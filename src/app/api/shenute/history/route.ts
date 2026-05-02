@@ -12,6 +12,16 @@ type SavedChatMessage = {
   parts?: Array<{ text: string; type: "text" }>;
 };
 
+type SavedChatRow = {
+  client_message_id: string | null;
+  content: string;
+  id: string;
+  metadata: {
+    parts?: SavedChatMessage["parts"] | null;
+  } | null;
+  role: SavedChatMessage["role"];
+};
+
 type HistoryRequestPayload = {
   sessionId?: unknown;
   messages?: unknown;
@@ -133,7 +143,7 @@ export async function GET(request: Request) {
 
     const { data: messages, error: messagesError } = await supabase
       .from("chat_messages")
-      .select("id, role, content, metadata")
+      .select("id, role, content, metadata, client_message_id")
       .eq("session_id", sessionId)
       .order("created_at", { ascending: true });
 
@@ -145,11 +155,22 @@ export async function GET(request: Request) {
       );
     }
 
+    const sanitizedMessages: SavedChatMessage[] = (messages ?? [])
+      .map((message) => message as SavedChatRow)
+      .map((message) => ({
+        id: message.client_message_id ?? message.id,
+        role: message.role,
+        content: message.content,
+        parts: Array.isArray(message.metadata?.parts)
+          ? message.metadata.parts
+          : undefined,
+      }));
+
     return NextResponse.json({
       success: true,
       sessionId,
       sessions: sessions ?? [],
-      messages: messages ?? [],
+      messages: sanitizedMessages ?? [],
     });
   } catch (error) {
     console.error("Shenute history GET failed:", error);
@@ -219,37 +240,39 @@ export async function POST(request: Request) {
       );
     }
 
-    const { error: deleteError } = await supabase
+    const { data: existingMessages, error: fetchError } = await supabase
       .from("chat_messages")
-      .delete()
+      .select("id, client_message_id")
       .eq("session_id", sessionId);
 
-    if (deleteError) {
-      console.error(
-        "Failed to clear existing Shenute history messages:",
-        deleteError,
-      );
-      return NextResponse.json(
-        { success: false, error: "Could not save history." },
-        { status: 500 },
-      );
+    if (fetchError) {
+      console.error("Failed to fetch existing messages for sync:", fetchError);
     }
 
-    const rows = messages.map((message) => ({
-      id: crypto.randomUUID(),
-      session_id: sessionId,
-      role: message.role,
-      content: message.content,
-      metadata: {
+    const rows = messages.map((message, index) => {
+      const existing = existingMessages?.find(
+        (m) => m.client_message_id === message.id,
+      );
+
+      // Add a 1ms offset to each message to ensure stable ordering by created_at
+      const messageDate = new Date(new Date(now).getTime() + index);
+
+      return {
+        id: existing?.id ?? crypto.randomUUID(),
+        session_id: sessionId,
         client_message_id: message.id,
-        parts: message.parts ?? null,
-      },
-      created_at: now,
-    }));
+        role: message.role,
+        content: message.content,
+        metadata: {
+          parts: message.parts ?? null,
+        },
+        created_at: messageDate.toISOString(),
+      };
+    });
 
     const { error: messagesError } = await supabase
       .from("chat_messages")
-      .insert(rows);
+      .upsert(rows, { onConflict: "session_id, client_message_id" });
 
     if (messagesError) {
       console.error("Failed to upsert Shenute messages:", messagesError);

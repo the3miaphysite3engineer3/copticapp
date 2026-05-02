@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { ArrowRight, BookOpenCheck } from "lucide-react";
+import { ArrowRight, BookOpenCheck, Square, Volume2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -22,6 +22,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { StatusNotice } from "@/components/StatusNotice";
 import { SurfacePanel } from "@/components/SurfacePanel";
+import { useSpeech } from "@/features/dictionary/hooks/useSpeech";
 import { cx } from "@/lib/classes";
 import { getContributorsPath, getLocalizedHomePath } from "@/lib/locale";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
@@ -125,6 +126,8 @@ const SHENUTE_COPY = {
       "Start with a word, a grammar question, or an image attachment and Shenute AI will keep the conversation grounded in your Coptic study workflow.",
     welcomeTitle: "Welcome to Shenute AI",
     writeAdminFeedback: "Write admin feedback before submitting.",
+    play: "Speak",
+    stop: "Stop",
   },
   nl: {
     accessRequired: "Meld u aan om Shenute AI te gebruiken.",
@@ -197,6 +200,8 @@ const SHENUTE_COPY = {
       "Begin met een woord, een grammaticavraag of een afbeelding. Shenute AI houdt het gesprek verbonden met uw Koptische studiewerkstroom.",
     welcomeTitle: "Welkom bij Shenute AI",
     writeAdminFeedback: "Schrijf beheerdersfeedback voordat u die verzendt.",
+    play: "Spreken",
+    stop: "Stop",
   },
 } as const;
 
@@ -445,6 +450,7 @@ export default function ShenuteAI() {
     useState<Record<string, string>>({});
   const [feedbackStateByMessage, setFeedbackStateByMessage] =
     useState<FeedbackStateByMessage>({});
+  const isSavingRef = useRef(false);
 
   const transport = useMemo(
     () =>
@@ -457,6 +463,8 @@ export default function ShenuteAI() {
   const { messages, setMessages, sendMessage, status, error } = useChat({
     transport,
   });
+
+  const { speakMixed, stop, isSpeaking, isPremiumLoading } = useSpeech();
 
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [autosaveStatus, setAutosaveStatus] = useState<string | null>(null);
@@ -485,12 +493,7 @@ export default function ShenuteAI() {
   }, [isLoading, typedMessages.length]);
 
   useEffect(() => {
-    if (hasRestoredHistory || !isReady) {
-      return;
-    }
-
-    if (!isAuthenticated) {
-      setHasRestoredHistory(true);
+    if (hasRestoredHistory || !isReady || !isAuthenticated) {
       return;
     }
 
@@ -544,10 +547,16 @@ export default function ShenuteAI() {
     }
 
     const timer = window.setTimeout(() => {
+      if (isSavingRef.current) {
+        return;
+      }
+
+      isSavingRef.current = true;
       void saveChatHistoryOnline(
         typedMessages,
         shenuteSessionIdRef.current,
       ).then((result) => {
+        isSavingRef.current = false;
         if (result.success) {
           if (result.sessionId) {
             shenuteSessionIdRef.current = result.sessionId;
@@ -1328,6 +1337,36 @@ export default function ShenuteAI() {
                       {m.role === "assistant" ? (
                         <div className="mt-3 space-y-2 border-t border-stone-200 pt-3 text-xs dark:border-stone-700">
                           <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (isSpeaking) {
+                                  stop();
+                                } else {
+                                  const text = getMessageText(m);
+                                  if (text) {
+                                    void speakMixed(text);
+                                  }
+                                }
+                              }}
+                              disabled={isPremiumLoading}
+                              className={buttonClassName({
+                                size: "sm",
+                                variant: "secondary",
+                                className: cx(
+                                  "gap-2",
+                                  isSpeaking &&
+                                    "border-sky-500 text-sky-600 dark:border-sky-400 dark:text-sky-300",
+                                ),
+                              })}
+                            >
+                              {isSpeaking ? (
+                                <Square className="h-3.5 w-3.5 fill-current" />
+                              ) : (
+                                <Volume2 className="h-3.5 w-3.5" />
+                              )}
+                              {isSpeaking ? copy.stop : copy.play}
+                            </button>
                             <button
                               type="button"
                               onClick={() => {

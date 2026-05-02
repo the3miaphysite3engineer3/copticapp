@@ -49,6 +49,63 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 > [!NOTE]  
 > To enable Supabase auth, AI routing, or email features locally, copy `.env.example` to `.env.local` and add your credentials. See our [Architecture Docs](docs/architecture.md) for more details.
 
+## Repository Guide
+
+This repo is organized around a few clear layers:
+
+- `src/app` owns routes, route handlers, metadata, and app shell entry points.
+- `src/features` owns feature-specific UI, hooks, server helpers, and logic.
+- `src/actions` owns shared server actions used by forms and client mutations.
+- `src/lib` owns shared infrastructure such as Supabase wiring, locale helpers, metadata, and validation.
+- `src/content/grammar` owns typed grammar source files that are exported into checked-in data.
+- `public/data` owns the generated or checked-in datasets consumed by the app and public API.
+- `supabase` owns SQL migrations and Edge Functions.
+- `tests/e2e` owns the Playwright smoke tests used in CI.
+
+## Common Commands
+
+The main scripts in `package.json` are:
+
+- `npm run dev` - start the local app with the webpack dev server.
+- `npm run build` - create a production build, including the grammar data export step.
+- `npm run lint` - run ESLint with zero-warnings enforcement.
+- `npm run test` - run the Vitest suite.
+- `npm run test:e2e` - run Playwright end-to-end tests.
+- `npm run test:e2e:local` - build first, then run the Playwright smoke tests.
+- `npm run knip` - check for dead code and unused exports.
+- `npm run format:check` - verify formatting with Prettier.
+- `npm run data:grammar:export` - regenerate the public grammar JSON bundle from source.
+
+## Environment Setup
+
+Start with `.env.example` and fill in only the services you need. The most common values are:
+
+- Supabase URL and anon/service-role keys for auth and server-side data access.
+- Resend API keys and sender addresses for contact and notification flows.
+- Optional Upstash or Vercel KV settings for shared rate limiting.
+- AI provider keys for Shenute AI and embedding workflows.
+- OCR service settings for the server-side OCR proxy.
+
+For production and external callbacks, the canonical site URL should be `https://www.copticcompass.com`.
+
+## Validation Before PRs
+
+Before opening a pull request, the project expects the main checks to pass:
+
+```bash
+npm run format:check
+npm run knip
+npm run lint
+npm run test
+npm run build
+```
+
+If you change routing, auth, metadata, redirects, or major UI flows, also run:
+
+```bash
+npm run test:e2e:local
+```
+
 ## Documentation
 
 For deep dives into the technical architecture, environment setup, API surfaces, or localization guidelines, see the `docs/` directory:

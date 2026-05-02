@@ -112,8 +112,9 @@ const matchVelar = () =>
 // ─── Tokeniser ───────────────────────────────────────────────────────
 
 const SPACER_RE = /\s|\.|\r|\n|:/;
-const COPTIC_RE = new RegExp(`[${Object.keys(CHAR_MAP).join("")}]+`, "i");
-const OTHER_RE = new RegExp(`[^${Object.keys(CHAR_MAP).join("")}]+`, "i");
+export const COPTIC_CHAR_SET = Object.keys(CHAR_MAP).join("");
+const COPTIC_RE = new RegExp(`[${COPTIC_CHAR_SET}]+`, "i");
+const OTHER_RE = new RegExp(`[^${COPTIC_CHAR_SET}]+`, "i");
 const TOKEN_RE = new RegExp(
   `(?<word>${COPTIC_RE.source})|(?<spacer>${OTHER_RE.source})+`,
   "ig",
