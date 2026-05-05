@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
 import { Badge } from "@/components/Badge";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -183,12 +183,16 @@ export default function DictionaryEntryCard({
   const articleRef = useRef<HTMLElement>(null);
   const [viewDialect, setViewDialect] =
     useState<EntryDialectSelection>(selectedDialect);
+  const [prevSelectedDialect, setPrevSelectedDialect] =
+    useState<DialectFilter>(selectedDialect);
+
+  if (selectedDialect !== prevSelectedDialect) {
+    setPrevSelectedDialect(selectedDialect);
+    setViewDialect(selectedDialect);
+  }
+
   const isDetailView = headingLevel === "h1";
   const primaryDialectKey = getPreferredEntryDialectKey(entry, viewDialect);
-
-  useEffect(() => {
-    setViewDialect(selectedDialect);
-  }, [selectedDialect]);
 
   let headerSpelling = entry.headword;
   const primaryForms = primaryDialectKey
