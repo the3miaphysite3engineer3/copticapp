@@ -37,6 +37,7 @@ export interface DialectForms {
   absolute: string;
   constructParticipleCompounds?: ConstructParticipleCompound[];
   constructParticiples?: string[];
+  imperatives?: string[];
   nominal: string;
   pronominal: string;
   stative: string;
@@ -64,15 +65,12 @@ export interface LexicalEntry {
   greek_equivalents: string[];
   bohairicParadigmData?: unknown;
   etymology?: "Egy" | "Gr";
-  raw: {
-    word: string;
-    meaning: string;
-  };
+  pluralForms?: Partial<Record<DictionaryDialectCode, string[]>>;
 }
 
 /**
  * Represents the reduced dictionary shape needed by search-result cards and
- * analytics drilldowns without shipping the full raw/source payload.
+ * analytics drilldowns.
  */
 export type DictionaryClientEntry = Pick<
   LexicalEntry,
@@ -81,9 +79,11 @@ export type DictionaryClientEntry = Pick<
   | "english_meanings"
   | "etymology"
   | "gender"
-  | "greek_equivalents"
   | "headword"
   | "id"
+  | "pluralForms"
   | "pos"
   | "relationType"
->;
+> & {
+  greek_equivalents?: string[];
+};

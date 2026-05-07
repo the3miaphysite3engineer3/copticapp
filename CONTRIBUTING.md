@@ -8,8 +8,11 @@ Use the pinned Node.js version before installing dependencies:
 
 ```bash
 nvm use
-npm install
+npm ci
 ```
+
+Use `npm install` instead when you intentionally need to update
+`package-lock.json`.
 
 If you need auth, profile avatars, contact email, or distributed rate limiting locally, copy the example environment file and fill in your own values:
 
@@ -22,7 +25,7 @@ Do not commit `.env.local`. It is gitignored by default, while [`.env.example`](
 If you plan to run the browser smoke tests locally, install the Playwright browser once:
 
 ```bash
-npx playwright install chromium
+npx playwright install --with-deps chromium
 ```
 
 ## What Contributions Are Most Helpful
@@ -47,6 +50,8 @@ npm run dev
 
 Public pages live under `/en` and `/nl`, and the legacy non-localized routes redirect to their localized equivalents.
 
+Dictionary search pages use `/en/dictionary` and `/nl/dictionary`. Individual dictionary entries use `/en/entry/<id>` and `/nl/entry/<id>` as the canonical route shape; do not add localized `/dictionary/<id>` entry pages unless the routing model is intentionally changed.
+
 If your change touches auth, dashboard, admin review, profile avatars, or contact email, make sure `.env.local` is populated first.
 
 ### Grammar Content Changes
@@ -65,7 +70,11 @@ Then review the generated files under `public/data/grammar/v1` and spot-check th
 
 ### Dictionary Changes
 
-The site currently serves the checked-in dataset at `public/data/dictionary.json`.
+The site currently serves the normalized checked-in dataset at `public/data/dictionary.json`. Runtime dictionary entries should use structured fields such as `dialects`, `english_meanings`, `dutch_meanings`, `greek_equivalents`, `pluralForms`, and entry relation fields rather than raw/source-only text fields.
+
+The historical XML source file is kept outside tracked runtime data under `backups/` when needed for local reference. Do not re-add it to `public/data` or rely on it from app code.
+
+Grammar abbreviations and part-of-speech display rules live in `src/features/dictionary/grammarRegistry.ts`; update that registry and its tests when dictionary grammar labels change.
 
 For lexical corrections, include the scholarly or source rationale in your PR. For larger source-data refreshes, coordinate the ingest workflow separately with the maintainer.
 

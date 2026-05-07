@@ -1,4 +1,4 @@
-import { getGrammarOpenApiDocument } from "@/features/grammar/lib/grammarOpenApi";
+import { getPublicOpenApiDocument } from "@/features/api-docs/lib/publicOpenApi";
 import {
   publicApiJsonResponse,
   publicApiOptionsResponse,
@@ -7,11 +7,11 @@ import {
 export const dynamic = "force-static";
 
 /**
- * Returns the generated grammar OpenAPI document as a static public API
+ * Returns the generated public OpenAPI document as a static public API
  * response.
  */
 export function GET() {
-  return publicApiJsonResponse(getGrammarOpenApiDocument());
+  return publicApiJsonResponse(getPublicOpenApiDocument());
 }
 
 /**

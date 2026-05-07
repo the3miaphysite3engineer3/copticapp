@@ -5,22 +5,22 @@ import Link from "next/link";
 import { Badge } from "@/components/Badge";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SurfacePanel } from "@/components/SurfacePanel";
+import { getPreferredEntryPrincipalSpelling } from "@/features/dictionary/lib/entryDisplay";
 import type {
   LexicalEntry,
   LexicalRelationType,
 } from "@/features/dictionary/types";
+import { cx } from "@/lib/classes";
 import { antinoou } from "@/lib/fonts";
 import { getEntryPath } from "@/lib/locale";
+
+import HighlightText from "./HighlightText";
 
 type EntryRelationsPanelProps = {
   entry: LexicalEntry;
   parentEntry: LexicalEntry | null;
   relatedEntries: readonly LexicalEntry[];
 };
-
-function getDisplayHeadword(entry: LexicalEntry) {
-  return entry.dialects.B?.absolute || entry.headword;
-}
 
 function getRelationLabel(
   relationType: LexicalRelationType | undefined,
@@ -62,7 +62,10 @@ function RelationEntryLink({
           <p
             className={`${antinoou.className} text-2xl tracking-wide text-sky-700 transition-colors group-hover:text-sky-600 dark:text-sky-300 dark:group-hover:text-sky-200`}
           >
-            {getDisplayHeadword(entry)}
+            <HighlightText
+              text={getPreferredEntryPrincipalSpelling(entry)}
+              query=""
+            />
           </p>
           {firstMeaning ? (
             <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">
@@ -119,7 +122,12 @@ export default function EntryRelationsPanel({
             <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-500 dark:text-stone-400">
               {t("entry.relatedEntries")}
             </h2>
-            <div className="grid gap-3 md:grid-cols-2">
+            <div
+              className={cx(
+                "grid gap-3",
+                relatedEntries.length > 1 && "md:grid-cols-2",
+              )}
+            >
               {relatedEntries.map((relatedEntry) => (
                 <RelationEntryLink
                   key={relatedEntry.id}

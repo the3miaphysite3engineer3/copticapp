@@ -105,24 +105,30 @@ function getDictionaryLookupIndex(
 }
 
 /**
- * Removes raw/source-only fields from the generated dictionary snapshot so
- * client search and analytics views can reuse a smaller transport payload.
+ * Keeps client search and analytics views on the smaller transport payload
+ * they need instead of shipping entry-detail-only fields.
  */
 export function toDictionaryClientEntry(
   entry: LexicalEntry,
 ): DictionaryClientEntry {
-  return {
+  const clientEntry: DictionaryClientEntry = {
     dialects: entry.dialects,
     dutch_meanings: entry.dutch_meanings,
     english_meanings: entry.english_meanings,
     etymology: entry.etymology,
     gender: entry.gender,
-    greek_equivalents: entry.greek_equivalents,
     headword: entry.headword,
     id: entry.id,
+    pluralForms: entry.pluralForms,
     pos: entry.pos,
     relationType: entry.relationType,
   };
+
+  if (entry.greek_equivalents.length > 0) {
+    clientEntry.greek_equivalents = entry.greek_equivalents;
+  }
+
+  return clientEntry;
 }
 
 const readDictionaryClientEntries = cache((): DictionaryClientEntry[] => {

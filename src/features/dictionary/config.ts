@@ -1,11 +1,20 @@
 import type { TranslationKey } from "@/lib/i18n";
 
+import {
+  DICTIONARY_PART_OF_SPEECH_CODES,
+  DICTIONARY_PART_OF_SPEECH_FILTER_CODES,
+  getPartOfSpeechDisplayCode,
+  getPartOfSpeechLabelKey,
+  normalizePartOfSpeechCode,
+} from "./grammarRegistry";
+
 export const DICTIONARY_DIALECT_CODES = [
   "A",
   "B",
   "F",
   "Fb",
   "L",
+  "M",
   "Sl",
   "O",
   "S",
@@ -13,19 +22,17 @@ export const DICTIONARY_DIALECT_CODES = [
   "Sf",
 ] as const;
 
-export const ANALYTICS_DIALECTS = ["ALL", "S", "B", "A", "L", "F"] as const;
-
-export const PARTS_OF_SPEECH = [
-  "V",
-  "N",
-  "ADJ",
-  "ADV",
-  "CONJ",
-  "INJ",
-  "OTHER",
-  "PREP",
-  "UNKNOWN",
+export const ANALYTICS_DIALECTS = [
+  "ALL",
+  "S",
+  "B",
+  "A",
+  "L",
+  "F",
+  "M",
 ] as const;
+
+export const PARTS_OF_SPEECH = DICTIONARY_PART_OF_SPEECH_CODES;
 
 export type DictionaryDialectCode = (typeof DICTIONARY_DIALECT_CODES)[number];
 export type AnalyticsDialect = (typeof ANALYTICS_DIALECTS)[number];
@@ -49,18 +56,6 @@ type PartOfSpeechOption = {
   labelKey: TranslationKey;
 };
 
-const PART_OF_SPEECH_LABEL_KEYS: Record<PartOfSpeech, TranslationKey> = {
-  V: "dict.verb",
-  N: "dict.noun",
-  ADJ: "dict.adj",
-  ADV: "dict.adv",
-  CONJ: "dict.conj",
-  INJ: "dict.inj",
-  OTHER: "dict.other",
-  PREP: "dict.prep",
-  UNKNOWN: "dict.unknown",
-};
-
 const DIALECT_LABEL_KEYS: Record<
   "ALL" | DictionaryDialectCode,
   TranslationKey
@@ -71,6 +66,7 @@ const DIALECT_LABEL_KEYS: Record<
   F: "dialect.F",
   Fb: "dialect.Fb",
   L: "dialect.L",
+  M: "dialect.M",
   Sl: "dialect.Sl",
   O: "dialect.O",
   S: "dialect.S",
@@ -89,15 +85,15 @@ export const dialectFilterOptions = [
   { value: "A", labelKey: "dialect.A" },
   { value: "L", labelKey: "dialect.L" },
   { value: "F", labelKey: "dialect.F" },
+  { value: "M", labelKey: "dialect.M" },
 ] as const satisfies readonly DialectOption[];
 
 export const dictionaryPartOfSpeechFilterOptions = [
   { value: "ALL", labelKey: "dict.any" },
-  { value: "V", labelKey: "dict.verb" },
-  { value: "N", labelKey: "dict.noun" },
-  { value: "ADJ", labelKey: "dict.adj" },
-  { value: "ADV", labelKey: "dict.adv" },
-  { value: "PREP", labelKey: "dict.prep" },
+  ...DICTIONARY_PART_OF_SPEECH_FILTER_CODES.map((value) => ({
+    value,
+    labelKey: getPartOfSpeechLabelKey(value),
+  })),
 ] as const satisfies readonly PartOfSpeechOption[];
 
 export function getDialectLabelKey(siglum: string): TranslationKey | undefined {
@@ -128,35 +124,29 @@ export function getPartOfSpeechFilterLabel(
 }
 
 /**
- * Normalizes imported and legacy part-of-speech codes into the compact set
- * used by the current dictionary UI.
+ * Normalizes dictionary part-of-speech codes into the compact set used by the
+ * current dictionary UI.
  */
 export function normalizePartOfSpeech(value: string): PartOfSpeech {
-  if (value === "INTERJ") {
-    return "INJ";
-  }
-
-  return PARTS_OF_SPEECH.includes(value as PartOfSpeech)
-    ? (value as PartOfSpeech)
-    : "UNKNOWN";
+  return normalizePartOfSpeechCode(value);
 }
 
 /**
  * Returns the stable short code shown in compact UI badges.
  */
 export function getPartOfSpeechCode(value: string) {
-  return normalizePartOfSpeech(value);
+  return getPartOfSpeechDisplayCode(value);
 }
 
 /**
  * Returns the localized part-of-speech label for entry metadata and assistive
- * text without exposing raw internal codes.
+ * text without exposing stored dictionary codes.
  */
 export function getPartOfSpeechLabel(
   value: string,
   translate: (key: TranslationKey) => string,
 ) {
-  return translate(PART_OF_SPEECH_LABEL_KEYS[normalizePartOfSpeech(value)]);
+  return translate(getPartOfSpeechLabelKey(value));
 }
 
 export function isDialectFilter(value: string): value is DialectFilter {

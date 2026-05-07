@@ -11,11 +11,13 @@ type RouteHandlerModule = {
 const discoveredPublicApiRouteModules: Record<string, RouteHandlerModule> =
   import.meta.glob<RouteHandlerModule>("./**/route.ts*", { eager: true });
 
-const publicApiRouteModules = Object.entries(
+const publicReadOnlyApiRouteModules = Object.entries(
   discoveredPublicApiRouteModules,
 ).filter(
   ([path]) =>
-    path === "./openapi.json/route.ts" || path.startsWith("./v1/grammar/"),
+    path === "./openapi.json/route.ts" ||
+    path.startsWith("./v1/dictionary/") ||
+    path.startsWith("./v1/grammar/"),
 );
 
 function expectCorsHeaders(response: Response) {
@@ -36,10 +38,19 @@ function getRouteGetArgs(path: string): unknown[] {
   }
 
   if (
+    path === "./v1/dictionary/search-index/route.ts" ||
     path === "./v1/grammar/route.ts" ||
     path === "./v1/grammar/manifest/route.ts"
   ) {
     return [];
+  }
+
+  if (path === "./v1/dictionary/search/route.ts") {
+    return [
+      new NextRequest(
+        `${baseUrl}/api/v1/dictionary/search?q=ⲙⲟⲓ&dialect=B&limit=10`,
+      ),
+    ];
   }
 
   if (path === "./v1/grammar/lessons/route.ts") {
@@ -113,16 +124,16 @@ function getRouteGetArgs(path: string): unknown[] {
 }
 
 describe("public API CORS", () => {
-  it("exposes OPTIONS handlers for every public API route", () => {
-    expect(publicApiRouteModules.length).toBeGreaterThan(0);
+  it("exposes OPTIONS handlers for every public read-only API route", () => {
+    expect(publicReadOnlyApiRouteModules.length).toBeGreaterThan(0);
 
-    publicApiRouteModules.forEach(([, routeModule]) => {
+    publicReadOnlyApiRouteModules.forEach(([, routeModule]) => {
       expect(typeof routeModule.OPTIONS).toBe("function");
     });
   });
 
   it("applies CORS headers to GET and OPTIONS responses", async () => {
-    for (const [path, routeModule] of publicApiRouteModules) {
+    for (const [path, routeModule] of publicReadOnlyApiRouteModules) {
       expect(typeof routeModule.GET).toBe("function");
       expect(typeof routeModule.OPTIONS).toBe("function");
 

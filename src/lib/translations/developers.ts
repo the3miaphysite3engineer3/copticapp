@@ -1,57 +1,65 @@
 export const developersMessages = {
   en: {
     "developers.title": "Developers",
-    "developers.seoTitle":
-      "Coptic Compass Grammar + Shenute AI APIs for Developers",
+    "developers.seoTitle": "Coptic Compass Public APIs for Developers",
     "developers.description":
-      "Explore the public Coptic Compass grammar API plus Shenute AI and OCR-backed image integration patterns for developer workflows.",
-    "developers.heroTitle": "Build on grammar and Shenute AI APIs",
+      "Explore the public Coptic Compass grammar and dictionary APIs plus Shenute AI and OCR-backed image integration patterns for developer workflows.",
+    "developers.heroTitle": "Build on Coptic Compass public APIs",
     "developers.heroDescription":
-      "The grammar API exposes a read-only, versioned dataset for lessons, concepts, examples, exercises, footnotes, and sources, while /api/shenute powers Shenute AI interactions with provider selection and OCR-backed image context.",
+      "The public API surface includes the read-only grammar dataset, normalized dictionary search, Shenute AI provider routing, and an OCR proxy for image or document uploads.",
     "developers.primaryCta": "Open API Docs",
     "developers.secondaryCta": "View OpenAPI JSON",
     "developers.discoveryTitle": "Start here",
     "developers.discoveryDescription":
-      "Most integrations should begin with the API index, which documents the available resource families and the current dataset version.",
+      "Most integrations should begin with the OpenAPI document, which describes the available public services and their request shapes.",
     "developers.workflowTitle": "Typical workflow",
     "developers.workflow.0":
-      "Call /api/v1/grammar to discover the current endpoints and dataset version.",
+      "Use /api/openapi.json to inspect contracts for all four public services.",
     "developers.workflow.1":
-      "Fetch /api/v1/grammar/lessons for the published lesson index.",
+      "Call /api/v1/grammar to discover grammar endpoints and dataset version.",
     "developers.workflow.2":
-      "Load /api/v1/grammar/lessons/[slug] for full lesson payloads.",
+      "Fetch /api/v1/grammar/lessons for the published lesson index.",
     "developers.workflow.3":
-      "Use /api/openapi.json when generating clients or importing the schema into tooling.",
+      "Query /api/v1/dictionary/search for paginated dictionary results.",
     "developers.workflow.4":
-      "Send POST /api/shenute requests for Shenute AI responses (default provider: openrouter).",
+      "Use /api/v1/dictionary/search-index when a reduced full dictionary index is needed.",
     "developers.workflow.5":
+      "Send POST /api/shenute requests for Shenute AI responses (default provider: thoth).",
+    "developers.workflow.6":
       "Send image OCR requests to POST /api/ocr so Coptic Compass forwards them to OCR_SERVICE_URL.",
     "developers.integrationTitle": "Integration notes",
     "developers.integration.0":
-      "Responses are read-only and versioned with schemaVersion, datasetVersion, and generatedAt metadata.",
+      "Grammar responses are read-only and versioned with schemaVersion, datasetVersion, and generatedAt metadata.",
     "developers.integration.1":
       "The public dataset only exposes published lessons and their related concepts, examples, exercises, footnotes, and sources.",
     "developers.integration.2":
       "The lesson filter accepts either a lesson slug or a canonical lesson id.",
     "developers.integration.3":
-      "For browser apps on another origin, a backend proxy is the safest default.",
+      "Dictionary search accepts q, dialect, partOfSpeech, exact, limit, and offset filters.",
     "developers.integration.4":
-      "Shenute AI supports provider values: openrouter, gemini, and hf.",
+      "Dictionary payloads are normalized and do not include raw/source-only fields.",
     "developers.integration.5":
-      "Image upload and camera capture flows run OCR first and append extracted text under [Image OCR Context] before calling /api/shenute.",
+      "For browser apps on another origin, a backend proxy is the safest default.",
     "developers.integration.6":
-      "Set OCR_SERVICE_URL and optionally OCR_UPLOAD_FIELD when your OCR backend requires a specific multipart field name.",
+      "Shenute AI supports provider values: thoth, openrouter, gemini, and hf.",
     "developers.integration.7":
+      "Image upload and camera capture flows run OCR first and append extracted text under [Image OCR Context] before calling /api/shenute.",
+    "developers.integration.8":
+      "Set OCR_SERVICE_URL and optionally OCR_UPLOAD_FIELD when your OCR backend requires a specific multipart field name.",
+    "developers.integration.9":
       "The /api/ocr endpoint proxies multipart OCR uploads and returns upstream OCR responses to the client.",
     "developers.endpointsTitle": "High-value endpoints",
     "developers.exampleTitle": "Example request",
     "developers.exampleCaption":
       "A minimal server-side fetch that lists published lesson titles.",
+    "developers.dictionaryExampleTitle": "Dictionary search example",
+    "developers.dictionaryExampleCaption":
+      "A paginated dictionary search request scoped to the Bohairic dialect.",
     "developers.resourcesTitle": "Related resources",
     "developers.breadcrumbLabel": "Developers",
     "developers.shenuteExampleTitle": "Shenute AI request example",
     "developers.shenuteExampleCaption":
-      "A minimal POST request to /api/shenute using OpenRouter as provider.",
+      "A minimal POST request to /api/shenute using THOTH AI as provider.",
     "developers.ocrExampleTitle": "OCR integration notes",
     "developers.ocrExampleCaption":
       "Clients can call /api/ocr, and Coptic Compass forwards to OCR_SERVICE_URL then returns the upstream OCR response.",
@@ -62,6 +70,10 @@ export const developersMessages = {
     "developers.endpoints.manifest.desc":
       "Manifest with dataset-level metadata and counts.",
     "developers.endpoints.openapi.desc": "Machine-readable OpenAPI document.",
+    "developers.endpoints.dictionarySearch.desc":
+      "Paginated normalized dictionary search with query, dialect, part-of-speech, exact-match, and pagination filters.",
+    "developers.endpoints.dictionaryIndex.desc":
+      "Reduced dictionary index for client search and analytics drilldowns.",
     "developers.endpoints.shenute.desc":
       "Shenute AI endpoint with provider routing and fallback handling.",
     "developers.endpoints.ocr.desc":
@@ -72,9 +84,12 @@ export const developersMessages = {
     "developers.resources.openapi.label": "OpenAPI JSON",
     "developers.resources.openapi.desc":
       "Import into Postman, SDK generators, or internal tooling.",
-    "developers.resources.apiIndex.label": "API index",
+    "developers.resources.apiIndex.label": "Grammar API index",
     "developers.resources.apiIndex.desc":
-      "Read the current API capabilities and example routes.",
+      "Read grammar dataset capabilities and example grammar routes.",
+    "developers.resources.dictionary.label": "Dictionary search API",
+    "developers.resources.dictionary.desc":
+      "Search normalized Coptic dictionary entries by Coptic, English, Dutch, Greek, dialect, and part of speech.",
     "developers.resources.grammarHub.label": "Grammar hub",
     "developers.resources.grammarHub.desc":
       "See the public content the API is exposing.",
@@ -87,57 +102,66 @@ export const developersMessages = {
   },
   nl: {
     "developers.title": "Ontwikkelaars",
-    "developers.seoTitle":
-      "Coptic Compass-API's voor grammatica en Shenute AI voor ontwikkelaars",
+    "developers.seoTitle": "Coptic Compass publieke API's voor ontwikkelaars",
     "developers.description":
-      "Verken de publieke grammatica-API van Coptic Compass plus Shenute AI en OCR-ondersteunde afbeeldingsintegratie voor ontwikkelaars.",
-    "developers.heroTitle": "Bouw voort op grammatica- en Shenute AI-API's",
+      "Verken de publieke grammatica- en woordenboek-API's van Coptic Compass, plus Shenute AI en OCR-ondersteunde afbeeldingsintegratie voor ontwikkelaars.",
+    "developers.heroTitle":
+      "Bouw voort op de publieke API's van Coptic Compass",
     "developers.heroDescription":
-      "De grammatica-API biedt een alleen-lezen, geversioneerde dataset voor lessen, begrippen, voorbeelden, oefeningen, voetnoten en bronnen, terwijl /api/shenute Shenute AI-interacties levert met providerkeuze en OCR-context voor afbeeldingen.",
+      "De publieke API-laag omvat de alleen-lezen grammaticadataset, genormaliseerde woordenboekzoekfunctie, Shenute AI-providerroutering en een OCR-proxy voor afbeelding- of documentuploads.",
     "developers.primaryCta": "Open API-docs",
     "developers.secondaryCta": "Bekijk OpenAPI JSON",
     "developers.discoveryTitle": "Begin hier",
     "developers.discoveryDescription":
-      "De meeste integraties starten best bij de API-index, waar de beschikbare resourcefamilies en de huidige datasetversie worden uitgelegd.",
+      "De meeste integraties starten best bij het OpenAPI-document, waar de publieke services en requestvormen worden beschreven.",
     "developers.workflowTitle": "Typische workflow",
     "developers.workflow.0":
-      "Roep /api/v1/grammar aan om de huidige endpoints en datasetversie te ontdekken.",
+      "Gebruik /api/openapi.json om de contracten voor alle vier publieke services te bekijken.",
     "developers.workflow.1":
-      "Gebruik /api/v1/grammar/lessons voor de index van gepubliceerde lessen.",
+      "Roep /api/v1/grammar aan om grammatica-endpoints en datasetversie te ontdekken.",
     "developers.workflow.2":
-      "Laad /api/v1/grammar/lessons/[slug] voor volledige lespayloads.",
+      "Gebruik /api/v1/grammar/lessons voor de index van gepubliceerde lessen.",
     "developers.workflow.3":
-      "Gebruik /api/openapi.json om clients te genereren of het schema in tooling te importeren.",
+      "Query /api/v1/dictionary/search voor gepagineerde woordenboekresultaten.",
     "developers.workflow.4":
-      "Verstuur POST /api/shenute voor Shenute AI-antwoorden (standaardprovider: openrouter).",
+      "Gebruik /api/v1/dictionary/search-index wanneer een beperkte volledige woordenboekindex nodig is.",
     "developers.workflow.5":
+      "Verstuur POST /api/shenute voor Shenute AI-antwoorden (standaardprovider: thoth).",
+    "developers.workflow.6":
       "Stuur OCR-requests voor afbeeldingen naar POST /api/ocr zodat Coptic Compass ze doorstuurt naar OCR_SERVICE_URL.",
     "developers.integrationTitle": "Integratienotities",
     "developers.integration.0":
-      "Responses zijn alleen-lezen en bevatten schemaVersion, datasetVersion en generatedAt.",
+      "Grammaticaresponses zijn alleen-lezen en bevatten schemaVersion, datasetVersion en generatedAt.",
     "developers.integration.1":
       "De publieke dataset bevat alleen gepubliceerde lessen en de bijbehorende begrippen, voorbeelden, oefeningen, voetnoten en bronnen.",
     "developers.integration.2":
       "De lesson-filter accepteert zowel een slug als een canonieke les-id.",
     "developers.integration.3":
-      "Voor browser-apps op een andere origin is een backendproxy de veiligste standaardoptie.",
+      "Woordenboekzoekopdrachten accepteren q, dialect, partOfSpeech, exact, limit en offset als filters.",
     "developers.integration.4":
-      "Shenute AI ondersteunt providers: openrouter, gemini en hf.",
+      "Woordenboekpayloads zijn genormaliseerd en bevatten geen ruwe of alleen-bronvelden.",
     "developers.integration.5":
-      "Bij upload van afbeeldingen of cameracaptures draait OCR eerst; de geëxtraheerde tekst wordt toegevoegd onder [Image OCR Context] vóór de call naar /api/shenute.",
+      "Voor browser-apps op een andere origin is een backendproxy de veiligste standaardoptie.",
     "developers.integration.6":
-      "Stel OCR_SERVICE_URL in en optioneel OCR_UPLOAD_FIELD als uw OCR-backend een vaste multipart-veldnaam vereist.",
+      "Shenute AI ondersteunt providers: thoth, openrouter, gemini en hf.",
     "developers.integration.7":
+      "Bij upload van afbeeldingen of cameracaptures draait OCR eerst; de geëxtraheerde tekst wordt toegevoegd onder [Image OCR Context] vóór de call naar /api/shenute.",
+    "developers.integration.8":
+      "Stel OCR_SERVICE_URL in en optioneel OCR_UPLOAD_FIELD als uw OCR-backend een vaste multipart-veldnaam vereist.",
+    "developers.integration.9":
       "Het endpoint /api/ocr proxyt multipart OCR-uploads en geeft het upstream OCR-resultaat terug aan de client.",
     "developers.endpointsTitle": "Belangrijke endpoints",
     "developers.exampleTitle": "Voorbeeldrequest",
     "developers.exampleCaption":
       "Een minimale server-side fetch-aanroep die de titels van gepubliceerde lessen ophaalt.",
+    "developers.dictionaryExampleTitle": "Voorbeeld woordenboekzoekopdracht",
+    "developers.dictionaryExampleCaption":
+      "Een gepagineerde woordenboekzoekopdracht beperkt tot het Bohairisch.",
     "developers.resourcesTitle": "Verwante bronnen",
     "developers.breadcrumbLabel": "Ontwikkelaars",
     "developers.shenuteExampleTitle": "Voorbeeld Shenute AI-request",
     "developers.shenuteExampleCaption":
-      "Een minimale POST-request naar /api/shenute met OpenRouter als provider.",
+      "Een minimale POST-request naar /api/shenute met THOTH AI als provider.",
     "developers.ocrExampleTitle": "OCR-integratienotities",
     "developers.ocrExampleCaption":
       "Clients kunnen /api/ocr aanroepen; Coptic Compass stuurt door naar OCR_SERVICE_URL en geeft de upstream OCR-response terug.",
@@ -148,6 +172,10 @@ export const developersMessages = {
     "developers.endpoints.manifest.desc":
       "Manifest met datasetmetadata en aantallen.",
     "developers.endpoints.openapi.desc": "Machineleesbaar OpenAPI-document.",
+    "developers.endpoints.dictionarySearch.desc":
+      "Gepagineerde genormaliseerde woordenboekzoekfunctie met query-, dialect-, woordsoort-, exact-match- en pagineringsfilters.",
+    "developers.endpoints.dictionaryIndex.desc":
+      "Beperkte woordenboekindex voor clientzoekfunctie en analytische drilldowns.",
     "developers.endpoints.shenute.desc":
       "Shenute AI-endpoint met providerkeuze en fallback-afhandeling.",
     "developers.endpoints.ocr.desc":
@@ -158,9 +186,12 @@ export const developersMessages = {
     "developers.resources.openapi.label": "OpenAPI JSON",
     "developers.resources.openapi.desc":
       "Importeer in Postman, SDK-generators of interne tooling.",
-    "developers.resources.apiIndex.label": "API-index",
+    "developers.resources.apiIndex.label": "Grammatica-API-index",
     "developers.resources.apiIndex.desc":
-      "Lees de huidige mogelijkheden en voorbeeldroutes.",
+      "Lees de mogelijkheden van de grammaticadataset en voorbeeldroutes voor grammatica.",
+    "developers.resources.dictionary.label": "Woordenboekzoek-API",
+    "developers.resources.dictionary.desc":
+      "Zoek genormaliseerde Koptische woordenboeklemma's op Koptisch, Engels, Nederlands, Grieks, dialect en woordsoort.",
     "developers.resources.grammarHub.label": "Grammatica-overzicht",
     "developers.resources.grammarHub.desc":
       "Bekijk de publieke inhoud die de API ontsluit.",

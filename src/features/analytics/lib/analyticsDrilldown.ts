@@ -1,5 +1,6 @@
 import type { EtymologyFilter } from "@/features/analytics/lib/analytics";
 import type { AnalyticsDialect } from "@/features/dictionary/config";
+import { isVerbPartOfSpeech } from "@/features/dictionary/grammarRegistry";
 import {
   DEFAULT_DICTIONARY_SEARCH_PAGE_SIZE,
   MAX_DICTIONARY_SEARCH_PAGE_SIZE,
@@ -196,7 +197,7 @@ function matchesAnalyticsDrilldownEntry(
 
   if (drilldown.chartType === "pos") {
     if (drilldown.originalName === "Verbs") {
-      return entry.pos === "V";
+      return isVerbPartOfSpeech(entry.pos);
     }
     if (drilldown.originalName === "Nouns") {
       return entry.pos === "N";
@@ -215,7 +216,7 @@ function matchesAnalyticsDrilldownEntry(
     }
 
     return (
-      entry.pos === "OTHER" || entry.pos === "INJ" || entry.pos === "UNKNOWN"
+      entry.pos === "OTHER" || entry.pos === "INTJ" || entry.pos === "UNKNOWN"
     );
   }
 
@@ -278,7 +279,7 @@ function matchesAnalyticsDrilldownEntry(
   }
 
   if (drilldown.chartType === "verb") {
-    if (entry.pos !== "V") {
+    if (!isVerbPartOfSpeech(entry.pos)) {
       return false;
     }
 

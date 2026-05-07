@@ -37,6 +37,8 @@ Knowledge Base:
 - A Concise Dictionary of Middle Egyptian (1962) - Raymond Oliver Faulkner
 - Custom instruction prompts (500 plus lines)
 
+This list documents THOTH AI's external knowledge context. The Coptic Compass runtime dictionary is the normalized JSON dataset described below, not the historical XML source file.
+
 ### OCR Proxy (`/api/ocr`)
 
 - Endpoint: `POST /api/ocr`
@@ -101,13 +103,25 @@ The export writes to `public/data/grammar/v1` and also runs automatically before
 
 ### Dictionary
 
-The public dictionary currently ships from the checked-in dataset at `public/data/dictionary.json`.
+The public dictionary currently ships from the normalized checked-in dataset at `public/data/dictionary.json`.
 
-## Public Grammar API
+Runtime dictionary data should stay structured and app-facing: dialect forms, meanings, Greek equivalents, plural forms, entry relations, etymology, part of speech, and gender. Raw/source-only text fields, attestations, and source notes are intentionally not part of the runtime payload.
 
-The repository exposes a read-only public grammar dataset.
+Primary app surfaces:
 
-Key entry points:
+- `/en/dictionary` and `/nl/dictionary` for localized search and browsing.
+- `/en/entry/<id>` and `/nl/entry/<id>` for canonical localized entry pages.
+
+Dictionary API surfaces:
+
+- `/api/v1/dictionary/search?q=<query>` for paginated search.
+- `/api/v1/dictionary/search-index` for the reduced client/search index.
+
+## Public APIs
+
+The repository exposes read-only public grammar and dictionary datasets.
+
+Grammar entry points:
 
 - `/api/v1/grammar`
 - `/api/v1/grammar/manifest`
@@ -118,10 +132,15 @@ Key entry points:
 - `/api/v1/grammar/footnotes`
 - `/api/v1/grammar/sources`
 
+Dictionary entry points:
+
+- `/api/v1/dictionary/search`
+- `/api/v1/dictionary/search-index`
+
 Docs and developer pages:
 
 - `/api-docs`
-- `/api/openapi.json`
+- `/api/openapi.json` for the combined public OpenAPI document covering grammar, dictionary, Shenute AI, and OCR
 - `/en/developers`
 - `/nl/developers`
 

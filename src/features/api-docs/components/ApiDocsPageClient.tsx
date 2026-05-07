@@ -7,7 +7,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { SurfacePanel } from "@/components/SurfacePanel";
-import { SwaggerDocsClient } from "@/features/grammar/components/SwaggerDocsClient";
+import { SwaggerDocsClient } from "@/features/api-docs/components/SwaggerDocsClient";
 import {
   getDevelopersPath,
   getGrammarPath,
@@ -49,6 +49,21 @@ const result = await response.text();`,
 const result = await response.text();`,
 };
 
+const DICTIONARY_API_EXAMPLES = {
+  en: `const response = await fetch(
+  "https://www.copticcompass.com/api/v1/dictionary/search?q=ⲙⲟⲓ&dialect=B&partOfSpeech=V&limit=10",
+);
+
+const page = await response.json();
+const headwords = page.entries.map((entry) => entry.headword);`,
+  nl: `const response = await fetch(
+  "https://www.copticcompass.com/api/v1/dictionary/search?q=ⲙⲟⲓ&dialect=B&partOfSpeech=V&limit=10",
+);
+
+const page = await response.json();
+const trefwoorden = page.entries.map((entry) => entry.headword);`,
+};
+
 const OCR_INTEGRATION_EXAMPLES = {
   en: `# .env.local
 OCR_SERVICE_URL=https://your-ocr-service/upload
@@ -80,12 +95,26 @@ function ApiDocsOverview() {
   const { t } = useLanguage();
   return (
     <p className="text-sm leading-7 text-stone-600 dark:text-stone-300">
-      {t("apiDocs.overviewStart")} <code>/api/v1/grammar</code>{" "}
-      {t("apiDocs.overviewOpenApi")} <code>/api/openapi.json</code>{" "}
-      {t("apiDocs.overviewDataset")} <code>/api/shenute</code>,{" "}
-      {t("apiDocs.overviewProvider")} <code>openrouter</code>{" "}
-      {t("apiDocs.overviewEnd")} <code>/api/ocr</code>{" "}
-      {t("apiDocs.overviewInstead")}
+      {t("apiDocs.overviewStart")} <code>/api/openapi.json</code>{" "}
+      {t("apiDocs.overviewOpenApi")} <code>/api/v1/grammar</code>,{" "}
+      {t("apiDocs.overviewDictionary")} <code>/api/v1/dictionary/search</code>,{" "}
+      {t("apiDocs.overviewShenute")} <code>/api/shenute</code>,{" "}
+      {t("apiDocs.overviewEnd")} <code>/api/ocr</code>.
+    </p>
+  );
+}
+
+function DictionaryApiDescription() {
+  const { t } = useLanguage();
+  return (
+    <p className="text-sm leading-7 text-stone-600 dark:text-stone-300">
+      {t("apiDocs.dictionaryDescriptionStart")}{" "}
+      <code>GET /api/v1/dictionary/search</code>{" "}
+      {t("apiDocs.dictionaryDescriptionFilters")} <code>q</code>,{" "}
+      <code>dialect</code>, <code>partOfSpeech</code>, <code>exact</code>,{" "}
+      <code>limit</code>, {t("apiDocs.shenuteDescriptionJoin")}{" "}
+      <code>offset</code>. {t("apiDocs.dictionaryDescriptionIndex")}{" "}
+      <code>/api/v1/dictionary/search-index</code>.
     </p>
   );
 }
@@ -96,9 +125,10 @@ function ShenuteApiDescription() {
     <p className="text-sm leading-7 text-stone-600 dark:text-stone-300">
       {t("apiDocs.shenuteDescriptionStart")} <code>POST /api/shenute</code>{" "}
       {t("apiDocs.shenuteDescriptionWith")}{" "}
-      {t("apiDocs.shenuteDescriptionProviders")} <code>openrouter</code>,{" "}
-      <code>gemini</code>, {t("apiDocs.shenuteDescriptionJoin")} <code>hf</code>
-      . {t("apiDocs.shenuteDescriptionFallback")}
+      {t("apiDocs.shenuteDescriptionProviders")} <code>thoth</code>,{" "}
+      <code>openrouter</code>, <code>gemini</code>,{" "}
+      {t("apiDocs.shenuteDescriptionJoin")} <code>hf</code>.{" "}
+      {t("apiDocs.shenuteDescriptionFallback")}
     </p>
   );
 }
@@ -176,6 +206,9 @@ export function ApiDocsPageClient() {
           <Link href="/api/v1/grammar" className="btn-secondary">
             {t("apiDocs.apiIndexLabel")}
           </Link>
+          <Link href="/api/v1/dictionary/search" className="btn-secondary">
+            {t("apiDocs.dictionarySearchLabel")}
+          </Link>
           <Link href="/api/shenute" className="btn-secondary">
             {t("apiDocs.shenuteEndpointLabel")}
           </Link>
@@ -204,7 +237,22 @@ export function ApiDocsPageClient() {
         <ApiDocsOverview />
       </SurfacePanel>
 
-      <section className="grid gap-6 xl:grid-cols-2">
+      <section className="grid gap-6 xl:grid-cols-3">
+        <SurfacePanel
+          as="article"
+          rounded="3xl"
+          variant="elevated"
+          className="space-y-4 p-6 md:p-8"
+        >
+          <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">
+            {t("apiDocs.dictionaryTitle")}
+          </h2>
+          <DictionaryApiDescription />
+          <pre className="overflow-x-auto rounded-2xl border border-stone-200/80 bg-stone-950 px-4 py-4 text-sm leading-6 text-stone-100 dark:border-stone-800/80">
+            <code>{DICTIONARY_API_EXAMPLES[language]}</code>
+          </pre>
+        </SurfacePanel>
+
         <SurfacePanel
           as="article"
           rounded="3xl"

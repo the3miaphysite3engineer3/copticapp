@@ -18,10 +18,6 @@ const fallbackEntry: LexicalEntry = {
   gender: "",
   english_meanings: [""],
   greek_equivalents: [],
-  raw: {
-    word: "ϭⲱⲓⲥ",
-    meaning: "",
-  },
 };
 
 describe("entry descriptions", () => {

@@ -4,9 +4,13 @@ import type { LexicalEntry } from "@/features/dictionary/types";
 
 import {
   formatDialectForms,
+  formatImperativeForms,
+  formatPrincipalDialectForms,
+  getDialectImperativeForms,
   getDialectVariantRows,
   getPreferredEntryDialectKey,
   getPreferredEntryDisplaySpelling,
+  getPreferredEntryPrincipalSpelling,
 } from "./entryDisplay";
 
 function createEntry(
@@ -22,10 +26,6 @@ function createEntry(
     gender: "",
     english_meanings: [],
     greek_equivalents: [],
-    raw: {
-      meaning: "",
-      word: headword,
-    },
     ...rest,
   };
 }
@@ -142,6 +142,9 @@ describe("dictionary entry display helpers", () => {
     expect(getPreferredEntryDisplaySpelling(entry)).toBe(
       "ϭⲓ ϭⲓ-/ϭⲓⲧ= ϭⲏⲟⲩ† ϭⲁⲓ~",
     );
+    expect(formatPrincipalDialectForms(entry.dialects.B!, entry.headword)).toBe(
+      "ϭⲓ ϭⲓ-/ϭⲓⲧ=",
+    );
   });
 
   it("collapses matching nominal and pronominal bound stems", () => {
@@ -206,6 +209,73 @@ describe("dictionary entry display helpers", () => {
         state: "constructParticiples",
       },
     ]);
+  });
+
+  it("returns imperative forms separately without adding them to the header", () => {
+    const entry = createEntry({
+      id: "cd_2",
+      headword: "ϯ",
+      dialects: {
+        B: {
+          absolute: "ϯ",
+          imperatives: ["ⲙⲟⲓ", "ⲙⲁ-", "ⲙⲏⲓ="],
+          nominal: "ϯ-",
+          pronominal: "ⲧⲏⲓ=",
+          stative: "ⲧⲟⲓ†",
+        },
+      },
+    });
+
+    expect(formatDialectForms(entry.dialects.B!, entry.headword)).toBe(
+      "ϯ ϯ-/ⲧⲏⲓ= ⲧⲟⲓ†",
+    );
+    expect(getDialectVariantRows(entry.dialects.B)).toEqual([]);
+    expect(getDialectImperativeForms(entry.dialects.B)).toEqual([
+      "ⲙⲟⲓ",
+      "ⲙⲁ-",
+      "ⲙⲏⲓ=",
+    ]);
+    expect(formatImperativeForms(entry.dialects.B!.imperatives ?? [])).toBe(
+      "ⲙⲟⲓ ⲙⲁ-/ⲙⲏⲓ=",
+    );
+  });
+
+  it("keeps non-canonical imperative lists comma-separated", () => {
+    expect(formatImperativeForms(["ⲁⲣⲓ-", "ⲉⲣⲓ-"])).toBe("ⲁⲣⲓ-, ⲉⲣⲓ-");
+  });
+
+  it("uses absolute plus bound forms for principal relation spellings", () => {
+    const parentEntry = createEntry({
+      id: "cd_2",
+      headword: "ϯ",
+      dialects: {
+        B: {
+          absolute: "ϯ",
+          nominal: "ϯ-",
+          pronominal: "ⲧⲏⲓ=",
+          stative: "ⲧⲟⲓ†",
+        },
+      },
+    });
+    const relatedEntry = createEntry({
+      id: "cd_2b",
+      headword: "ⲙⲟⲓ",
+      dialects: {
+        B: {
+          absolute: "ⲙⲟⲓ",
+          nominal: "ⲙⲁ-",
+          pronominal: "ⲙⲏⲓ=",
+          stative: "",
+        },
+      },
+      parentEntryId: "cd_2",
+      relationType: "paradigm-member",
+    });
+
+    expect(getPreferredEntryPrincipalSpelling(parentEntry)).toBe("ϯ ϯ-/ⲧⲏⲓ=");
+    expect(getPreferredEntryPrincipalSpelling(relatedEntry)).toBe(
+      "ⲙⲟⲓ ⲙⲁ-/ⲙⲏⲓ=",
+    );
   });
 
   it("returns no variant rows without secondary forms", () => {

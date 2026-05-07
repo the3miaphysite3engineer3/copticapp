@@ -317,4 +317,76 @@ describe("dictionary search", () => {
       totalMatches: 3,
     });
   });
+
+  it("matches entries by their plural forms", () => {
+    const treasureEntry: DictionaryClientEntry = {
+      id: "cd_7",
+      headword: "ⲁϩⲟ",
+      dialects: {
+        S: {
+          absolute: "ⲁϩⲟ",
+          nominal: "",
+          pronominal: "",
+          stative: "",
+        },
+      },
+      pos: "N",
+      gender: "",
+      english_meanings: ["treasure"],
+      greek_equivalents: ["θησαυροσ"],
+      pluralForms: {
+        S: ["ⲁϩⲱⲱⲣ"],
+        A: ["ⲉϩⲱⲣ"],
+        B: ["ⲁϩⲱⲣ"],
+      },
+    };
+
+    const preparedDictionary = prepareDictionaryForSearch([treasureEntry]);
+
+    expect(
+      searchPreparedDictionary("ⲁϩⲱⲱⲣ", preparedDictionary, [
+        treasureEntry,
+      ]).map((entry) => entry.id),
+    ).toEqual(["cd_7"]);
+
+    expect(
+      searchPreparedDictionary("ⲉϩⲱⲣ", preparedDictionary, [treasureEntry]).map(
+        (entry) => entry.id,
+      ),
+    ).toEqual(["cd_7"]);
+
+    expect(
+      searchPreparedDictionary("ⲁϩⲱⲣ", preparedDictionary, [treasureEntry]).map(
+        (entry) => entry.id,
+      ),
+    ).toEqual(["cd_7"]);
+  });
+
+  it("matches entries by their imperative forms", () => {
+    const giveEntry: DictionaryClientEntry = {
+      id: "cd_2",
+      headword: "ϯ",
+      dialects: {
+        B: {
+          absolute: "ϯ",
+          imperatives: ["ⲙⲟⲓ"],
+          nominal: "ϯ-",
+          pronominal: "ⲧⲏⲓ=",
+          stative: "ⲧⲟⲓ†",
+        },
+      },
+      pos: "V",
+      gender: "",
+      english_meanings: ["give"],
+      greek_equivalents: ["διδοναι"],
+    };
+
+    const preparedDictionary = prepareDictionaryForSearch([giveEntry]);
+
+    expect(
+      searchPreparedDictionary("ⲙⲟⲓ", preparedDictionary, [giveEntry]).map(
+        (entry) => entry.id,
+      ),
+    ).toEqual(["cd_2"]);
+  });
 });

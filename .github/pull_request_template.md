@@ -20,9 +20,13 @@ Explain the problem this PR solves or the improvement it introduces.
 
 List the checks you ran.
 
-- [ ] `npm run build`
+- [ ] `npm run format:check`
+- [ ] `npm run knip`
+- [ ] `npm run lint`
 - [ ] `npm run test`
-- [ ] `npm run lint` if relevant
+- [ ] `npm run build`
+- [ ] `npm run test:e2e` or `npm run test:e2e:local` if relevant
+- [ ] Supabase migration dry-run or push if relevant
 - [ ] Manual review in the browser if relevant
 
 ## Screenshots

@@ -14,7 +14,7 @@ alter table public.profiles
 add column if not exists preferred_dictionary_dialect text
   not null
   default 'B'
-  check (preferred_dictionary_dialect in ('ALL', 'S', 'B', 'A', 'L', 'F'));
+  check (preferred_dictionary_dialect in ('ALL', 'S', 'B', 'A', 'L', 'F', 'M'));
 
 create table if not exists public.submissions (
   id uuid primary key default gen_random_uuid(),

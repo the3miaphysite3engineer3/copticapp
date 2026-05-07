@@ -804,7 +804,14 @@ export type Database = {
           email: string | null;
           full_name: string | null;
           id: string;
-          preferred_dictionary_dialect: "A" | "ALL" | "B" | "F" | "L" | "S";
+          preferred_dictionary_dialect:
+            | "A"
+            | "ALL"
+            | "B"
+            | "F"
+            | "L"
+            | "M"
+            | "S";
           role: "admin" | "student";
         };
         Insert: {
@@ -813,7 +820,14 @@ export type Database = {
           email?: string | null;
           full_name?: string | null;
           id: string;
-          preferred_dictionary_dialect?: "A" | "ALL" | "B" | "F" | "L" | "S";
+          preferred_dictionary_dialect?:
+            | "A"
+            | "ALL"
+            | "B"
+            | "F"
+            | "L"
+            | "M"
+            | "S";
           role?: "admin" | "student";
         };
         Update: {
@@ -822,7 +836,14 @@ export type Database = {
           email?: string | null;
           full_name?: string | null;
           id?: string;
-          preferred_dictionary_dialect?: "A" | "ALL" | "B" | "F" | "L" | "S";
+          preferred_dictionary_dialect?:
+            | "A"
+            | "ALL"
+            | "B"
+            | "F"
+            | "L"
+            | "M"
+            | "S";
           role?: "admin" | "student";
         };
         Relationships: [];

@@ -2,6 +2,7 @@ import {
   ANALYTICS_DIALECTS,
   type AnalyticsDialect,
 } from "@/features/dictionary/config";
+import { isVerbPartOfSpeech } from "@/features/dictionary/grammarRegistry";
 import type { DictionaryClientEntry } from "@/features/dictionary/types";
 
 type AnalyticsChartDatum = {
@@ -46,7 +47,7 @@ function createAnalyticsSnapshot(
     ADV: 0,
     CONJ: 0,
     PREP: 0,
-    INJ: 0,
+    INTJ: 0,
     OTHER: 0,
     UNKNOWN: 0,
   };
@@ -101,7 +102,7 @@ function createAnalyticsSnapshot(
       posCounts[entry.pos] = 1;
     }
 
-    if (entry.pos === "V") {
+    if (isVerbPartOfSpeech(entry.pos)) {
       const hasAnyStative = Object.values(entry.dialects).some(
         (d) => d?.stative,
       );
@@ -159,7 +160,7 @@ function createAnalyticsSnapshot(
       { name: "Prepositions", value: posCounts.PREP || 0 },
       {
         name: "Other",
-        value: (posCounts.OTHER || 0) + (posCounts.INJ || 0),
+        value: (posCounts.OTHER || 0) + (posCounts.INTJ || 0),
       },
     ].filter((item) => item.value > 0),
     genderChartData: [

@@ -1,22 +1,27 @@
 export const apiDocsMessages = {
   en: {
-    "apiDocs.apiIndexLabel": "API Index",
+    "apiDocs.apiIndexLabel": "Grammar Index",
     "apiDocs.breadcrumbLabel": "API Docs",
     "apiDocs.developerGuideLabel": "Developer Guide",
+    "apiDocs.dictionaryDescriptionFilters": "with filters for",
+    "apiDocs.dictionaryDescriptionIndex": "Use the reduced full index at",
+    "apiDocs.dictionaryDescriptionStart": "Use",
+    "apiDocs.dictionarySearchLabel": "Dictionary Search",
+    "apiDocs.dictionaryTitle": "Dictionary API",
     "apiDocs.description":
-      "Explore the public grammar dataset in Swagger and integrate Shenute AI with provider selection and OCR-backed image context.",
+      "Explore the public grammar and dictionary APIs in Swagger, then integrate Shenute AI and OCR-backed image context.",
     "apiDocs.grammarHubLabel": "Grammar Hub",
     "apiDocs.highlight.0": "Read-only and versioned responses",
-    "apiDocs.highlight.1": "Swagger UI plus raw OpenAPI JSON",
-    "apiDocs.highlight.2": "Lesson filters accept slug or canonical id",
+    "apiDocs.highlight.1": "Swagger UI plus OpenAPI JSON",
+    "apiDocs.highlight.2": "Grammar and dictionary endpoints documented",
     "apiDocs.highlight.3": "Rights metadata included in the dataset",
-    "apiDocs.highlight.4": "Shenute AI endpoint available at /api/shenute",
+    "apiDocs.highlight.4": "Shenute AI defaults to the thoth provider",
     "apiDocs.highlight.5": "OCR proxy endpoint available at /api/ocr",
     "apiDocs.highlight.6":
       "Image and camera prompts support OCR-backed context",
     "apiDocs.metadataDescription":
-      "Swagger-powered API documentation for the public Coptic Compass grammar dataset plus Shenute AI and OCR-assisted integration guidance.",
-    "apiDocs.metadataTitle": "Coptic Compass Grammar + Shenute AI API Docs",
+      "Swagger-powered API documentation for the public Coptic Compass grammar and dictionary APIs, plus Shenute AI and OCR-assisted integration guidance.",
+    "apiDocs.metadataTitle": "Coptic Compass Public API Docs",
     "apiDocs.ocrDescriptionAfterLang": "(or another language) and set",
     "apiDocs.ocrDescriptionEnd":
       "when your backend expects a specific upload field name.",
@@ -27,14 +32,15 @@ export const apiDocsMessages = {
     "apiDocs.ocrProxyLabel": "OCR Proxy",
     "apiDocs.ocrTitle": "OCR Proxy API",
     "apiDocs.openApiLabel": "OpenAPI JSON",
+    "apiDocs.overviewDictionary": "dictionary search at",
     "apiDocs.overviewDataset":
       "for tooling. The public dataset only exposes published lessons and their related records. Shenute AI is available through",
-    "apiDocs.overviewEnd":
-      "as the default provider when no explicit provider is supplied. OCR requests can be proxied through",
+    "apiDocs.overviewEnd": "and OCR requests through",
     "apiDocs.overviewInstead":
       "instead of calling the upstream OCR service directly.",
-    "apiDocs.overviewOpenApi": "for discovery or",
+    "apiDocs.overviewOpenApi": "for discovery. Grammar lives at",
     "apiDocs.overviewProvider": "with",
+    "apiDocs.overviewShenute": "Shenute AI at",
     "apiDocs.overviewStart": "Public consumers should usually start with",
     "apiDocs.shenuteDescriptionFallback":
       "When Hugging Face is rate-limited, the API can fall back to configured alternatives.",
@@ -45,27 +51,32 @@ export const apiDocsMessages = {
     "apiDocs.shenuteEndpointLabel": "Shenute Endpoint",
     "apiDocs.shenuteTitle": "Shenute AI API",
     "apiDocs.shenuteUiLabel": "Shenute UI",
-    "apiDocs.title": "Coptic Compass Grammar + Shenute AI Docs",
+    "apiDocs.title": "Coptic Compass Public API Docs",
   },
   nl: {
-    "apiDocs.apiIndexLabel": "API-index",
+    "apiDocs.apiIndexLabel": "Grammatica-index",
     "apiDocs.breadcrumbLabel": "API-docs",
     "apiDocs.developerGuideLabel": "Ontwikkelaarsgids",
+    "apiDocs.dictionaryDescriptionFilters": "met filters voor",
+    "apiDocs.dictionaryDescriptionIndex":
+      "Gebruik de beperkte volledige index via",
+    "apiDocs.dictionaryDescriptionStart": "Gebruik",
+    "apiDocs.dictionarySearchLabel": "Woordenboekzoekopdracht",
+    "apiDocs.dictionaryTitle": "Woordenboek-API",
     "apiDocs.description":
-      "Verken de publieke grammaticadataset in Swagger en integreer Shenute AI met providerkeuze en OCR-context voor afbeeldingen.",
+      "Verken de publieke grammatica- en woordenboek-API's in Swagger en integreer daarna Shenute AI en OCR-context voor afbeeldingen.",
     "apiDocs.grammarHubLabel": "Grammaticahub",
     "apiDocs.highlight.0": "Alleen-lezen en geversioneerde responses",
-    "apiDocs.highlight.1": "Swagger UI plus ruwe OpenAPI JSON",
-    "apiDocs.highlight.2": "Lesfilters accepteren een slug of canonieke id",
+    "apiDocs.highlight.1": "Swagger UI plus OpenAPI JSON",
+    "apiDocs.highlight.2": "Grammatica- en woordenboekendpoints gedocumenteerd",
     "apiDocs.highlight.3": "Rechtenmetadata inbegrepen in de dataset",
-    "apiDocs.highlight.4": "Shenute AI-endpoint beschikbaar via /api/shenute",
+    "apiDocs.highlight.4": "Shenute AI gebruikt standaard de provider thoth",
     "apiDocs.highlight.5": "OCR-proxyendpoint beschikbaar via /api/ocr",
     "apiDocs.highlight.6":
       "Afbeeldings- en cameraprompts ondersteunen OCR-context",
     "apiDocs.metadataDescription":
-      "Swagger-ondersteunde API-documentatie voor de publieke grammaticadataset van Coptic Compass, plus integratiehulp voor Shenute AI en OCR.",
-    "apiDocs.metadataTitle":
-      "Coptic Compass-API-docs voor grammatica en Shenute AI",
+      "Swagger-ondersteunde API-documentatie voor de publieke grammatica- en woordenboek-API's van Coptic Compass, plus integratiehulp voor Shenute AI en OCR.",
+    "apiDocs.metadataTitle": "Coptic Compass publieke API-docs",
     "apiDocs.ocrDescriptionAfterLang": "(of een andere taal) meegeven en",
     "apiDocs.ocrDescriptionEnd":
       "instellen wanneer uw backend een specifieke uploadveldnaam verwacht.",
@@ -76,14 +87,15 @@ export const apiDocsMessages = {
     "apiDocs.ocrProxyLabel": "OCR-proxy",
     "apiDocs.ocrTitle": "OCR-proxy-API",
     "apiDocs.openApiLabel": "OpenAPI JSON",
+    "apiDocs.overviewDictionary": "woordenboekzoekopdrachten via",
     "apiDocs.overviewDataset":
       "voor tooling. De publieke dataset ontsluit alleen gepubliceerde lessen en hun gerelateerde records. Shenute AI is beschikbaar via",
-    "apiDocs.overviewEnd":
-      "als standaardprovider wanneer geen expliciete provider wordt meegegeven. OCR-requests kunnen via",
+    "apiDocs.overviewEnd": "en OCR-requests via",
     "apiDocs.overviewInstead":
       "worden geproxyd in plaats van de upstream OCR-service rechtstreeks aan te roepen.",
-    "apiDocs.overviewOpenApi": "voor ontdekking of",
+    "apiDocs.overviewOpenApi": "voor ontdekking. Grammatica staat op",
     "apiDocs.overviewProvider": "met",
+    "apiDocs.overviewShenute": "Shenute AI via",
     "apiDocs.overviewStart": "Publieke gebruikers beginnen meestal met",
     "apiDocs.shenuteDescriptionFallback":
       "Wanneer Hugging Face door een limiet wordt geblokkeerd, kan de API terugvallen op geconfigureerde alternatieven.",
@@ -94,6 +106,6 @@ export const apiDocsMessages = {
     "apiDocs.shenuteEndpointLabel": "Shenute-endpoint",
     "apiDocs.shenuteTitle": "Shenute AI-API",
     "apiDocs.shenuteUiLabel": "Shenute UI",
-    "apiDocs.title": "Coptic Compass-docs voor grammatica en Shenute AI",
+    "apiDocs.title": "Coptic Compass publieke API-docs",
   },
 } as const;

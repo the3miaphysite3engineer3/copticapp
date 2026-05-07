@@ -16,11 +16,18 @@ const code = `const response = await fetch(
 const payload = await response.json();
 const lessonTitles = payload.data.map((lesson) => lesson.title.en);`;
 
+const dictionaryCode = `const response = await fetch(
+  "https://www.copticcompass.com/api/v1/dictionary/search?q=ⲙⲟⲓ&dialect=B&limit=10",
+);
+
+const page = await response.json();
+const firstEntry = page.entries[0];`;
+
 const shenuteCode = `const response = await fetch("https://www.copticcompass.com/api/shenute", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    inferenceProvider: "openrouter",
+    inferenceProvider: "thoth",
     messages: [
       {
         id: "u1",
@@ -71,6 +78,16 @@ export function DevelopersPageClient() {
       description: t("developers.endpoints.openapi.desc"),
     },
     {
+      href: "/api/v1/dictionary/search?q=ⲙⲟⲓ&dialect=B",
+      label: "/api/v1/dictionary/search",
+      description: t("developers.endpoints.dictionarySearch.desc"),
+    },
+    {
+      href: "/api/v1/dictionary/search-index",
+      label: "/api/v1/dictionary/search-index",
+      description: t("developers.endpoints.dictionaryIndex.desc"),
+    },
+    {
       href: "/api/shenute",
       label: "/api/shenute",
       description: t("developers.endpoints.shenute.desc"),
@@ -99,6 +116,11 @@ export function DevelopersPageClient() {
       description: t("developers.resources.apiIndex.desc"),
     },
     {
+      href: "/api/v1/dictionary/search?q=ⲙⲟⲓ",
+      label: t("developers.resources.dictionary.label"),
+      description: t("developers.resources.dictionary.desc"),
+    },
+    {
       href: getGrammarPath(language),
       label: t("developers.resources.grammarHub.label"),
       description: t("developers.resources.grammarHub.desc"),
@@ -122,6 +144,7 @@ export function DevelopersPageClient() {
     t("developers.workflow.3"),
     t("developers.workflow.4"),
     t("developers.workflow.5"),
+    t("developers.workflow.6"),
   ];
 
   const integrationItems = [
@@ -133,6 +156,8 @@ export function DevelopersPageClient() {
     t("developers.integration.5"),
     t("developers.integration.6"),
     t("developers.integration.7"),
+    t("developers.integration.8"),
+    t("developers.integration.9"),
   ];
 
   return (
@@ -179,6 +204,9 @@ export function DevelopersPageClient() {
             </Link>
             <Link href="/api/v1/grammar" className="btn-secondary">
               /api/v1/grammar
+            </Link>
+            <Link href="/api/v1/dictionary/search" className="btn-secondary">
+              /api/v1/dictionary/search
             </Link>
           </div>
         </SurfacePanel>
@@ -247,7 +275,7 @@ export function DevelopersPageClient() {
         </SurfacePanel>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
+      <section className="grid gap-6">
         <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500 dark:text-stone-400">
             {t("developers.exampleTitle")}
@@ -260,6 +288,20 @@ export function DevelopersPageClient() {
           </pre>
         </SurfacePanel>
 
+        <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500 dark:text-stone-400">
+            {t("developers.dictionaryExampleTitle")}
+          </p>
+          <p className="mt-3 text-sm leading-7 text-stone-600 dark:text-stone-300">
+            {t("developers.dictionaryExampleCaption")}
+          </p>
+          <pre className="mt-5 overflow-x-auto rounded-2xl border border-stone-200/80 bg-stone-950 px-4 py-4 text-sm leading-6 text-stone-100 dark:border-stone-800/80">
+            <code>{dictionaryCode}</code>
+          </pre>
+        </SurfacePanel>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
         <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500 dark:text-stone-400">
             {t("developers.resourcesTitle")}

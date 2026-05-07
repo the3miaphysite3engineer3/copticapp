@@ -15,6 +15,7 @@ interface PreparedLexicalEntry {
   index: number;
   normalizedHeadword: string;
   normalizedDialectForms: string;
+  normalizedPluralForms: string;
 }
 
 export interface DictionarySearchPageOptions {
@@ -58,6 +59,7 @@ export function prepareDictionaryForSearch(
         forms.nominal,
         forms.pronominal,
         forms.stative,
+        ...(forms.imperatives ?? []),
         ...(forms.constructParticiples ?? []),
         ...(forms.constructParticipleCompounds ?? []).flatMap((compound) => [
           compound.form,
@@ -69,6 +71,11 @@ export function prepareDictionaryForSearch(
         ...(forms.variants?.stative ?? []),
         ...(forms.variants?.constructParticiples ?? []),
       ])
+      .filter(Boolean)
+      .join(" ");
+
+    const pluralFormsText = Object.values(entry.pluralForms ?? {})
+      .flat()
       .filter(Boolean)
       .join(" ");
 
@@ -89,10 +96,11 @@ export function prepareDictionaryForSearch(
       ]
         .join(" ")
         .toLowerCase(),
-      greekSearchText: entry.greek_equivalents.join(" ").toLowerCase(),
+      greekSearchText: (entry.greek_equivalents ?? []).join(" ").toLowerCase(),
       index,
       normalizedHeadword: normalizeCopticSearchText(entry.headword),
       normalizedDialectForms: normalizeCopticSearchText(dialectForms),
+      normalizedPluralForms: normalizeCopticSearchText(pluralFormsText),
     };
   });
 }
@@ -233,6 +241,12 @@ function matchesPreparedEntryQuery(
     if (normalizedRegex.test(entry.normalizedDialectForms)) {
       return true;
     }
+    if (
+      entry.normalizedPluralForms &&
+      normalizedRegex.test(entry.normalizedPluralForms)
+    ) {
+      return true;
+    }
     if (plainRegex.test(entry.englishSearchText)) {
       return true;
     }
@@ -249,6 +263,12 @@ function matchesPreparedEntryQuery(
     return true;
   }
   if (entry.normalizedDialectForms.includes(normalizedQuery)) {
+    return true;
+  }
+  if (
+    entry.normalizedPluralForms &&
+    entry.normalizedPluralForms.includes(normalizedQuery)
+  ) {
     return true;
   }
   if (entry.englishSearchText.includes(plainQuery)) {

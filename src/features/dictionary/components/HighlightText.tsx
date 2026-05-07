@@ -1,6 +1,10 @@
 import React from "react";
 
 import { MicroTooltip } from "@/components/MicroTooltip";
+import {
+  INLINE_GRAMMAR_ABBREVIATION_PATTERNS,
+  LEADING_GRAMMAR_LABEL_PATTERNS,
+} from "@/features/dictionary/grammarRegistry";
 import { buildCopticSearchRegex } from "@/lib/copticSearch";
 import { antinoou } from "@/lib/fonts";
 
@@ -8,111 +12,27 @@ import type { ReactNode } from "react";
 
 type FormSymbol = "-" | "=" | "†" | "~";
 export type FormSymbolTooltips = Partial<Record<FormSymbol, string>>;
-export type GrammarAbbreviationTooltips = Partial<Record<string, string>>;
+type GrammarAbbreviationTooltips = Partial<Record<string, string>>;
 
 const COPTIC_LEGACY_CHAR_CLASS = "\\u03E2-\\u03EF";
 const COPTIC_CHAR_CLASS = `${COPTIC_LEGACY_CHAR_CLASS}\\u2C80-\\u2CFF`;
 const COPTIC_COMBINING_CLASS = "\\u0300-\\u036f\\uFE20-\\uFE2F\\u0483-\\u0489";
 const FORM_SYMBOL_PATTERN = /([-=\u2020~])/;
 const GRAMMAR_ABBREVIATION_CLASS_NAME = "small-caps whitespace-nowrap";
-/**
- * These fragments capture normalized shorthand in imported glosses so we can
- * emphasize recurring grammar labels consistently.
- */
-const LEADING_LABEL_FRAGMENTS = [
-  "pc",
-  "impers vb",
-  "bijvoeglijk naamwoord",
-  "voegwoord",
-  "imperative",
-  "adjective",
-  "auxil",
-  "intr",
-  "qual",
-  "kwal(?:iteit)?",
-  "conj",
-  "prep",
-  "advb",
-  "adj",
-  "adv",
-  "tr",
-  "refl",
-  "suff",
-  "pref",
-  "vb",
-  "nn",
-  "pron",
-  "art",
-  "int\\.?",
-];
-const INLINE_ABBREVIATION_FRAGMENTS = [
-  "\\bbijvoeglijk naamwoord\\b",
-  "\\bkwaliteit\\b",
-  "\\bvoegwoord\\b",
-  "\\bpc\\b",
-  "\\bimpers\\b",
-  "\\bimperative\\b",
-  "\\bauxil\\b",
-  "\\binterrog\\b",
-  "\\bneg\\b",
-  "\\bobj\\b",
-  "\\bethic(?:al)?\\b",
-  "\\bdat\\b",
-  "\\bsuff\\b",
-  "\\bpref\\b",
-  "\\bpronom\\b",
-  "\\bsubj\\b",
-  "\\bpron\\b",
-  "\\brel\\b",
-  "\\bacc\\b",
-  "\\bnom\\b",
-  "\\bgen\\b",
-  "\\bsg\\b",
-  "\\bpl\\b",
-  "\\bart\\b",
-  "\\bdef\\b",
-  "\\bindef\\b",
-  "\\bposs\\b",
-  "\\bgk\\b",
-  "\\besp\\b",
-  "\\blit\\b",
-  "\\bcausative\\b",
-  "\\bcaus\\b",
-  "\\bsim\\b",
-  "\\bprob\\b",
-  "\\brare\\b",
-  "\\bconstr\\b",
-  "\\bvbal\\b",
-  "\\bc\\b(?=\\s)",
-  "\\bintr\\b",
-  "\\bqual\\b",
-  "\\bkwal\\b",
-  "\\bconj\\b",
-  "\\bprep\\b",
-  "\\badvb\\b",
-  "\\badj\\b",
-  "\\badv\\b",
-  "\\brefl\\b",
-  "\\btr\\b",
-  "\\bnn\\b",
-  "\\bvb\\b",
-  "\\bint\\.(?=$|[^A-Za-z0-9_])",
-  "\\bint\\b",
-];
 const LEADING_LABEL_PATTERN = new RegExp(
-  `^(${LEADING_LABEL_FRAGMENTS.join("|")})(?: ?\\([^)]*\\))?(?=$|[:., ]|-)`,
+  `^(${LEADING_GRAMMAR_LABEL_PATTERNS.join("|")})(?: ?\\([^)]*\\))?(?=$|[:., ]|-)`,
   "i",
 );
 const INLINE_ABBREVIATION_PATTERN = new RegExp(
-  `(${INLINE_ABBREVIATION_FRAGMENTS.join("|")})`,
+  `(${INLINE_GRAMMAR_ABBREVIATION_PATTERNS.join("|")})`,
   "i",
 );
 const GRAMMAR_ABBREVIATION_PUNCTUATION_PATTERN = new RegExp(
-  `\\b(${LEADING_LABEL_FRAGMENTS.join("|")})(?: ?\\([^)]*\\))?[:,]([ \\t]*)`,
+  `\\b(${LEADING_GRAMMAR_LABEL_PATTERNS.join("|")})(?: ?\\([^)]*\\))?[:,]([ \\t]*)`,
   "gi",
 );
 const DIALECT_SIGLA_TRAILING_COMMA_PATTERN =
-  /\b((?:Fb|Sa|Sf|Sl|A|B|F|L|O|S)+),([ \t]+)/g;
+  /\b((?:Fb|Sa|Sf|Sl|A|B|F|L|M|O|S)+),([ \t]+)/g;
 const COPTIC_RUN_REGEX = new RegExp(
   `([${COPTIC_CHAR_CLASS}](?:[${COPTIC_CHAR_CLASS}${COPTIC_COMBINING_CLASS}]*)?)`,
   "g",

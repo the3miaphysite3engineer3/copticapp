@@ -18,10 +18,10 @@
 
 ## Features
 
-- **Searchable Dictionary:** 6,400+ checked-in entries with Coptic, English, and Greek lookup. Includes dialect forms and a built-in virtual keyboard.
+- **Searchable Dictionary:** 6,400+ normalized checked-in entries with Coptic, English, and Greek lookup. Includes dialect forms, canonical entry pages, and a built-in virtual keyboard.
 - **Interactive Grammar Lessons:** Reading and study modes with exercises, footnotes, and concept glossaries linked directly to dictionary sources.
 - **Shenute AI Assistant:** OCR-assisted image prompts backed by pgvector RAG, integrating THOTH AI, OpenRouter, Gemini, and Hugging Face.
-- **Public Grammar API:** Read-only JSON endpoints and OpenAPI documentation for developers and educators.
+- **Public APIs:** Read-only grammar and dictionary JSON endpoints plus OpenAPI documentation for developers and educators.
 - **Student & Instructor Workspaces:** Private dashboards for progress tracking, exercise submissions, reviews, and notifications.
 - **Localized UI:** Full support for both English and Dutch.
 
@@ -75,6 +75,9 @@ The main scripts in `package.json` are:
 - `npm run knip` - check for dead code and unused exports.
 - `npm run format:check` - verify formatting with Prettier.
 - `npm run data:grammar:export` - regenerate the public grammar JSON bundle from source.
+- `npm run db:migrations:list` - compare local and linked Supabase migrations.
+- `npm run db:push:dry-run` - preview pending Supabase migration changes.
+- `npm run db:push` - apply pending Supabase migrations to the linked project.
 
 ## Environment Setup
 
@@ -90,9 +93,10 @@ For production and external callbacks, the canonical site URL should be `https:/
 
 ## Validation Before PRs
 
-Before opening a pull request, the project expects the main checks to pass:
+For CI parity from a clean checkout, run the same core checks locally:
 
 ```bash
+npm ci
 npm run format:check
 npm run knip
 npm run lint
@@ -100,10 +104,11 @@ npm run test
 npm run build
 ```
 
-If you change routing, auth, metadata, redirects, or major UI flows, also run:
+If you change routing, auth, metadata, redirects, or major UI flows, also install the Playwright browser and run the smoke suite:
 
 ```bash
-npm run test:e2e:local
+npx playwright install --with-deps chromium
+npm run test:e2e
 ```
 
 ## Documentation

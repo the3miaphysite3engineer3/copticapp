@@ -117,7 +117,7 @@ const localizedStaticRoutes: readonly LocalizedStaticRouteConfig[] = [
     sourcePaths: [
       "src/app/(site)/[locale]/developers/page.tsx",
       "src/app/(app)/api-docs/page.tsx",
-      "src/features/grammar/lib/grammarOpenApi.ts",
+      "src/features/api-docs/lib/publicOpenApi.ts",
     ],
   },
   {
@@ -174,8 +174,8 @@ const staticRoutes: readonly StaticRouteConfig[] = [
     priority: 0.65,
     sourcePaths: [
       "src/app/(app)/api-docs/page.tsx",
-      "src/features/grammar/components/SwaggerDocsClient.tsx",
-      "src/features/grammar/lib/grammarOpenApi.ts",
+      "src/features/api-docs/components/SwaggerDocsClient.tsx",
+      "src/features/api-docs/lib/publicOpenApi.ts",
     ],
   },
 ];

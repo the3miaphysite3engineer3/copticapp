@@ -26,10 +26,6 @@ const lordEntry: LexicalEntry = {
   gender: "",
   english_meanings: ["lord"],
   greek_equivalents: ["κυριοσ"],
-  raw: {
-    word: "(B) ϭⲱⲓⲥ, ⳪",
-    meaning: "lord",
-  },
 };
 
 describe("structured dictionary data", () => {

@@ -1902,7 +1902,11 @@
                       { "type": "text", "text": "Note: " },
                       { "type": "coptic", "text": "ⲡⲓ-" },
                       { "type": "text", "text": " and " },
-                      { "type": "coptic", "text": "ⲡ̀-" },
+                      {
+                        "type": "coptic",
+                        "text": "ⲡ̀-",
+                        "dictionaryEntryId": "cd_1220"
+                      },
                       {
                         "type": "text",
                         "text": " are synonyms. We refer to them as long vs. short definite articles."
@@ -2283,7 +2287,11 @@
                       { "type": "text", "text": "Opmerking: " },
                       { "type": "coptic", "text": "ⲡⲓ-" },
                       { "type": "text", "text": " en " },
-                      { "type": "coptic", "text": "ⲡ̀-" },
+                      {
+                        "type": "coptic",
+                        "text": "ⲡ̀-",
+                        "dictionaryEntryId": "cd_1220"
+                      },
                       {
                         "type": "text",
                         "text": " zijn synoniemen. We spreken van lange vs. korte bepaalde lidwoorden."
@@ -3619,10 +3627,7 @@
                           "content": [
                             {
                               "type": "copticSpan",
-                              "children": [
-                                { "type": "text", "text": "Ⲓⲏⲥⲟⲩⲥ" }
-                              ],
-                              "dictionaryEntryId": "cd_4549"
+                              "children": [{ "type": "text", "text": "Ⲓⲏⲥⲟⲩⲥ" }]
                             },
                             { "type": "text", "text": " " },
                             { "type": "text", "text": "N" },
@@ -4267,10 +4272,7 @@
                           "content": [
                             {
                               "type": "copticSpan",
-                              "children": [
-                                { "type": "text", "text": "Ⲓⲏⲥⲟⲩⲥ" }
-                              ],
-                              "dictionaryEntryId": "cd_4549"
+                              "children": [{ "type": "text", "text": "Ⲓⲏⲥⲟⲩⲥ" }]
                             },
                             { "type": "text", "text": " " },
                             { "type": "text", "text": "N" },

@@ -119,6 +119,23 @@ To enable background release sends in a Supabase project:
 
 The worker validates its bearer token in code, so any caller must send `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>`.
 
+### Migration Rollout
+
+Supabase migrations live under `supabase/migrations`. Before deployment, compare and preview the linked project state:
+
+```bash
+npm run db:migrations:list
+npm run db:push:dry-run
+```
+
+When the dry run matches the intended rollout, apply the pending migrations:
+
+```bash
+npm run db:push
+```
+
+If the Supabase CLI reports that a newer version is available, update it through the same install channel you originally used before important production rollouts when practical.
+
 ### Resend Audience Sync
 
 Audience opt-ins can be mirrored into Resend Contacts and Segments so provider-native broadcasts are possible.

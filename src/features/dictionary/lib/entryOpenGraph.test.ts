@@ -20,10 +20,6 @@ function createEntry(
     gender: "",
     english_meanings: [],
     greek_equivalents: [],
-    raw: {
-      meaning: "",
-      word: headword,
-    },
     ...rest,
   };
 }
@@ -47,7 +43,7 @@ describe("entry Open Graph helpers", () => {
           stative: "",
         },
       },
-      english_meanings: ["nn son"],
+      english_meanings: ["N son"],
     });
 
     const preview = buildEntryOpenGraphPreview({

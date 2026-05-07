@@ -29,6 +29,13 @@ That split supports two goals:
 - public pages get stable localized URLs, canonical metadata, sitemap coverage, and structured data
 - legacy paths remain supported without duplicating the real implementation
 
+Dictionary routing follows this same model:
+
+- `/[locale]/dictionary` is the localized search and browse surface.
+- `/[locale]/entry/[id]` is the canonical localized dictionary entry route.
+- `/dictionary` and `/entry/[id]` are legacy redirects.
+- `/[locale]/dictionary/[id]` is intentionally not a canonical entry route.
+
 ## Main Layers
 
 ### 1. Route Layer
@@ -60,6 +67,7 @@ Examples:
 
 - dictionary search and entry rendering live under `src/features/dictionary`
 - grammar dataset, lesson rendering, reading/study workspace UI, API shaping, and learner state live under `src/features/grammar`
+- public API documentation, Swagger UI wiring, and the combined OpenAPI document live under `src/features/api-docs`
 - analytics dashboards and linguistic drill-downs live under `src/features/analytics`
 - admin dashboard presentation, workspace modes, and queue UI live under `src/features/admin`
 
@@ -121,7 +129,11 @@ The grammar source is typed and reviewed in source form, then exported into JSON
 
 - Source of truth in the app runtime: `public/data/dictionary.json`
 
-The dictionary currently ships from the checked-in dataset and is read by both the public dictionary UI and sitemap/SEO helpers.
+The dictionary currently ships from a normalized checked-in dataset and is read by the public dictionary UI, analytics drill-downs, the dictionary search API, and sitemap/SEO helpers.
+
+The app-facing JSON should contain structured fields such as dialect forms, meanings, Greek equivalents, plural forms, and relation metadata. Raw/source-only text fields, attestations, and source notes should stay out of the runtime payload now that the data migration has been completed. The historical XML source can live in ignored local backups for reference, but it should not be tracked under `public/data` or imported by app code.
+
+Dictionary part-of-speech codes, grammar abbreviations, and grammar-label tooltip behavior are centralized in `src/features/dictionary/grammarRegistry.ts` with matching tests. Prefer extending that registry over scattering one-off label parsing across UI, analytics, or structured-data helpers.
 
 ## SEO and Discoverability
 

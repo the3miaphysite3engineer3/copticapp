@@ -28,10 +28,6 @@ function createEntry(
     gender: "",
     english_meanings: [],
     greek_equivalents: [],
-    raw: {
-      word: headword,
-      meaning: "",
-    },
     ...rest,
   };
 }
@@ -115,12 +111,17 @@ describe("dictionary helpers", () => {
     });
   });
 
-  it("builds a reduced client payload without raw dictionary fields", () => {
+  it("builds a reduced client payload with only client-facing dictionary fields", () => {
     expect(toDictionaryClientEntry(dictionary[0]!)).toMatchObject({
       id: "cd_20",
       headword: "ϣⲏⲣⲓ",
       english_meanings: ["son"],
     });
-    expect("raw" in toDictionaryClientEntry(dictionary[0]!)).toBe(false);
+    expect(toDictionaryClientEntry(dictionary[0]!)).not.toHaveProperty(
+      "bohairicParadigmData",
+    );
+    expect(toDictionaryClientEntry(dictionary[0]!)).not.toHaveProperty(
+      "greek_equivalents",
+    );
   });
 });
