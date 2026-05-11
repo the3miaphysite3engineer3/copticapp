@@ -459,14 +459,18 @@ function collectDialectAlternateNames(forms: DialectForms) {
     forms.stative,
     ...(forms.constructParticiples ?? []),
     ...collectDialectVariantAlternateNames(forms),
-  ];
+  ].filter((form): form is string => Boolean(form));
 }
 
 export function createDefinedTermStructuredData(
   entry: LexicalEntry,
   locale: Language = DEFAULT_LANGUAGE,
+  options: {
+    description?: string;
+    name?: string;
+  } = {},
 ): JsonLd {
-  const headword = toPlainText(entry.headword);
+  const headword = options.name ?? toPlainText(entry.headword);
   const entryPath = getEntryPath(entry.id, locale);
   const copy = getStructuredDataCopy(locale);
   const alternateNames = Array.from(
@@ -508,7 +512,7 @@ export function createDefinedTermStructuredData(
     url: absoluteUrl(entryPath),
     name: headword,
     alternateName: alternateNames,
-    description: buildEntryDescription(entry, locale),
+    description: options.description ?? buildEntryDescription(entry, locale),
     termCode: entry.id,
     inDefinedTermSet: {
       "@id": getDictionarySetId(locale),

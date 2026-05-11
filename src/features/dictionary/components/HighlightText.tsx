@@ -8,6 +8,8 @@ import {
 import { buildCopticSearchRegex } from "@/lib/copticSearch";
 import { antinoou } from "@/lib/fonts";
 
+import { LinguisticGloss } from "./LinguisticGloss";
+
 import type { ReactNode } from "react";
 
 type FormSymbol = "-" | "=" | "†" | "~";
@@ -18,7 +20,6 @@ const COPTIC_LEGACY_CHAR_CLASS = "\\u03E2-\\u03EF";
 const COPTIC_CHAR_CLASS = `${COPTIC_LEGACY_CHAR_CLASS}\\u2C80-\\u2CFF`;
 const COPTIC_COMBINING_CLASS = "\\u0300-\\u036f\\uFE20-\\uFE2F\\u0483-\\u0489";
 const FORM_SYMBOL_PATTERN = /([-=\u2020~])/;
-const GRAMMAR_ABBREVIATION_CLASS_NAME = "small-caps whitespace-nowrap";
 const LEADING_LABEL_PATTERN = new RegExp(
   `^(${LEADING_GRAMMAR_LABEL_PATTERNS.join("|")})(?: ?\\([^)]*\\))?(?=$|[:., ]|-)`,
   "i",
@@ -80,22 +81,6 @@ function FormSymbolTooltip({
   return <MicroTooltip label={label}>{symbolContent}</MicroTooltip>;
 }
 
-function GrammarAbbreviationTooltip({
-  children,
-  className,
-  label,
-}: {
-  children: ReactNode;
-  className?: string;
-  label: string;
-}) {
-  return (
-    <MicroTooltip label={label} className={className}>
-      {children}
-    </MicroTooltip>
-  );
-}
-
 function normalizeGrammarAbbreviationKey(value: string) {
   return value.toLowerCase().replace(/\.$/, "").replace(/\s+/g, " ").trim();
 }
@@ -105,7 +90,6 @@ function renderWithSuperscript(
   keyPrefix: string,
   className?: string,
   symbolTooltips?: FormSymbolTooltips,
-  grammarTooltipLabel?: string,
 ): ReactNode[] {
   const parts = text.split(FORM_SYMBOL_PATTERN);
   const result: ReactNode[] = [];
@@ -140,20 +124,6 @@ function renderWithSuperscript(
     }
 
     if (part) {
-      if (grammarTooltipLabel) {
-        result.push(
-          <GrammarAbbreviationTooltip
-            key={`${keyPrefix}-text-${i}`}
-            className={className}
-            label={grammarTooltipLabel}
-          >
-            {part}
-          </GrammarAbbreviationTooltip>,
-        );
-
-        return;
-      }
-
       result.push(
         className ? (
           <span key={`${keyPrefix}-text-${i}`} className={className}>
@@ -188,19 +158,27 @@ function renderPlainTypography(
       return;
     }
 
-    const className = i % 2 === 1 ? GRAMMAR_ABBREVIATION_CLASS_NAME : undefined;
-    const grammarTooltipLabel =
-      i % 2 === 1
-        ? grammarAbbreviationTooltips?.[normalizeGrammarAbbreviationKey(part)]
-        : undefined;
+    if (i % 2 === 1) {
+      result.push(
+        <LinguisticGloss
+          key={`${keyPrefix}-${i}`}
+          code={part}
+          label={
+            grammarAbbreviationTooltips?.[normalizeGrammarAbbreviationKey(part)]
+          }
+          size="inline"
+        />,
+      );
+
+      return;
+    }
 
     result.push(
       ...renderWithSuperscript(
         part,
         `${keyPrefix}-${i}`,
-        className,
+        undefined,
         symbolTooltips,
-        grammarTooltipLabel,
       ),
     );
   });

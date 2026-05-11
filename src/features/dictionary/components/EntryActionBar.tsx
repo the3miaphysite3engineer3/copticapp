@@ -11,6 +11,7 @@ import { cx } from "@/lib/classes";
 type EntryActionIntent = "favorite" | "report" | "share";
 
 type EntryActionBarProps = {
+  compact?: boolean;
   entry: LexicalEntry;
   parentEntry?: LexicalEntry | null;
   relatedEntries?: readonly LexicalEntry[];
@@ -22,7 +23,13 @@ type EntryActionBarPanelProps = EntryActionBarProps & {
 
 type EntryActionBarPanelComponent = ComponentType<EntryActionBarPanelProps>;
 
-export function EntryActionBar(props: EntryActionBarProps) {
+const compactActionButtonClassName =
+  "inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-stone-500 transition hover:border-stone-300 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-stone-600 dark:hover:bg-stone-800 dark:hover:text-stone-100";
+
+export function EntryActionBar({
+  compact = false,
+  ...props
+}: EntryActionBarProps) {
   const { t } = useLanguage();
   const [Panel, setPanel] = useState<EntryActionBarPanelComponent | null>(null);
   const [initialIntent, setInitialIntent] = useState<
@@ -48,7 +55,72 @@ export function EntryActionBar(props: EntryActionBarProps) {
   );
 
   if (Panel) {
-    return <Panel {...props} initialIntent={initialIntent} />;
+    return <Panel {...props} compact={compact} initialIntent={initialIntent} />;
+  }
+
+  if (compact) {
+    return (
+      <>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            aria-label={t("entry.actions.share")}
+            title={t("entry.actions.share")}
+            className={compactActionButtonClassName}
+            onClick={() => loadPanel("share")}
+            onFocus={() => loadPanel()}
+            onMouseEnter={() => loadPanel()}
+          >
+            <Share2 className="h-4 w-4" />
+            <span className="sr-only">{t("entry.actions.share")}</span>
+          </button>
+
+          <span
+            onFocusCapture={() => loadPanel()}
+            onMouseEnter={() => loadPanel()}
+            onPointerDownCapture={() => loadPanel("favorite")}
+          >
+            <AuthGatedActionButton
+              className={compactActionButtonClassName}
+              isAuthenticated={false}
+              isReady
+              lockedContent={
+                <>
+                  <Heart className="h-4 w-4" />
+                  <span className="sr-only">{t("entry.actions.favorite")}</span>
+                </>
+              }
+              lockedMessage={lockedMessage}
+            >
+              <Heart className="h-4 w-4" />
+              <span className="sr-only">{t("entry.actions.favorite")}</span>
+            </AuthGatedActionButton>
+          </span>
+
+          <span
+            onFocusCapture={() => loadPanel()}
+            onMouseEnter={() => loadPanel()}
+            onPointerDownCapture={() => loadPanel("report")}
+          >
+            <AuthGatedActionButton
+              className={compactActionButtonClassName}
+              isAuthenticated={false}
+              isReady
+              lockedContent={
+                <>
+                  <Flag className="h-4 w-4" />
+                  <span className="sr-only">{t("entry.actions.report")}</span>
+                </>
+              }
+              lockedMessage={lockedMessage}
+            >
+              <Flag className="h-4 w-4" />
+              <span className="sr-only">{t("entry.actions.report")}</span>
+            </AuthGatedActionButton>
+          </span>
+        </div>
+      </>
+    );
   }
 
   return (

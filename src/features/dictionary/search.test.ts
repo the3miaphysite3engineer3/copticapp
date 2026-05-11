@@ -362,6 +362,46 @@ describe("dictionary search", () => {
     ).toEqual(["cd_7"]);
   });
 
+  it("matches base entries by embedded feminine counterpart forms", () => {
+    const servantEntry: DictionaryClientEntry = {
+      id: "cd_550",
+      headword: "ⲃⲱⲕ",
+      dialects: {
+        B: {
+          absolute: "ⲃⲱⲕ",
+        },
+      },
+      pos: "N",
+      gender: "M",
+      english_meanings: ["servant, slave"],
+      greek_equivalents: [],
+      pluralForms: {
+        B: ["ⲉⲃⲓⲁⲓⲕ"],
+      },
+      genderedCounterparts: [
+        {
+          id: "cd_550a",
+          headword: "ⲃⲱⲕⲓ",
+          dialects: {
+            B: {
+              absolute: "ⲃⲱⲕⲓ",
+            },
+          },
+          gender: "F",
+          relationType: "feminine-counterpart",
+        },
+      ],
+    };
+
+    const preparedDictionary = prepareDictionaryForSearch([servantEntry]);
+
+    expect(
+      searchPreparedDictionary("ⲃⲱⲕⲓ", preparedDictionary, [servantEntry]).map(
+        (entry) => entry.id,
+      ),
+    ).toEqual(["cd_550"]);
+  });
+
   it("matches entries by their imperative forms", () => {
     const giveEntry: DictionaryClientEntry = {
       id: "cd_2",

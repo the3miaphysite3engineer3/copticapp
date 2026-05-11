@@ -18,13 +18,18 @@ import { useEntryFavorite } from "../lib/useEntryFavorite";
 import { useEntryShareActions } from "../lib/useEntryShareActions";
 
 type EntryActionBarProps = {
+  compact?: boolean;
   entry: LexicalEntry;
   initialIntent?: "favorite" | "report" | "share";
   parentEntry?: LexicalEntry | null;
   relatedEntries?: readonly LexicalEntry[];
 };
 
+const compactActionButtonClassName =
+  "inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-stone-500 transition hover:border-stone-300 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-stone-600 dark:hover:bg-stone-800 dark:hover:text-stone-100";
+
 export function EntryActionBarPanel({
+  compact = false,
   entry,
   initialIntent,
   parentEntry = null,
@@ -123,6 +128,166 @@ export function EntryActionBarPanel({
     toggleReportPanel,
     toggleSharePanel,
   ]);
+
+  if (compact) {
+    return (
+      <>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            aria-controls={sharePanelId}
+            aria-expanded={isShareOpen}
+            aria-label={
+              isShareOpen
+                ? t("entry.actions.shareClose")
+                : t("entry.actions.share")
+            }
+            title={
+              isShareOpen
+                ? t("entry.actions.shareClose")
+                : t("entry.actions.share")
+            }
+            className={cx(
+              compactActionButtonClassName,
+              isShareOpen &&
+                "border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 hover:text-sky-800 dark:border-sky-900/50 dark:bg-sky-950/25 dark:text-sky-300 dark:hover:bg-sky-950/40",
+            )}
+            onClick={toggleSharePanel}
+          >
+            <Share2 className="h-4 w-4" />
+            <span className="sr-only">
+              {isShareOpen
+                ? t("entry.actions.shareClose")
+                : t("entry.actions.share")}
+            </span>
+          </button>
+
+          <AuthGatedActionButton
+            className={cx(
+              compactActionButtonClassName,
+              (isLoading || isPending) && "opacity-70",
+              isFavorited &&
+                "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/25 dark:text-rose-300 dark:hover:bg-rose-950/40",
+            )}
+            disabled={isLoading || isPending}
+            isAuthenticated={authGate.isAuthenticated}
+            isReady={authGate.isReady}
+            lockedContent={
+              <>
+                <Heart className="h-4 w-4" />
+                <span className="sr-only">{favoriteLabel}</span>
+              </>
+            }
+            lockedOpen={activeLockedAction === "favorite"}
+            lockedMessage={lockedMessage}
+            onLockedOpenChange={(visible) =>
+              handleLockedActionOpenChange("favorite", visible)
+            }
+            onClick={() => {
+              handleFavoriteClick();
+              void toggleFavorite();
+            }}
+            title={favoriteLabel}
+            aria-label={favoriteLabel}
+          >
+            {isLoading || isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Heart className={cx("h-4 w-4", isFavorited && "fill-current")} />
+            )}
+            <span className="sr-only">{favoriteLabel}</span>
+          </AuthGatedActionButton>
+
+          <AuthGatedActionButton
+            className={cx(
+              compactActionButtonClassName,
+              isReportOpen &&
+                "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/25 dark:text-amber-300 dark:hover:bg-amber-950/40",
+            )}
+            isAuthenticated={authGate.isAuthenticated}
+            isReady={authGate.isReady}
+            lockedContent={
+              <>
+                <Flag className="h-4 w-4" />
+                <span className="sr-only">
+                  {isReportPanelVisible
+                    ? t("entry.actions.reportClose")
+                    : t("entry.actions.report")}
+                </span>
+              </>
+            }
+            lockedOpen={activeLockedAction === "report"}
+            lockedMessage={lockedMessage}
+            onLockedOpenChange={(visible) =>
+              handleLockedActionOpenChange("report", visible)
+            }
+            onClick={toggleReportPanel}
+            title={
+              isReportPanelVisible
+                ? t("entry.actions.reportClose")
+                : t("entry.actions.report")
+            }
+            aria-label={
+              isReportPanelVisible
+                ? t("entry.actions.reportClose")
+                : t("entry.actions.report")
+            }
+          >
+            <Flag className="h-4 w-4" />
+            <span className="sr-only">
+              {isReportPanelVisible
+                ? t("entry.actions.reportClose")
+                : t("entry.actions.report")}
+            </span>
+          </AuthGatedActionButton>
+        </div>
+
+        {favoriteErrorMessage ? (
+          <div className="w-full sm:w-[min(28rem,calc(100vw-6rem))]">
+            <StatusNotice tone="error" align="left">
+              {favoriteErrorMessage}
+            </StatusNotice>
+          </div>
+        ) : null}
+
+        {reportNotice ? (
+          <div className="w-full sm:w-[min(28rem,calc(100vw-6rem))]">
+            <StatusNotice tone={reportNotice.tone} align="left">
+              {reportNotice.message}
+            </StatusNotice>
+          </div>
+        ) : null}
+
+        {isShareOpen ? (
+          <div
+            id={sharePanelId}
+            className="w-full sm:w-[min(42rem,calc(100vw-6rem))]"
+          >
+            <EntrySharePanel
+              canUseNativeShare={canUseNativeShare}
+              notice={shareNotice}
+              onCopyLink={() => void copyLink()}
+              onCopyText={() => void copyText()}
+              onNativeShare={() => void nativeShare()}
+              shareLinks={shareLinks}
+              sharePayload={sharePayload}
+            />
+          </div>
+        ) : null}
+
+        {isReportPanelVisible ? (
+          <div className="w-full sm:w-[min(42rem,calc(100vw-6rem))]">
+            <EntryReportPanel
+              entry={entry}
+              language={language}
+              onClose={closeReportPanel}
+              onSubmitted={handleReportSubmitted}
+            />
+          </div>
+        ) : null}
+      </>
+    );
+  }
 
   return (
     <div className="space-y-4">

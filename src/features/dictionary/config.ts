@@ -6,7 +6,7 @@ import {
   getPartOfSpeechDisplayCode,
   getPartOfSpeechLabelKey,
   normalizePartOfSpeechCode,
-} from "./grammarRegistry";
+} from "./grammarRegistry.ts";
 
 export const DICTIONARY_DIALECT_CODES = [
   "A",
@@ -33,8 +33,44 @@ export const ANALYTICS_DIALECTS = [
 ] as const;
 
 export const PARTS_OF_SPEECH = DICTIONARY_PART_OF_SPEECH_CODES;
+export const DICTIONARY_MEANING_GROUP_CODES = [
+  "N",
+  "V",
+  "ADJ",
+  "ADV",
+  "CONJ",
+  "PREP",
+  "PRON",
+  "INTR",
+  "TR",
+  "STA",
+  "IMP",
+  "PC",
+  "REFL",
+  "AUX",
+  "IMPERS.V",
+  "IMPERS",
+  "PFX",
+  "SFX",
+  "DAT",
+  "OBJ",
+  "NEG",
+  "INDF",
+  "Q",
+  "CAUS",
+  "SIM",
+  "REL",
+  "PL",
+  "SG",
+  "LIT",
+  "VBAL",
+  "ESP",
+  "ABS",
+] as const;
 
 export type DictionaryDialectCode = (typeof DICTIONARY_DIALECT_CODES)[number];
+export type DictionaryMeaningGroupCode =
+  (typeof DICTIONARY_MEANING_GROUP_CODES)[number];
 export type AnalyticsDialect = (typeof ANALYTICS_DIALECTS)[number];
 export type DialectFilter = AnalyticsDialect;
 export type PartOfSpeech = (typeof PARTS_OF_SPEECH)[number];

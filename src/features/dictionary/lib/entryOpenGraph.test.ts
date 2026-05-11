@@ -71,6 +71,69 @@ describe("entry Open Graph helpers", () => {
     expect(preview.strapline).toBe("Coptic Dictionary");
   });
 
+  it("uses gendered heading and gloss data for social previews", () => {
+    const entry = createEntry({
+      id: "cd_18",
+      headword: "ⲣⲣⲟ",
+      dialects: {
+        B: {
+          absolute: "ⲟⲩⲣⲟ",
+        },
+      },
+      english_meanings: ["king; queen; royals"],
+      gender: "M",
+      genderedMeanings: [
+        {
+          english: {
+            f: "queen",
+            m: "king",
+            pl: "royals",
+          },
+        },
+      ],
+      pluralForms: {
+        B: ["ⲟⲩⲣⲱⲟⲩ"],
+      },
+    });
+    const feminineCounterpart = createEntry({
+      id: "cd_18a",
+      headword: "ⲟⲩⲣⲱ",
+      dialects: {
+        B: {
+          absolute: "ⲟⲩⲣⲱ",
+        },
+      },
+      english_meanings: ["queen"],
+      gender: "F",
+      parentEntryId: "cd_18",
+      relationType: "feminine-counterpart",
+    });
+
+    const preview = buildEntryOpenGraphPreview({
+      entry,
+      language: "en",
+      relatedEntries: [feminineCounterpart],
+    });
+
+    expect(preview.heading).toBe("ⲟⲩⲣⲟ m ⲟⲩⲣⲱ f ⲟⲩⲣⲱⲟⲩ pl");
+    expect(preview.headingParts).toEqual([
+      { marker: "m", spelling: "ⲟⲩⲣⲟ" },
+      { marker: "f", spelling: "ⲟⲩⲣⲱ" },
+      { marker: "pl", spelling: "ⲟⲩⲣⲱⲟⲩ" },
+    ]);
+    expect(preview.gloss).toBe("m king; f queen; pl royals");
+    expect(preview.genderedGlossRows).toEqual([
+      {
+        values: [
+          { marker: "m", meaning: "king" },
+          { marker: "f", meaning: "queen" },
+          { marker: "pl", meaning: "royals" },
+        ],
+      },
+    ]);
+    expect(preview.relatedForms).toEqual([]);
+  });
+
   it("includes the primary construct participle in preview headings", () => {
     const entry = createEntry({
       id: "cd_130",

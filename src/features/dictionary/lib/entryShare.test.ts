@@ -109,6 +109,71 @@ describe("entry share helpers", () => {
     );
   });
 
+  it("shares gendered headings and all structured gendered gloss rows", () => {
+    const entry = createEntry({
+      id: "cd_550",
+      headword: "ⲃⲱⲕ",
+      dialects: {
+        B: {
+          absolute: "ⲃⲱⲕ",
+        },
+      },
+      english_meanings: [
+        "male slave; female slave; slaves",
+        "male servant; female servant, maidservant; servants",
+      ],
+      gender: "M",
+      genderedMeanings: [
+        {
+          english: {
+            f: "female slave",
+            m: "male slave",
+            pl: "slaves",
+          },
+        },
+        {
+          english: {
+            f: "female servant, maidservant",
+            m: "male servant",
+            pl: "servants",
+          },
+        },
+      ],
+      pluralForms: {
+        B: ["ⲉⲃⲓⲁⲓⲕ"],
+      },
+    });
+    const feminineCounterpart = createEntry({
+      id: "cd_550a",
+      headword: "ⲃⲱⲕⲓ",
+      dialects: {
+        B: {
+          absolute: "ⲃⲱⲕⲓ",
+        },
+      },
+      english_meanings: ["female slave", "female servant, maidservant"],
+      gender: "F",
+      parentEntryId: "cd_550",
+      relationType: "feminine-counterpart",
+    });
+
+    const payload = buildEntrySharePayload({
+      entry,
+      language: "en",
+      relatedEntries: [feminineCounterpart],
+      url: "https://www.copticcompass.com/en/entry/cd_550",
+    });
+
+    expect(payload.title).toBe("ⲃⲱⲕ m ⲃⲱⲕⲓ f ⲉⲃⲓⲁⲓⲕ pl | Coptic Dictionary");
+    expect(payload.text).toContain(
+      "Coptic dictionary entry: ⲃⲱⲕ m ⲃⲱⲕⲓ f ⲉⲃⲓⲁⲓⲕ pl",
+    );
+    expect(payload.text).toContain(
+      "m male slave; f female slave; pl slaves; m male servant; f female servant, maidservant; pl servants.",
+    );
+    expect(payload.text).not.toContain("Related forms: ⲃⲱⲕⲓ");
+  });
+
   it("includes the primary construct participle in share headings", () => {
     const entry = createEntry({
       id: "cd_130",

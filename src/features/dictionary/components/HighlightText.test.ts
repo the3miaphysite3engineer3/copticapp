@@ -31,7 +31,8 @@ describe("HighlightText", () => {
     expect(markup).toContain(
       '<span aria-label="Stative" class="group/micro-tooltip',
     );
-    expect(markup).toContain("small-caps whitespace-nowrap");
+    expect(markup).toContain(">pc<");
+    expect(markup).toContain(">sta<");
     expect(markup).toContain("Construct participle");
     expect(markup).toContain("Stative");
     expect(markup).toContain("ABFLOS carrier");

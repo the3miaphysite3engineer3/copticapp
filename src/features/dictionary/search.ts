@@ -2,6 +2,7 @@ import type {
   DialectFilter,
   DictionaryPartOfSpeechFilter,
 } from "@/features/dictionary/config";
+import { getLocalizedMeaningValues } from "@/features/dictionary/lib/entryText";
 import type { DictionaryClientEntry } from "@/features/dictionary/types";
 import { normalizeCopticSearchText } from "@/lib/copticSearch";
 
@@ -43,6 +44,31 @@ type SearchPreparedDictionaryPageArgs = DictionarySearchPageOptions & {
   preparedDictionary: readonly PreparedLexicalEntry[];
 };
 
+function getSearchableDialectFormText(
+  dialects: DictionaryClientEntry["dialects"],
+) {
+  return Object.values(dialects)
+    .flatMap((forms) => [
+      forms.absolute,
+      forms.nominal,
+      forms.pronominal,
+      forms.stative,
+      ...(forms.imperatives ?? []),
+      ...(forms.constructParticiples ?? []),
+      ...(forms.constructParticipleCompounds ?? []).flatMap((compound) => [
+        compound.form,
+        compound.sourceConstructParticiple ?? "",
+      ]),
+      ...(forms.variants?.absolute ?? []),
+      ...(forms.variants?.nominal ?? []),
+      ...(forms.variants?.pronominal ?? []),
+      ...(forms.variants?.stative ?? []),
+      ...(forms.variants?.constructParticiples ?? []),
+    ])
+    .filter(Boolean)
+    .join(" ");
+}
+
 /**
  * Precomputes the normalized search fields used by interactive dictionary
  * filtering so repeated queries do not rebuild the same derived strings.
@@ -54,35 +80,35 @@ export function prepareDictionaryForSearch(
     const constructParticipleCompounds = Object.values(entry.dialects).flatMap(
       (forms) => forms.constructParticipleCompounds ?? [],
     );
-    const dialectForms = Object.values(entry.dialects)
-      .flatMap((forms) => [
-        forms.absolute,
-        forms.nominal,
-        forms.pronominal,
-        forms.stative,
-        ...(forms.imperatives ?? []),
-        ...(forms.constructParticiples ?? []),
-        ...(forms.constructParticipleCompounds ?? []).flatMap((compound) => [
-          compound.form,
-          compound.sourceConstructParticiple ?? "",
-        ]),
-        ...(forms.variants?.absolute ?? []),
-        ...(forms.variants?.nominal ?? []),
-        ...(forms.variants?.pronominal ?? []),
-        ...(forms.variants?.stative ?? []),
-        ...(forms.variants?.constructParticiples ?? []),
-      ])
+    const genderedCounterpartForms = (entry.genderedCounterparts ?? [])
+      .map((counterpart) =>
+        [
+          counterpart.headword,
+          getSearchableDialectFormText(counterpart.dialects),
+        ]
+          .filter(Boolean)
+          .join(" "),
+      )
+      .join(" ");
+    const dialectForms = [
+      getSearchableDialectFormText(entry.dialects),
+      genderedCounterpartForms,
+    ]
       .filter(Boolean)
       .join(" ");
 
-    const pluralFormsText = Object.values(entry.pluralForms ?? {})
-      .flat()
+    const pluralFormsText = [
+      ...Object.values(entry.pluralForms ?? {}).flat(),
+      ...(entry.genderedCounterparts ?? []).flatMap((counterpart) =>
+        Object.values(counterpart.pluralForms ?? {}).flat(),
+      ),
+    ]
       .filter(Boolean)
       .join(" ");
 
     return {
       englishSearchText: [
-        ...entry.english_meanings,
+        ...getLocalizedMeaningValues(entry, "en"),
         ...constructParticipleCompounds.flatMap(
           (compound) => compound.english_meanings,
         ),
@@ -90,7 +116,7 @@ export function prepareDictionaryForSearch(
         .join(" ")
         .toLowerCase(),
       dutchSearchText: [
-        ...(entry.dutch_meanings || []),
+        ...getLocalizedMeaningValues(entry, "nl"),
         ...constructParticipleCompounds.flatMap(
           (compound) => compound.dutch_meanings ?? [],
         ),

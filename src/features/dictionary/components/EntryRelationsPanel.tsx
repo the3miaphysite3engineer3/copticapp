@@ -6,8 +6,10 @@ import { Badge } from "@/components/Badge";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SurfacePanel } from "@/components/SurfacePanel";
 import { getPreferredEntryPrincipalSpelling } from "@/features/dictionary/lib/entryDisplay";
+import { getEntrySummary } from "@/features/dictionary/lib/entryText";
 import type {
   LexicalEntry,
+  LexicalGender,
   LexicalRelationType,
 } from "@/features/dictionary/types";
 import { cx } from "@/lib/classes";
@@ -15,6 +17,7 @@ import { antinoou } from "@/lib/fonts";
 import { getEntryPath } from "@/lib/locale";
 
 import HighlightText from "./HighlightText";
+import { LinguisticGlossGroup } from "./LinguisticGloss";
 
 type EntryRelationsPanelProps = {
   entry: LexicalEntry;
@@ -38,6 +41,28 @@ function getRelationLabel(
   }
 }
 
+function getGenderMarkers(
+  gender: LexicalGender,
+  t: ReturnType<typeof useLanguage>["t"],
+) {
+  if (!gender) {
+    return [];
+  }
+
+  if (gender === "BOTH") {
+    return [
+      { code: "m", label: t("entry.gender.masculine") },
+      { code: "f", label: t("entry.gender.feminine") },
+    ];
+  }
+
+  return [
+    gender === "M"
+      ? { code: "m", label: t("entry.gender.masculine") }
+      : { code: "f", label: t("entry.gender.feminine") },
+  ];
+}
+
 function RelationEntryLink({
   entry,
   relationType,
@@ -47,10 +72,8 @@ function RelationEntryLink({
 }) {
   const { language, t } = useLanguage();
   const relationLabel = getRelationLabel(relationType, t);
-  const firstMeaning =
-    language === "nl" && entry.dutch_meanings
-      ? entry.dutch_meanings[0]
-      : entry.english_meanings[0];
+  const firstMeaning = getEntrySummary(entry, language);
+  const genderMarkers = getGenderMarkers(entry.gender, t);
 
   return (
     <Link
@@ -80,11 +103,11 @@ function RelationEntryLink({
               {relationLabel}
             </Badge>
           ) : null}
-          {entry.gender ? (
-            <Badge tone="neutral" size="xs">
-              {t("entry.gender")}: {entry.gender}
-            </Badge>
-          ) : null}
+          <LinguisticGlossGroup
+            markers={genderMarkers}
+            size="compact"
+            focusable={false}
+          />
         </div>
       </div>
     </Link>

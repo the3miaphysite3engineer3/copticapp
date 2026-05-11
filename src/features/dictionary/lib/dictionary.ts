@@ -12,6 +12,7 @@ import {
 } from "@/features/dictionary/search";
 import type {
   DictionaryClientEntry,
+  DictionaryGenderedCounterpart,
   LexicalEntry,
 } from "@/features/dictionary/types";
 import { assertServerOnly } from "@/lib/server/assertServerOnly.ts";
@@ -108,21 +109,59 @@ function getDictionaryLookupIndex(
  * Keeps client search and analytics views on the smaller transport payload
  * they need instead of shipping entry-detail-only fields.
  */
-export function toDictionaryClientEntry(
-  entry: LexicalEntry,
-): DictionaryClientEntry {
-  const clientEntry: DictionaryClientEntry = {
+function toDictionaryGenderedCounterpart(
+  entry: DictionaryGenderedCounterpart,
+): DictionaryGenderedCounterpart {
+  return {
     dialects: entry.dialects,
-    dutch_meanings: entry.dutch_meanings,
-    english_meanings: entry.english_meanings,
-    etymology: entry.etymology,
     gender: entry.gender,
     headword: entry.headword,
     id: entry.id,
     pluralForms: entry.pluralForms,
+    relationType: entry.relationType,
+  };
+}
+
+function getGenderedCounterpartEntries(
+  entry: LexicalEntry,
+  dictionaryLookupIndex: DictionaryLookupIndex,
+) {
+  return (dictionaryLookupIndex.childIdsByParentId.get(entry.id) ?? []).flatMap(
+    (childId) => {
+      const childEntry = dictionaryLookupIndex.byId.get(childId);
+
+      return childEntry?.relationType === "feminine-counterpart"
+        ? [toDictionaryGenderedCounterpart(childEntry)]
+        : [];
+    },
+  );
+}
+
+export function toDictionaryClientEntry(
+  entry: LexicalEntry,
+  genderedCounterparts: readonly DictionaryGenderedCounterpart[] = [],
+): DictionaryClientEntry {
+  const clientEntry: DictionaryClientEntry = {
+    dialects: entry.dialects,
+    dialectMeanings: entry.dialectMeanings,
+    dutch_meanings: entry.dutch_meanings,
+    english_meanings: entry.english_meanings,
+    etymology: entry.etymology,
+    gender: entry.gender,
+    genderedMeanings: entry.genderedMeanings,
+    headword: entry.headword,
+    id: entry.id,
+    meaningGroups: entry.meaningGroups,
+    pluralForms: entry.pluralForms,
     pos: entry.pos,
     relationType: entry.relationType,
   };
+
+  if (genderedCounterparts.length > 0) {
+    clientEntry.genderedCounterparts = genderedCounterparts.map(
+      toDictionaryGenderedCounterpart,
+    );
+  }
 
   if (entry.greek_equivalents.length > 0) {
     clientEntry.greek_equivalents = entry.greek_equivalents;
@@ -132,7 +171,15 @@ export function toDictionaryClientEntry(
 }
 
 const readDictionaryClientEntries = cache((): DictionaryClientEntry[] => {
-  return getDictionary().map(toDictionaryClientEntry);
+  const dictionary = getDictionary();
+  const dictionaryLookupIndex = getDictionaryLookupIndex(dictionary);
+
+  return dictionary.map((entry) =>
+    toDictionaryClientEntry(
+      entry,
+      getGenderedCounterpartEntries(entry, dictionaryLookupIndex),
+    ),
+  );
 });
 
 const readPreparedDictionarySearchEntries = cache(() => {

@@ -22,35 +22,35 @@ type DictionaryPartOfSpeechCode =
 
 const PART_OF_SPEECH_DEFINITIONS = {
   V: {
-    displayCode: "V",
+    displayCode: "v",
     labelKey: "dict.verb",
   },
   N: {
-    displayCode: "N",
+    displayCode: "n",
     labelKey: "dict.noun",
   },
   ADJ: {
-    displayCode: "ADJ",
+    displayCode: "adj",
     labelKey: "dict.adj",
   },
   ADV: {
-    displayCode: "ADV",
+    displayCode: "adv",
     labelKey: "dict.adv",
   },
   CONJ: {
-    displayCode: "CONJ",
+    displayCode: "conj",
     labelKey: "dict.conj",
   },
   INTJ: {
-    displayCode: "INTJ",
+    displayCode: "intj",
     labelKey: "dict.inj",
   },
   OTHER: {
-    displayCode: "OTHER",
+    displayCode: "other",
     labelKey: "dict.other",
   },
   PREP: {
-    displayCode: "PREP",
+    displayCode: "prep",
     labelKey: "dict.prep",
   },
   UNKNOWN: {

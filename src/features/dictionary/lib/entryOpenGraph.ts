@@ -2,8 +2,11 @@ import { buildOpenGraphImageUrl } from "@/features/seo/lib/openGraph";
 import { siteConfig } from "@/lib/site";
 import type { Language } from "@/types/i18n";
 
-import { getPreferredEntryDisplaySpelling } from "./entryDisplay";
-import { getEntrySummary, toPlainText } from "./entryText";
+import {
+  buildEntryPreview,
+  type EntryPreviewGenderedGlossRow,
+  type EntryPreviewHeadingPart,
+} from "./entryPreview";
 
 import type { LexicalEntry } from "../types";
 
@@ -15,51 +18,13 @@ type BuildEntryOpenGraphPreviewOptions = {
 };
 
 type EntryOpenGraphPreview = {
+  genderedGlossRows: EntryPreviewGenderedGlossRow[];
   gloss: string;
   heading: string;
+  headingParts: EntryPreviewHeadingPart[];
   relatedForms: string[];
   strapline: string;
 };
-
-function getDisplayForm(entry: LexicalEntry) {
-  return toPlainText(getPreferredEntryDisplaySpelling(entry));
-}
-
-/**
- * Collects up to two distinct related forms for the entry preview, preferring
- * resolved parent/related entries while avoiding duplicate ids and spellings.
- */
-function collectRelatedForms(
-  entry: LexicalEntry,
-  parentEntry: LexicalEntry | null | undefined,
-  relatedEntries: readonly LexicalEntry[],
-) {
-  const forms: string[] = [];
-  const seenIds = new Set([entry.id]);
-  const seenForms = new Set([getDisplayForm(entry)]);
-
-  for (const candidate of [parentEntry, ...relatedEntries]) {
-    if (!candidate || seenIds.has(candidate.id)) {
-      continue;
-    }
-
-    seenIds.add(candidate.id);
-
-    const form = getDisplayForm(candidate);
-    if (!form || seenForms.has(form)) {
-      continue;
-    }
-
-    seenForms.add(form);
-    forms.push(form);
-
-    if (forms.length === 2) {
-      break;
-    }
-  }
-
-  return forms;
-}
 
 /**
  * Builds the `/api/og` image URL for one dictionary entry preview card.
@@ -87,14 +52,23 @@ export function buildEntryOpenGraphPreview({
   parentEntry = null,
   relatedEntries = [],
 }: BuildEntryOpenGraphPreviewOptions): EntryOpenGraphPreview {
+  const preview = buildEntryPreview({
+    entry,
+    language,
+    parentEntry,
+    relatedEntries,
+  });
+
   return {
+    genderedGlossRows: preview.genderedGlossRows,
     gloss:
-      getEntrySummary(entry, language) ||
+      preview.gloss ||
       (language === "nl"
         ? "Koptisch woordenboeklemma"
         : "Coptic dictionary entry"),
-    heading: getDisplayForm(entry),
-    relatedForms: collectRelatedForms(entry, parentEntry, relatedEntries),
+    heading: preview.heading,
+    headingParts: preview.headingParts,
+    relatedForms: preview.relatedForms,
     strapline: language === "nl" ? "Koptisch woordenboek" : "Coptic Dictionary",
   };
 }

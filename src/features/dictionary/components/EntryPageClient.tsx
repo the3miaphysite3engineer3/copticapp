@@ -27,18 +27,23 @@ export default function EntryPageClient({
     Boolean(initialParentEntry) ||
     initialRelatedEntries.length > 0 ||
     relatedGrammarLessons.length > 0;
+  const genderedCounterparts = initialRelatedEntries.filter(
+    (entry) => entry.relationType === "feminine-counterpart",
+  );
 
   return (
     <>
       <DictionaryEntryCard
         actions={
           <EntryActionBar
+            compact
             entry={initialEntry}
             parentEntry={initialParentEntry}
             relatedEntries={initialRelatedEntries}
           />
         }
         entry={initialEntry}
+        genderedCounterparts={genderedCounterparts}
         headingLevel="h1"
         linkHeadword={false}
       />

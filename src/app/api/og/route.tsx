@@ -114,8 +114,10 @@ function renderEntryCard(id: string, locale: string) {
 
   return renderEntryOpenGraphCard({
     footerLabel,
+    genderedGlossRows: preview.genderedGlossRows,
     gloss: preview.gloss,
     heading: preview.heading,
+    headingParts: preview.headingParts,
     partOfSpeech,
     partOfSpeechLabel,
     relatedForms: preview.relatedForms,

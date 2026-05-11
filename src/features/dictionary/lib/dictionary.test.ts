@@ -124,4 +124,20 @@ describe("dictionary helpers", () => {
       "greek_equivalents",
     );
   });
+
+  it("embeds compact feminine counterpart summaries in base client payloads", () => {
+    expect(
+      toDictionaryClientEntry(dictionary[0]!, [dictionary[1]!]),
+    ).toMatchObject({
+      id: "cd_20",
+      genderedCounterparts: [
+        {
+          id: "cd_20a",
+          headword: "ϣⲉⲣⲓ",
+          gender: "F",
+          relationType: "feminine-counterpart",
+        },
+      ],
+    });
+  });
 });

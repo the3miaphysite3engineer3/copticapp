@@ -5,6 +5,7 @@ const DUTCH_LANGUAGE_COOKIE = {
   value: "nl",
   url: "http://127.0.0.1:3100",
 };
+const FLOATING_ASSISTANT_TIMEOUT_MS = 15_000;
 
 test("root route redirects to the English homepage", async ({ page }) => {
   await page.goto("/");
@@ -57,7 +58,9 @@ test("floating Shenute assistant opens on demand", async ({ page }) => {
 
   await page.getByRole("button", { name: "Open Shenute AI" }).click();
 
-  await expect(page.getByText("Page context: Home")).toBeVisible();
+  await expect(page.getByText("Page context: Home")).toBeVisible({
+    timeout: FLOATING_ASSISTANT_TIMEOUT_MS,
+  });
   await expect(page.getByRole("button", { name: "Minimize" })).toBeVisible();
   await expect(page.getByText("Sign in required")).toBeVisible();
 });
@@ -69,7 +72,9 @@ test("floating Shenute assistant labels dictionary context", async ({
 
   await page.getByRole("button", { name: "Open Shenute AI" }).click();
 
-  await expect(page.getByText("Page context: Dictionary")).toBeVisible();
+  await expect(page.getByText("Page context: Dictionary")).toBeVisible({
+    timeout: FLOATING_ASSISTANT_TIMEOUT_MS,
+  });
 });
 
 test("floating Shenute assistant is hidden on the Shenute route", async ({

@@ -1,8 +1,7 @@
 import { getEntryPath } from "@/lib/locale";
 import type { Language } from "@/types/i18n";
 
-import { getPreferredEntryDisplaySpelling } from "./entryDisplay";
-import { getEntrySummary, toPlainText } from "./entryText";
+import { buildEntryPreview } from "./entryPreview";
 
 import type { LexicalEntry } from "../types";
 
@@ -32,46 +31,6 @@ function ensureSentence(value: string) {
   }
 
   return /[.!?]$/.test(value) ? value : `${value}.`;
-}
-
-function getShareDisplayForm(entry: LexicalEntry) {
-  return toPlainText(getPreferredEntryDisplaySpelling(entry));
-}
-
-/**
- * Collects up to two distinct related forms for share text while skipping the
- * current entry and duplicate spellings.
- */
-function collectRelatedShareForms(
-  entry: LexicalEntry,
-  parentEntry: LexicalEntry | null | undefined,
-  relatedEntries: readonly LexicalEntry[],
-) {
-  const labels: string[] = [];
-  const seenIds = new Set([entry.id]);
-  const seenLabels = new Set([getShareDisplayForm(entry)]);
-
-  for (const candidate of [parentEntry, ...relatedEntries]) {
-    if (!candidate || seenIds.has(candidate.id)) {
-      continue;
-    }
-
-    seenIds.add(candidate.id);
-
-    const label = getShareDisplayForm(candidate);
-    if (!label || seenLabels.has(label)) {
-      continue;
-    }
-
-    seenLabels.add(label);
-    labels.push(label);
-
-    if (labels.length === 2) {
-      break;
-    }
-  }
-
-  return labels;
 }
 
 /**
@@ -111,13 +70,15 @@ export function buildEntrySharePayload({
   relatedEntries = [],
   url,
 }: BuildEntrySharePayloadOptions): EntrySharePayload {
-  const displayForm = getShareDisplayForm(entry);
-  const summary = ensureSentence(getEntrySummary(entry, language));
-  const relatedForms = collectRelatedShareForms(
+  const preview = buildEntryPreview({
     entry,
+    language,
     parentEntry,
     relatedEntries,
-  );
+  });
+  const displayForm = preview.heading;
+  const summary = ensureSentence(preview.gloss);
+  const relatedForms = preview.relatedForms;
   let relatedLine = "";
 
   if (relatedForms.length > 0) {

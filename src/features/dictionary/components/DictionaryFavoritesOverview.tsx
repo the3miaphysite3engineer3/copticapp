@@ -9,13 +9,18 @@ import {
 } from "@/features/dashboard/lib/dashboardCopy";
 import {
   getPartOfSpeechCode,
+  getPartOfSpeechLabel,
   type DialectFilter,
 } from "@/features/dictionary/config";
 import type { EntryFavoriteWithEntry } from "@/features/dictionary/lib/entryActions";
 import { getPreferredEntryDisplaySpelling } from "@/features/dictionary/lib/entryDisplay";
+import { getEntryMeaningPreview } from "@/features/dictionary/lib/entryText";
 import { antinoou } from "@/lib/fonts";
+import { getTranslation } from "@/lib/i18n";
 import { getEntryPath } from "@/lib/locale";
 import type { Language } from "@/types/i18n";
+
+import { LinguisticGloss } from "./LinguisticGloss";
 
 type DictionaryFavoritesOverviewProps = {
   favorites: readonly EntryFavoriteWithEntry[];
@@ -31,12 +36,9 @@ function getMeaningPreview(
     return null;
   }
 
-  const meanings =
-    language === "nl" && favorite.entry.dutch_meanings?.length
-      ? favorite.entry.dutch_meanings
-      : favorite.entry.english_meanings;
+  const previewMeanings = getEntryMeaningPreview(favorite.entry, language, 2);
 
-  return meanings.slice(0, 2).join("; ");
+  return previewMeanings.length > 0 ? previewMeanings.join("; ") : null;
 }
 
 export function DictionaryFavoritesOverview({
@@ -108,9 +110,13 @@ export function DictionaryFavoritesOverview({
                           : copy.dictionary.missingBadge}
                       </Badge>
                       {entry ? (
-                        <Badge tone="surface" size="xs">
-                          {getPartOfSpeechCode(entry.pos)}
-                        </Badge>
+                        <LinguisticGloss
+                          code={getPartOfSpeechCode(entry.pos)}
+                          label={getPartOfSpeechLabel(entry.pos, (key) =>
+                            getTranslation(language, key),
+                          )}
+                          size="body"
+                        />
                       ) : null}
                     </div>
 

@@ -5,17 +5,29 @@ import {
 import type {
   DialectFormVariants,
   DictionaryClientEntry,
+  DictionaryGenderedCounterpart,
 } from "@/features/dictionary/types";
 
+type EntryDisplayCandidate = Pick<
+  DictionaryClientEntry,
+  "dialects" | "headword"
+> &
+  Partial<Pick<DictionaryClientEntry, "gender" | "id" | "pluralForms">>;
 type DialectEntryTuple = [
   DictionaryDialectCode,
-  NonNullable<DictionaryClientEntry["dialects"][DictionaryDialectCode]>,
+  NonNullable<EntryDisplayCandidate["dialects"][DictionaryDialectCode]>,
 ];
 type EntryDialectSelection = "ALL" | DictionaryDialectCode;
 type DialectVariantState = keyof DialectFormVariants;
 type DialectVariantRow = {
   forms: string[];
   state: DialectVariantState;
+};
+export type GenderedHeadingMarker = "f" | "m" | "pl";
+type GenderedHeadingPart = {
+  entryId?: string;
+  marker: GenderedHeadingMarker;
+  spelling: string;
 };
 
 const DIALECT_VARIANT_STATE_ORDER: readonly DialectVariantState[] = [
@@ -26,7 +38,7 @@ const DIALECT_VARIANT_STATE_ORDER: readonly DialectVariantState[] = [
   "constructParticiples",
 ] as const;
 
-function formatBoundForms(nominal: string, pronominal: string) {
+function formatBoundForms(nominal = "", pronominal = "") {
   if (!nominal) {
     return pronominal;
   }
@@ -171,7 +183,7 @@ export function formatImperativeForms(forms: readonly string[]) {
  * the first available dialect.
  */
 export function getPreferredEntryDialectKey(
-  entry: DictionaryClientEntry,
+  entry: EntryDisplayCandidate,
   selectedDialect: EntryDialectSelection = DEFAULT_DICTIONARY_DIALECT_FILTER,
 ) {
   const dialectKeys = Object.keys(entry.dialects) as DictionaryDialectCode[];
@@ -191,7 +203,7 @@ export function getPreferredEntryDialectKey(
  * dialect filter.
  */
 export function getPreferredEntryDisplaySpelling(
-  entry: DictionaryClientEntry,
+  entry: EntryDisplayCandidate,
   selectedDialect: EntryDialectSelection = DEFAULT_DICTIONARY_DIALECT_FILTER,
 ) {
   const primaryDialectKey = getPreferredEntryDialectKey(entry, selectedDialect);
@@ -211,7 +223,7 @@ export function getPreferredEntryDisplaySpelling(
  * related entry cards.
  */
 export function getPreferredEntryPrincipalSpelling(
-  entry: DictionaryClientEntry,
+  entry: EntryDisplayCandidate,
   selectedDialect: EntryDialectSelection = DEFAULT_DICTIONARY_DIALECT_FILTER,
 ) {
   const primaryDialectKey = getPreferredEntryDialectKey(entry, selectedDialect);
@@ -224,4 +236,173 @@ export function getPreferredEntryPrincipalSpelling(
   }
 
   return formatPrincipalDialectForms(primaryForms, entry.headword);
+}
+
+/**
+ * Builds the compact base + feminine counterpart + plural heading sequence for
+ * masculine nouns whose feminine counterpart is stored as a related entry.
+ */
+export function getGenderedHeadingParts(
+  entry: EntryDisplayCandidate,
+  genderedCounterparts: readonly DictionaryGenderedCounterpart[] = [],
+  selectedDialect: EntryDialectSelection = DEFAULT_DICTIONARY_DIALECT_FILTER,
+): GenderedHeadingPart[] {
+  if (entry.gender !== "M") {
+    return [];
+  }
+
+  const feminineCounterparts = genderedCounterparts.filter(
+    (counterpart) =>
+      counterpart.relationType === "feminine-counterpart" &&
+      counterpart.gender === "F",
+  );
+
+  if (feminineCounterparts.length === 0) {
+    return [];
+  }
+
+  const usedSpellings = new Set<string>();
+  const baseSpelling = getPreferredEntryPrincipalSpelling(
+    entry,
+    selectedDialect,
+  ).trim();
+  const headingParts: GenderedHeadingPart[] = [];
+
+  if (baseSpelling) {
+    headingParts.push({
+      entryId: entry.id,
+      marker: "m",
+      spelling: baseSpelling,
+    });
+    usedSpellings.add(baseSpelling);
+  }
+
+  for (const counterpart of feminineCounterparts) {
+    const counterpartSpelling = getPreferredEntryPrincipalSpelling(
+      counterpart,
+      selectedDialect,
+    ).trim();
+
+    if (!counterpartSpelling || usedSpellings.has(counterpartSpelling)) {
+      continue;
+    }
+
+    headingParts.push({
+      entryId: counterpart.id,
+      marker: "f",
+      spelling: counterpartSpelling,
+    });
+    usedSpellings.add(counterpartSpelling);
+  }
+
+  const primaryDialectKey = getPreferredEntryDialectKey(entry, selectedDialect);
+  const pluralSpelling = (
+    (primaryDialectKey ? entry.pluralForms?.[primaryDialectKey] : []) ?? []
+  )
+    .map((pluralForm) => pluralForm.trim())
+    .find((pluralForm) => pluralForm && !usedSpellings.has(pluralForm));
+
+  if (pluralSpelling) {
+    headingParts.push({
+      marker: "pl",
+      spelling: pluralSpelling,
+    });
+  }
+
+  return headingParts;
+}
+
+/**
+ * Formats a gendered heading into the same compact plain-text sequence used by
+ * metadata, share text, and generated Open Graph cards.
+ */
+export function formatGenderedHeadingParts(
+  parts: readonly GenderedHeadingPart[],
+) {
+  return parts
+    .map((part) => `${part.spelling} ${part.marker}`)
+    .join(" ")
+    .trim();
+}
+
+/**
+ * Builds the same m/f/pl sequence as the heading, scoped to one exact dialect
+ * row so alternate dialect cards do not silently borrow forms from another
+ * dialect.
+ */
+export function getGenderedDialectFormParts(
+  entry: EntryDisplayCandidate,
+  genderedCounterparts: readonly DictionaryGenderedCounterpart[] = [],
+  dialect: DictionaryDialectCode,
+): GenderedHeadingPart[] {
+  if (entry.gender !== "M") {
+    return [];
+  }
+
+  const feminineCounterparts = genderedCounterparts.filter(
+    (counterpart) =>
+      counterpart.relationType === "feminine-counterpart" &&
+      counterpart.gender === "F",
+  );
+
+  if (feminineCounterparts.length === 0) {
+    return [];
+  }
+
+  const forms = entry.dialects[dialect];
+  if (!forms) {
+    return [];
+  }
+
+  const usedSpellings = new Set<string>();
+  const baseSpelling = formatPrincipalDialectForms(
+    forms,
+    entry.headword,
+  ).trim();
+  const parts: GenderedHeadingPart[] = [];
+
+  if (baseSpelling) {
+    parts.push({
+      entryId: entry.id,
+      marker: "m",
+      spelling: baseSpelling,
+    });
+    usedSpellings.add(baseSpelling);
+  }
+
+  for (const counterpart of feminineCounterparts) {
+    const counterpartForms = counterpart.dialects[dialect];
+    if (!counterpartForms) {
+      continue;
+    }
+
+    const counterpartSpelling = formatPrincipalDialectForms(
+      counterpartForms,
+      counterpart.headword,
+    ).trim();
+
+    if (!counterpartSpelling || usedSpellings.has(counterpartSpelling)) {
+      continue;
+    }
+
+    parts.push({
+      entryId: counterpart.id,
+      marker: "f",
+      spelling: counterpartSpelling,
+    });
+    usedSpellings.add(counterpartSpelling);
+  }
+
+  const pluralSpelling = (entry.pluralForms?.[dialect] ?? [])
+    .map((pluralForm) => pluralForm.trim())
+    .find((pluralForm) => pluralForm && !usedSpellings.has(pluralForm));
+
+  if (pluralSpelling) {
+    parts.push({
+      marker: "pl",
+      spelling: pluralSpelling,
+    });
+  }
+
+  return parts;
 }

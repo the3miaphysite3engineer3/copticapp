@@ -9,10 +9,26 @@ type OpenGraphStat = {
 
 type OpenGraphThemeName = "mixed" | "sky" | "emerald" | "stone";
 
+type OpenGraphGlossMarker = "f" | "m" | "pl";
+
+type OpenGraphHeadingPart = {
+  marker: OpenGraphGlossMarker;
+  spelling: string;
+};
+
+type OpenGraphGenderedGlossRow = {
+  values: Array<{
+    marker: OpenGraphGlossMarker;
+    meaning: string;
+  }>;
+};
+
 type EntryCardOptions = {
   footerLabel: string;
+  genderedGlossRows?: OpenGraphGenderedGlossRow[];
   gloss: string;
   heading: string;
+  headingParts?: OpenGraphHeadingPart[];
   partOfSpeech: string;
   partOfSpeechLabel: string;
   relatedForms: string[];
@@ -211,6 +227,154 @@ function OpenGraphPill({
       }}
     >
       {label}
+    </div>
+  );
+}
+
+function OpenGraphLinguisticGloss({
+  marginLeft = 0,
+  marginRight = 0,
+  marker,
+  size,
+}: {
+  marginLeft?: number;
+  marginRight?: number;
+  marker: OpenGraphGlossMarker;
+  size: "body" | "heading";
+}) {
+  const displayMarker = marker.toLocaleUpperCase();
+
+  return (
+    <span
+      style={{
+        display: "flex",
+        alignItems: "center",
+        alignSelf: "center",
+        color: CARD_THEMES.sky.textFooter,
+        fontFamily: "Arial, Helvetica, sans-serif",
+        fontSize: size === "heading" ? 30 : 22,
+        fontVariant: "small-caps",
+        fontWeight: 700,
+        letterSpacing: 0,
+        lineHeight: 1,
+        marginLeft,
+        marginRight,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {displayMarker}
+    </span>
+  );
+}
+
+function OpenGraphEntryHeading({
+  heading,
+  headingParts = [],
+}: {
+  heading: string;
+  headingParts?: OpenGraphHeadingPart[];
+}) {
+  const sharedHeadingStyle = {
+    display: "flex",
+    fontSize: 70,
+    lineHeight: 1.05,
+    fontWeight: 700,
+    letterSpacing: 0,
+    fontFamily: "Antinoou",
+  } as const;
+
+  if (headingParts.length === 0) {
+    return <div style={sharedHeadingStyle}>{heading}</div>;
+  }
+
+  return (
+    <div
+      style={{
+        ...sharedHeadingStyle,
+        alignItems: "baseline",
+        flexWrap: "wrap",
+      }}
+    >
+      {headingParts.map((part) => (
+        <span
+          key={`${part.spelling}-${part.marker}`}
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            marginBottom: 6,
+            marginRight: 18,
+          }}
+        >
+          <span>{part.spelling}</span>
+          <OpenGraphLinguisticGloss
+            marginLeft={10}
+            marker={part.marker}
+            size="heading"
+          />
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function OpenGraphEntryGloss({
+  genderedGlossRows = [],
+  gloss,
+}: {
+  genderedGlossRows?: OpenGraphGenderedGlossRow[];
+  gloss: string;
+}) {
+  const sharedGlossStyle = {
+    display: "flex",
+    fontSize: 34,
+    lineHeight: 1.25,
+    color: CARD_THEMES.sky.textBody,
+    maxWidth: 920,
+  } as const;
+
+  if (genderedGlossRows.length === 0) {
+    return <div style={sharedGlossStyle}>{gloss}</div>;
+  }
+
+  return (
+    <div
+      style={{
+        ...sharedGlossStyle,
+        flexDirection: "column",
+        gap: 6,
+      }}
+    >
+      {genderedGlossRows.map((row, rowIndex) => (
+        <div
+          key={`gendered-gloss-${rowIndex}`}
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            flexWrap: "wrap",
+          }}
+        >
+          {row.values.map((value, valueIndex) => (
+            <span
+              key={`${value.marker}-${value.meaning}`}
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                marginRight: valueIndex < row.values.length - 1 ? 12 : 0,
+              }}
+            >
+              <OpenGraphLinguisticGloss
+                marginRight={7}
+                marker={value.marker}
+                size="body"
+              />
+              <span>
+                {value.meaning}
+                {valueIndex < row.values.length - 1 ? ";" : ""}
+              </span>
+            </span>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
@@ -439,8 +603,10 @@ export function renderSiteOpenGraphCard({
  */
 export function renderEntryOpenGraphCard({
   footerLabel,
+  genderedGlossRows = [],
   gloss,
   heading,
+  headingParts = [],
   partOfSpeech,
   partOfSpeechLabel,
   relatedForms,
@@ -479,29 +645,14 @@ export function renderEntryOpenGraphCard({
             gap: 18,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              fontSize: 70,
-              lineHeight: 1.05,
-              fontWeight: 700,
-              letterSpacing: -1.6,
-              fontFamily: "Antinoou",
-            }}
-          >
-            {heading}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              fontSize: 34,
-              lineHeight: 1.25,
-              color: CARD_THEMES.sky.textBody,
-              maxWidth: 920,
-            }}
-          >
-            {gloss}
-          </div>
+          <OpenGraphEntryHeading
+            heading={heading}
+            headingParts={headingParts}
+          />
+          <OpenGraphEntryGloss
+            genderedGlossRows={genderedGlossRows}
+            gloss={gloss}
+          />
         </div>
       </div>
 

@@ -8,6 +8,8 @@ import {
   formatPrincipalDialectForms,
   getDialectImperativeForms,
   getDialectVariantRows,
+  getGenderedDialectFormParts,
+  getGenderedHeadingParts,
   getPreferredEntryDialectKey,
   getPreferredEntryDisplaySpelling,
   getPreferredEntryPrincipalSpelling,
@@ -275,6 +277,142 @@ describe("dictionary entry display helpers", () => {
     expect(getPreferredEntryPrincipalSpelling(parentEntry)).toBe("ϯ ϯ-/ⲧⲏⲓ=");
     expect(getPreferredEntryPrincipalSpelling(relatedEntry)).toBe(
       "ⲙⲟⲓ ⲙⲁ-/ⲙⲏⲓ=",
+    );
+  });
+
+  it("builds gendered noun headings from feminine counterparts and plural forms", () => {
+    const kingEntry = createEntry({
+      id: "cd_18",
+      headword: "ⲣⲣⲟ",
+      dialects: {
+        B: {
+          absolute: "ⲟⲩⲣⲟ",
+        },
+      },
+      gender: "M",
+      pluralForms: {
+        B: ["ⲟⲩⲣⲱⲟⲩ"],
+      },
+    });
+    const queenEntry = createEntry({
+      id: "cd_18a",
+      headword: "ⲟⲩⲣⲱ",
+      dialects: {
+        B: {
+          absolute: "ⲟⲩⲣⲱ",
+        },
+      },
+      gender: "F",
+      parentEntryId: "cd_18",
+      relationType: "feminine-counterpart",
+    });
+
+    expect(getGenderedHeadingParts(kingEntry, [queenEntry], "B")).toEqual([
+      {
+        entryId: "cd_18",
+        marker: "m",
+        spelling: "ⲟⲩⲣⲟ",
+      },
+      {
+        entryId: "cd_18a",
+        marker: "f",
+        spelling: "ⲟⲩⲣⲱ",
+      },
+      {
+        marker: "pl",
+        spelling: "ⲟⲩⲣⲱⲟⲩ",
+      },
+    ]);
+  });
+
+  it("builds exact-dialect gendered form rows without borrowing fallback forms", () => {
+    const servantEntry = createEntry({
+      id: "cd_550",
+      headword: "ⲃⲱⲕ",
+      dialects: {
+        B: {
+          absolute: "ⲃⲱⲕ",
+        },
+        F: {
+          absolute: "ⲃⲱⲕ",
+        },
+      },
+      gender: "M",
+      pluralForms: {
+        B: ["ⲉⲃⲓⲁⲓⲕ"],
+      },
+    });
+    const feminineEntry = createEntry({
+      id: "cd_550a",
+      headword: "ⲃⲱⲕⲓ",
+      dialects: {
+        B: {
+          absolute: "ⲃⲱⲕⲓ",
+        },
+      },
+      gender: "F",
+      parentEntryId: "cd_550",
+      relationType: "feminine-counterpart",
+    });
+
+    expect(
+      getGenderedDialectFormParts(servantEntry, [feminineEntry], "B"),
+    ).toEqual([
+      {
+        entryId: "cd_550",
+        marker: "m",
+        spelling: "ⲃⲱⲕ",
+      },
+      {
+        entryId: "cd_550a",
+        marker: "f",
+        spelling: "ⲃⲱⲕⲓ",
+      },
+      {
+        marker: "pl",
+        spelling: "ⲉⲃⲓⲁⲓⲕ",
+      },
+    ]);
+    expect(
+      getGenderedDialectFormParts(servantEntry, [feminineEntry], "F"),
+    ).toEqual([
+      {
+        entryId: "cd_550",
+        marker: "m",
+        spelling: "ⲃⲱⲕ",
+      },
+    ]);
+  });
+
+  it("keeps ordinary masculine headings separate from unrelated relations", () => {
+    const servantEntry = createEntry({
+      id: "cd_550",
+      headword: "ⲃⲱⲕ",
+      dialects: {
+        B: {
+          absolute: "ⲃⲱⲕ",
+        },
+      },
+      gender: "M",
+      pluralForms: {
+        B: ["ⲉⲃⲓⲁⲓⲕ"],
+      },
+    });
+    const derivedEntry = createEntry({
+      id: "cd_550b",
+      headword: "ⲃⲱⲕⲧ",
+      dialects: {
+        B: {
+          absolute: "ⲃⲱⲕⲧ",
+        },
+      },
+      gender: "F",
+      parentEntryId: "cd_550",
+      relationType: "derived-subentry",
+    });
+
+    expect(getGenderedHeadingParts(servantEntry, [derivedEntry], "B")).toEqual(
+      [],
     );
   });
 

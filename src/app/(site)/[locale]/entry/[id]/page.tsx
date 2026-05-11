@@ -10,6 +10,7 @@ import {
   getDictionaryEntryRelations,
 } from "@/features/dictionary/lib/dictionary";
 import { buildEntryOpenGraphImageUrl } from "@/features/dictionary/lib/entryOpenGraph";
+import { buildEntryPreview } from "@/features/dictionary/lib/entryPreview";
 import {
   buildEntryDescription,
   toPlainText,
@@ -57,7 +58,14 @@ export async function generateMetadata({
     };
   }
 
-  const headword = toPlainText(entry.headword);
+  const { parentEntry, relatedEntries } = getDictionaryEntryRelations(entry);
+  const preview = buildEntryPreview({
+    entry,
+    language: locale,
+    parentEntry,
+    relatedEntries,
+  });
+  const headword = preview.heading || toPlainText(entry.headword);
   const partOfSpeech = getPartOfSpeechLabel(entry.pos, (key) =>
     getTranslation(locale, key),
   );
@@ -65,7 +73,10 @@ export async function generateMetadata({
     locale === "nl"
       ? `${headword} (${partOfSpeech}) - Koptisch woordenboek`
       : `${headword} (${partOfSpeech}) - Coptic Dictionary`;
-  const description = buildEntryDescription(entry, locale);
+  const description = buildEntryDescription(entry, locale, {
+    displayHeadword: headword,
+    summary: preview.gloss,
+  });
   const path = getEntryPath(entry.id, locale);
   const imageUrl = buildEntryOpenGraphImageUrl(entry.id, locale);
   const image = createSocialImage(
@@ -107,7 +118,17 @@ export default async function EntryPage({
   }
 
   const { parentEntry, relatedEntries } = getDictionaryEntryRelations(entry);
-  const headword = toPlainText(entry.headword);
+  const preview = buildEntryPreview({
+    entry,
+    language: locale,
+    parentEntry,
+    relatedEntries,
+  });
+  const headword = preview.heading || toPlainText(entry.headword);
+  const description = buildEntryDescription(entry, locale, {
+    displayHeadword: headword,
+    summary: preview.gloss,
+  });
   const relatedGrammarLessons = listPublishedGrammarLessonsForEntry(entry.id);
 
   return (
@@ -133,7 +154,10 @@ export default async function EntryPage({
             },
             { name: headword, path: getEntryPath(entry.id, locale) },
           ]),
-          createDefinedTermStructuredData(entry, locale),
+          createDefinedTermStructuredData(entry, locale, {
+            description,
+            name: headword,
+          }),
         ]}
       />
 
