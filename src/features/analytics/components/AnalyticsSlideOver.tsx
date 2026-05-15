@@ -59,7 +59,7 @@ export function AnalyticsSlideOver({
     <div className="fixed inset-0 z-50 flex justify-end overflow-hidden">
       <div
         className={cx(
-          "fixed inset-0 bg-stone-900/40 backdrop-blur-sm transition-opacity duration-300 dark:bg-black/60",
+          "fixed inset-0 bg-ink/45 backdrop-blur-sm transition-opacity duration-300 dark:bg-black/60",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onClick={onClose}
@@ -67,14 +67,12 @@ export function AnalyticsSlideOver({
 
       <div
         className={cx(
-          "relative flex h-full w-full max-w-2xl flex-col bg-stone-50 shadow-2xl transition-transform duration-300 ease-in-out dark:bg-stone-950",
+          "relative flex h-full w-full max-w-2xl flex-col bg-surface shadow-2xl transition-transform duration-300 ease-in-out",
           isOpen ? "translate-x-0" : "translate-x-full",
         )}
       >
-        <header className="flex items-center justify-between border-b border-stone-200 px-6 py-4 dark:border-stone-800">
-          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-200">
-            {title}
-          </h2>
+        <header className="flex items-center justify-between border-b border-line px-6 py-4">
+          <h2 className="text-xl font-bold text-ink">{title}</h2>
           <button
             onClick={onClose}
             className={iconButtonClassName({ className: "rounded-full" })}

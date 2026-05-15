@@ -3,6 +3,7 @@
 import { useLanguage } from "@/components/LanguageProvider";
 import { pageShellAccents } from "@/components/PageShell";
 import { RouteLoadingState } from "@/components/RouteLoadingState";
+import { SkeletonBlock as LoadingBlock } from "@/components/SkeletonBlock";
 import { SurfacePanel } from "@/components/SurfacePanel";
 
 const API_DOCS_LOADING_COPY = {
@@ -17,15 +18,6 @@ const API_DOCS_LOADING_COPY = {
     title: "API-docs voorbereiden",
   },
 } as const;
-
-function LoadingBlock({ className }: { className: string }) {
-  return (
-    <div
-      aria-hidden="true"
-      className={`animate-pulse rounded-lg border border-line/60 bg-elevated/80 dark:bg-elevated/60 ${className}`}
-    />
-  );
-}
 
 /**
  * Renders the loading skeleton for the API documentation page.

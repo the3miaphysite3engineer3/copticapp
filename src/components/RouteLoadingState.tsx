@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/PageHeader";
 import type { PageHeaderTone } from "@/components/PageHeader";
 import { PageShell } from "@/components/PageShell";
 import type { PageShellWidth } from "@/components/PageShell";
+import { SkeletonBlock as LoadingBlock } from "@/components/SkeletonBlock";
 import { SurfacePanel } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
 
@@ -17,18 +18,6 @@ type RouteLoadingStateProps = {
   tone?: PageHeaderTone;
   width?: PageShellWidth;
 };
-
-function LoadingBlock({ className }: { className: string }) {
-  return (
-    <div
-      aria-hidden="true"
-      className={cx(
-        "animate-pulse rounded-lg border border-line/60 bg-elevated/80 dark:bg-elevated/60",
-        className,
-      )}
-    />
-  );
-}
 
 function DefaultLoadingSkeleton() {
   return (

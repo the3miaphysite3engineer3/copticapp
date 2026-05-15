@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useEffect, type ReactNode } from "react";
 
 import { useLanguage } from "@/components/LanguageProvider";
+import { adminModeCardClassName } from "@/features/admin/components/adminControlStyles";
 import type { AdminWorkspaceOverview } from "@/features/admin/lib/dashboardData";
 import { usePersistentEnumState } from "@/features/admin/lib/uiState";
 import {
@@ -265,12 +266,8 @@ export function AdminWorkspaceModeShell({
                 key={nextMode}
                 type="button"
                 onClick={() => handleModeChange(nextMode)}
-                className={cx(
-                  "cursor-pointer select-none rounded-lg border px-3 py-3 text-left transition-all duration-200 hover:-translate-y-px active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
-                  isActive
-                    ? "border-accent/35 bg-accent-soft/75 shadow-sm dark:bg-accent-soft/25"
-                    : "border-line bg-surface/70 hover:border-accent/40 hover:bg-elevated",
-                )}
+                aria-pressed={isActive}
+                className={adminModeCardClassName({ active: isActive })}
               >
                 <div className="flex items-center justify-between gap-3">
                   <span

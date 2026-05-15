@@ -69,7 +69,7 @@ export function AnalyticsPieChartCard({
 
   const hasMeasuredChartSize = chartSize.width > 0 && chartSize.height > 0;
   const chartPlaceholder = (
-    <div className="h-full w-full rounded-2xl bg-stone-100/70 dark:bg-stone-900/40" />
+    <div className="h-full w-full rounded-2xl bg-elevated/65" />
   );
 
   return (
@@ -78,7 +78,7 @@ export function AnalyticsPieChartCard({
       shadow="soft"
       className="flex h-full flex-col p-6"
     >
-      <h2 className="mb-6 border-b border-stone-200 pb-3 text-2xl font-bold text-stone-800 dark:border-stone-800 dark:text-stone-300">
+      <h2 className="mb-6 border-b border-line pb-3 text-2xl font-bold text-ink">
         {title}
       </h2>
 

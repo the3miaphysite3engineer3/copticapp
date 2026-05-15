@@ -12,6 +12,7 @@ import Link from "next/link";
 import { AuthGateNotice } from "@/components/AuthGateNotice";
 import { Badge } from "@/components/Badge";
 import { buttonClassName } from "@/components/Button";
+import { SkeletonBlock } from "@/components/SkeletonBlock";
 import type { GrammarLessonLearnerSummary } from "@/features/grammar/lib/grammarLearnerState";
 import { cx } from "@/lib/classes";
 import { getDashboardPath } from "@/lib/locale";
@@ -85,9 +86,7 @@ export function GrammarLessonLearnerPanel({
   }
 
   if (status === "loading") {
-    return (
-      <div className="h-40 animate-pulse rounded-lg border border-line bg-surface/88 shadow-soft" />
-    );
+    return <SkeletonBlock className="h-40 shadow-soft" />;
   }
 
   if (status === "signed-out") {

@@ -3,17 +3,9 @@
 import { useLanguage } from "@/components/LanguageProvider";
 import { pageShellAccents } from "@/components/PageShell";
 import { RouteLoadingState } from "@/components/RouteLoadingState";
+import { SkeletonBlock as LoadingBlock } from "@/components/SkeletonBlock";
 import { SurfacePanel } from "@/components/SurfacePanel";
 import { adminRouteCopy } from "@/features/admin/lib/adminRouteCopy";
-
-function LoadingBlock({ className }: { className: string }) {
-  return (
-    <div
-      aria-hidden="true"
-      className={`animate-pulse rounded-lg bg-elevated ${className}`}
-    />
-  );
-}
 
 /**
  * Renders the loading skeleton for the private instructor workspace.

@@ -1,6 +1,10 @@
 import { EmptyState } from "@/components/EmptyState";
 import { surfacePanelClassName } from "@/components/SurfacePanel";
 import {
+  adminNavChipClassName,
+  adminQueueLinkClassName,
+} from "@/features/admin/components/adminControlStyles";
+import {
   AdminContentReleasesList,
   AdminContactMessagesList,
   AdminEntryReportsList,
@@ -565,7 +569,7 @@ export function AdminWorkspaceQuickJump({
           <a
             key={link.href}
             href={link.href}
-            className="inline-flex cursor-pointer select-none items-center gap-2 rounded-lg border border-line bg-surface/70 px-3 py-2 text-xs font-semibold text-muted transition-all duration-200 hover:-translate-y-px hover:border-accent/40 hover:bg-elevated hover:text-ink active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+            className={adminNavChipClassName()}
           >
             <span>{link.label}</span>
             <span className="text-muted">
@@ -642,7 +646,7 @@ export function AdminReviewInboxSummary({
           <a
             key={queue.href}
             href={queue.href}
-            className="cursor-pointer select-none rounded-lg border border-line bg-surface/70 p-3 transition-all duration-200 hover:-translate-y-px hover:border-accent/40 hover:bg-elevated hover:shadow-sm active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+            className={adminQueueLinkClassName()}
           >
             <div className="flex items-center justify-between gap-3">
               <span className="text-base font-semibold text-ink">

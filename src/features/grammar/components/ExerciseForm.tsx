@@ -8,6 +8,7 @@ import { submitExercise } from "@/actions/exercises";
 import { AuthGateNotice } from "@/components/AuthGateNotice";
 import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
+import { SkeletonBlock } from "@/components/SkeletonBlock";
 import { StatusNotice } from "@/components/StatusNotice";
 import { getDashboardPath } from "@/lib/locale";
 import { createClient, hasSupabaseEnv } from "@/lib/supabase/client";
@@ -128,9 +129,7 @@ export function ExerciseForm({
   }, [exerciseId, lessonSlug, userId]);
 
   if (loading) {
-    return (
-      <div className="mt-6 h-20 animate-pulse rounded-lg border border-line bg-elevated/70" />
-    );
+    return <SkeletonBlock className="mt-6 h-20" />;
   }
 
   if (!authAvailable) {

@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { AppPageIntro } from "@/components/AppPageIntro";
+import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { SurfacePanel } from "@/components/SurfacePanel";
@@ -201,28 +202,52 @@ export function ApiDocsPageClient() {
           className="space-y-5 p-6 md:p-8"
         >
           <div className="flex flex-wrap gap-3">
-            <Link href={getDevelopersPath(language)} className="btn-secondary">
+            <Link
+              href={getDevelopersPath(language)}
+              className={buttonClassName({ variant: "secondary" })}
+            >
               {t("apiDocs.developerGuideLabel")}
             </Link>
-            <Link href="/api/openapi.json" className="btn-secondary">
+            <Link
+              href="/api/openapi.json"
+              className={buttonClassName({ variant: "secondary" })}
+            >
               {t("apiDocs.openApiLabel")}
             </Link>
-            <Link href="/api/v1/grammar" className="btn-secondary">
+            <Link
+              href="/api/v1/grammar"
+              className={buttonClassName({ variant: "secondary" })}
+            >
               {t("apiDocs.apiIndexLabel")}
             </Link>
-            <Link href="/api/v1/dictionary/search" className="btn-secondary">
+            <Link
+              href="/api/v1/dictionary/search"
+              className={buttonClassName({ variant: "secondary" })}
+            >
               {t("apiDocs.dictionarySearchLabel")}
             </Link>
-            <Link href="/api/shenute" className="btn-secondary">
+            <Link
+              href="/api/shenute"
+              className={buttonClassName({ variant: "secondary" })}
+            >
               {t("apiDocs.shenuteEndpointLabel")}
             </Link>
-            <Link href="/api/ocr" className="btn-secondary">
+            <Link
+              href="/api/ocr"
+              className={buttonClassName({ variant: "secondary" })}
+            >
               {t("apiDocs.ocrProxyLabel")}
             </Link>
-            <Link href="/shenute" className="btn-secondary">
+            <Link
+              href="/shenute"
+              className={buttonClassName({ variant: "secondary" })}
+            >
               {t("apiDocs.shenuteUiLabel")}
             </Link>
-            <Link href={getGrammarPath(language)} className="btn-secondary">
+            <Link
+              href={getGrammarPath(language)}
+              className={buttonClassName({ variant: "secondary" })}
+            >
               {t("apiDocs.grammarHubLabel")}
             </Link>
           </div>

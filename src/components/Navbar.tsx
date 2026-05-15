@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useState, type ComponentType } from "react";
 
+import { controlButtonClassName } from "@/components/Button";
 import {
   getContactPath,
   getDashboardPath,
@@ -164,7 +165,7 @@ export function Navbar() {
             <LanguageToggle />
             <button
               type="button"
-              className="topbar-control lg:hidden"
+              className={controlButtonClassName({ className: "lg:hidden" })}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-controls="mobile-navigation"
               aria-expanded={isMobileMenuOpen}

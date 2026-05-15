@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { AppPageIntro } from "@/components/AppPageIntro";
+import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { SurfacePanel } from "@/components/SurfacePanel";
@@ -205,16 +206,28 @@ export function DevelopersPageClient() {
               {t("developers.discoveryDescription")}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/api-docs" className="btn-secondary">
+              <Link
+                href="/api-docs"
+                className={buttonClassName({ variant: "secondary" })}
+              >
                 {t("developers.primaryCta")}
               </Link>
-              <Link href="/api/openapi.json" className="btn-secondary">
+              <Link
+                href="/api/openapi.json"
+                className={buttonClassName({ variant: "secondary" })}
+              >
                 {t("developers.secondaryCta")}
               </Link>
-              <Link href="/api/v1/grammar" className="btn-secondary">
+              <Link
+                href="/api/v1/grammar"
+                className={buttonClassName({ variant: "secondary" })}
+              >
                 /api/v1/grammar
               </Link>
-              <Link href="/api/v1/dictionary/search" className="btn-secondary">
+              <Link
+                href="/api/v1/dictionary/search"
+                className={buttonClassName({ variant: "secondary" })}
+              >
                 /api/v1/dictionary/search
               </Link>
             </div>

@@ -83,7 +83,7 @@ function AnalyticsStatCard({
   accentClassName,
   title,
   value,
-  valueClassName = "text-3xl font-bold text-stone-800 dark:text-stone-200 md:text-4xl",
+  valueClassName = "text-3xl font-bold text-ink md:text-4xl",
   onClick,
 }: AnalyticsStatCardProps) {
   const cardContent = (
@@ -94,7 +94,7 @@ function AnalyticsStatCard({
           accentClassName,
         )}
       />
-      <h2 className="mb-1 text-xs font-semibold uppercase tracking-widest text-stone-500 dark:text-stone-400">
+      <h2 className="mb-1 text-xs font-semibold uppercase tracking-widest text-muted">
         {title}
       </h2>
       <p className={valueClassName}>{value}</p>
@@ -161,8 +161,8 @@ function AnalyticsChartSkeletonCard() {
       shadow="soft"
       className="flex h-full flex-col p-5"
     >
-      <div className="mb-6 h-8 w-48 rounded-full bg-stone-200/80 dark:bg-stone-800/80" />
-      <div className="h-[300px] w-full rounded-2xl bg-stone-100/80 dark:bg-stone-900/50" />
+      <div className="mb-6 h-8 w-48 rounded-full bg-elevated/80" />
+      <div className="h-[300px] w-full rounded-2xl bg-elevated/65" />
     </SurfacePanel>
   );
 }
@@ -177,10 +177,8 @@ function AnalyticsChartsCallout({
     <SurfacePanel rounded="2xl" shadow="soft" className="p-4 md:p-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2">
-          <h2 className="text-xl font-bold text-stone-800 dark:text-stone-200">
-            {title}
-          </h2>
-          <p className="max-w-2xl text-sm leading-6 text-stone-600 dark:text-stone-400">
+          <h2 className="text-xl font-bold text-ink">{title}</h2>
+          <p className="max-w-2xl text-sm leading-6 text-muted">
             {description}
           </p>
         </div>
@@ -481,9 +479,9 @@ export default function AnalyticsPageClient({
               {t("analytics.back")}
             </Link>
 
-            <div className="flex w-full flex-col gap-2 rounded-2xl border border-stone-200/80 bg-white/75 p-2 shadow-sm backdrop-blur-md dark:border-stone-800 dark:bg-stone-950/60 sm:w-auto sm:flex-row sm:items-center">
+            <div className="flex w-full flex-col gap-2 rounded-2xl border border-line bg-surface/88 p-2 shadow-sm backdrop-blur-md sm:w-auto sm:flex-row sm:items-center">
               <div className="flex items-center gap-2 px-2">
-                <span className="inline-flex items-center whitespace-nowrap text-stone-500 dark:text-stone-400">
+                <span className="inline-flex items-center whitespace-nowrap text-muted">
                   <Filter className="h-4 w-4" />
                 </span>
                 <CompactSelect
@@ -494,7 +492,7 @@ export default function AnalyticsPageClient({
                   onChange={(e) =>
                     setSelectedDialect(e.target.value as AnalyticsDialect)
                   }
-                  className="text-stone-700 dark:text-stone-200"
+                  className="text-ink"
                 >
                   {dialectFilterOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -513,7 +511,7 @@ export default function AnalyticsPageClient({
                   onChange={(e) =>
                     setSelectedEtymology(e.target.value as EtymologyFilter)
                   }
-                  className="text-stone-700 dark:text-stone-200"
+                  className="text-ink"
                 >
                   {ETYMOLOGY_FILTERS.map((etymology) => (
                     <option key={etymology} value={etymology}>
@@ -541,14 +539,14 @@ export default function AnalyticsPageClient({
           accentClassName="bg-[rgb(var(--warning)/0.12)]"
           title={t("analytics.meaningUnknown")}
           value={stats.unknownMeaning.toLocaleString()}
-          valueClassName="text-3xl font-bold text-stone-800 dark:text-stone-200"
+          valueClassName="text-3xl font-bold text-ink"
           onClick={() => handleStatClick("unknown")}
         />
         <AnalyticsStatCard
           accentClassName="bg-[rgb(var(--danger)/0.12)]"
           title={t("analytics.meaningUncertain")}
           value={stats.uncertainMeaning.toLocaleString()}
-          valueClassName="text-3xl font-bold text-stone-800 dark:text-stone-200"
+          valueClassName="text-3xl font-bold text-ink"
           onClick={() => handleStatClick("uncertain")}
         />
       </div>

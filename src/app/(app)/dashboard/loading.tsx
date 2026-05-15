@@ -1,15 +1,7 @@
 import { pageShellAccents } from "@/components/PageShell";
 import { RouteLoadingState } from "@/components/RouteLoadingState";
+import { SkeletonBlock as LoadingBlock } from "@/components/SkeletonBlock";
 import { SurfacePanel } from "@/components/SurfacePanel";
-
-function LoadingBlock({ className }: { className: string }) {
-  return (
-    <div
-      aria-hidden="true"
-      className={`animate-pulse rounded-lg bg-elevated ${className}`}
-    />
-  );
-}
 
 /**
  * Renders the loading skeleton for the private learner dashboard.

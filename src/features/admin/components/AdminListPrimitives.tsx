@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react";
 
 import { Badge } from "@/components/Badge";
 import { useLanguage } from "@/components/LanguageProvider";
-import { cx } from "@/lib/classes";
+import { adminFilterToggleClassName } from "@/features/admin/components/adminControlStyles";
 
 const adminListPrimitivesCopy = {
   en: {
@@ -36,12 +36,8 @@ export function AdminFilterToggle({
     <button
       type="button"
       onClick={onClick}
-      className={cx(
-        "cursor-pointer select-none rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-px active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
-        active
-          ? "border-accent/25 bg-accent-soft text-accent-strong shadow-sm dark:text-accent"
-          : "border-line bg-surface/70 text-muted hover:border-accent/40 hover:bg-elevated hover:text-ink",
-      )}
+      aria-pressed={active}
+      className={adminFilterToggleClassName({ active })}
     >
       {label}: {count.toLocaleString(language === "nl" ? "nl-BE" : "en-US")}
     </button>

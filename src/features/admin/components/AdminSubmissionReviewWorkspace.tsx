@@ -9,6 +9,7 @@ import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { surfacePanelClassName } from "@/components/SurfacePanel";
+import { adminReviewQueueItemClassName } from "@/features/admin/components/adminControlStyles";
 import { SubmissionReviewForm } from "@/features/submissions/components/SubmissionReviewForm";
 import { SubmissionStatusBadge } from "@/features/submissions/components/SubmissionStatusBadge";
 import type { AdminSubmission } from "@/features/submissions/types";
@@ -114,17 +115,7 @@ function AdminSubmissionQueueItem({
       type="button"
       onClick={onSelect}
       aria-pressed={active}
-      className={cx(
-        surfacePanelClassName({
-          rounded: "3xl",
-          variant: active ? "elevated" : "subtle",
-          className:
-            "w-full cursor-pointer select-none p-5 text-left transition-all duration-200 hover:-translate-y-px active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
-        }),
-        active
-          ? "border-accent/35 bg-accent-soft/75 shadow-panel dark:bg-accent-soft/25 dark:shadow-black/20"
-          : "hover:border-accent/40 hover:bg-surface dark:hover:bg-elevated",
-      )}
+      className={adminReviewQueueItemClassName({ active })}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">

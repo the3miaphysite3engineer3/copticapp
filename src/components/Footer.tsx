@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FaXTwitter, FaInstagram, FaGithub } from "react-icons/fa6";
 
+import { iconButtonClassName } from "@/components/Button";
 import {
   getContributorsPath,
   getDevelopersPath,
@@ -62,7 +63,7 @@ export function Footer() {
             href="https://x.com/kyrilloswannes"
             target="_blank"
             rel="noopener noreferrer"
-            className="icon-button"
+            className={iconButtonClassName()}
             title="X (Twitter)"
           >
             <span className="sr-only">X (Twitter)</span>
@@ -72,7 +73,7 @@ export function Footer() {
             href="https://www.instagram.com/kyrilloswannes/"
             target="_blank"
             rel="noopener noreferrer"
-            className="icon-button"
+            className={iconButtonClassName()}
             title="Instagram"
           >
             <span className="sr-only">Instagram</span>
@@ -82,7 +83,7 @@ export function Footer() {
             href="https://github.com/KyroHub"
             target="_blank"
             rel="noopener noreferrer"
-            className="icon-button"
+            className={iconButtonClassName()}
             title="GitHub"
           >
             <span className="sr-only">GitHub</span>

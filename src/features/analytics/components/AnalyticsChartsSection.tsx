@@ -97,19 +97,19 @@ export function AnalyticsChartsSection({
           title={
             <>
               {t("analytics.nounGenders")}{" "}
-              <span className="text-lg font-normal text-stone-500">
+              <span className="text-lg font-normal text-muted">
                 ({stats.totalNouns} {t("analytics.total")})
               </span>
             </>
           }
           footer={
-            <div className="mt-auto rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 shadow-sm dark:border-stone-800/50 dark:bg-stone-950/40">
+            <div className="mt-auto rounded-2xl border border-line bg-elevated/65 px-4 py-3 shadow-sm">
               <div className="mb-2 flex items-center justify-between text-sm text-[rgb(var(--accent-strong))]">
                 <span>{t("analytics.verbalNouns")}</span>
                 <span className="font-bold">{stats.verbalNouns}</span>
               </div>
-              <div className="my-2 h-px w-full bg-stone-300 dark:bg-stone-800" />
-              <div className="flex justify-between font-bold text-stone-700 dark:text-stone-300">
+              <div className="my-2 h-px w-full bg-line" />
+              <div className="flex justify-between font-bold text-ink">
                 <span>{t("analytics.totalMasculine")}</span>
                 <span>{stats.totalMasculine}</span>
               </div>
