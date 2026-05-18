@@ -70,9 +70,11 @@ Then review the generated files under `public/data/grammar/v1` and spot-check th
 
 ### Dictionary Changes
 
-The site currently serves the normalized checked-in dataset at `public/data/dictionary.json`. Runtime dictionary entries should use structured fields such as `dialects`, `senses`, `meanings.en`, `meanings.nl`, `greek`, `inflections`, and `root_id` rather than raw/source-only text fields.
+The site currently serves the normalized checked-in dataset at `public/data/dictionary.json`. Runtime dictionary entries should use structured fields such as `dialects`, `senses`, `meanings.en`, `meanings.nl`, `greekContext`, `inflections`, and `relations` rather than raw/source-only text fields.
 
-The historical XML source file is kept outside tracked runtime data under `backups/` when needed for local reference. Do not re-add it to `public/data` or rely on it from app code.
+Before editing dictionary JSON, read [docs/dictionary-json.md](./docs/dictionary-json.md) for the field conventions, variant patterns, imperative forms, notes, and validation workflow.
+
+Do not keep source dumps or one-off migration artifacts in `public/data` or runtime code. If a scholarly source file is needed for a future enrichment pass, keep it outside the tracked app tree and treat `public/data/dictionary.json` as the reviewed runtime source of truth.
 
 Grammar abbreviations and part-of-speech display rules live in `src/features/dictionary/grammarRegistry.ts`; update that registry and its tests when dictionary grammar labels change.
 

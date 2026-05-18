@@ -1888,7 +1888,11 @@
                     "type": "paragraph",
                     "content": [
                       { "type": "text", "text": "Note: " },
-                      { "type": "coptic", "text": "ⲡⲓ-" },
+                      {
+                        "type": "coptic",
+                        "text": "ⲡⲓ-",
+                        "dictionaryEntryId": "1223"
+                      },
                       { "type": "text", "text": " and " },
                       {
                         "type": "coptic",
@@ -2273,7 +2277,11 @@
                     "type": "paragraph",
                     "content": [
                       { "type": "text", "text": "Opmerking: " },
-                      { "type": "coptic", "text": "ⲡⲓ-" },
+                      {
+                        "type": "coptic",
+                        "text": "ⲡⲓ-",
+                        "dictionaryEntryId": "1223"
+                      },
                       { "type": "text", "text": " en " },
                       {
                         "type": "coptic",
@@ -3764,8 +3772,7 @@
                           "content": [
                             {
                               "type": "copticSpan",
-                              "children": [{ "type": "text", "text": "ⲡ̅ⲛ̅ⲁ̅" }],
-                              "dictionaryEntryId": "1117"
+                              "children": [{ "type": "text", "text": "ⲡ̅ⲛ̅ⲁ̅" }]
                             }
                           ]
                         }
@@ -4414,8 +4421,7 @@
                           "content": [
                             {
                               "type": "copticSpan",
-                              "children": [{ "type": "text", "text": "ⲡ̅ⲛ̅ⲁ̅" }],
-                              "dictionaryEntryId": "1117"
+                              "children": [{ "type": "text", "text": "ⲡ̅ⲛ̅ⲁ̅" }]
                             }
                           ]
                         }

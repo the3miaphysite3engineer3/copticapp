@@ -74,6 +74,10 @@ function getEtymologyFilterLabel(
       return t("analytics.filterEtymologyEgy" as TranslationKey);
     case "Gr":
       return t("analytics.filterEtymologyGr" as TranslationKey);
+    case "Lat":
+      return t("analytics.filterEtymologyLat" as TranslationKey);
+    case "Sem":
+      return t("analytics.filterEtymologySem" as TranslationKey);
     case "Unknown":
       return t("analytics.filterEtymologyUnknown" as TranslationKey);
   }

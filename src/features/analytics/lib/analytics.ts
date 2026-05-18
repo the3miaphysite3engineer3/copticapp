@@ -38,6 +38,8 @@ export const ETYMOLOGY_FILTERS: EtymologyFilter[] = [
   "ALL",
   "Egy",
   "Gr",
+  "Lat",
+  "Sem",
   "Unknown",
 ];
 
@@ -72,6 +74,8 @@ function createAnalyticsSnapshot(
 
   let egyEtymology = 0;
   let grEtymology = 0;
+  let latEtymology = 0;
+  let semEtymology = 0;
   let unknownEtymology = 0;
 
   let hasStative = 0;
@@ -100,6 +104,10 @@ function createAnalyticsSnapshot(
 
     if (entry.etym === "Gr") {
       grEtymology++;
+    } else if (entry.etym === "Lat") {
+      latEtymology++;
+    } else if (entry.etym === "Sem") {
+      semEtymology++;
     } else if (entry.etym === "Unknown") {
       unknownEtymology++;
     } else {
@@ -190,6 +198,8 @@ function createAnalyticsSnapshot(
     etymologyChartData: [
       { name: "analytics.egyEtymology", value: egyEtymology },
       { name: "analytics.grEtymology", value: grEtymology },
+      { name: "analytics.latEtymology", value: latEtymology },
+      { name: "analytics.semEtymology", value: semEtymology },
       { name: "analytics.unknownEtymology", value: unknownEtymology },
     ].filter((item) => item.value > 0),
     verbCompletenessData: [

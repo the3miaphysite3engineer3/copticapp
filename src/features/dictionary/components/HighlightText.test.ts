@@ -19,6 +19,29 @@ vi.mock("next/font/google", () => ({
 }));
 
 describe("HighlightText", () => {
+  it("renders Coptic form symbols with the Coptic font", () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(HighlightText, {
+        text: "ϭⲓ-/ϭⲓⲧ= ϭⲏⲟⲩ† ϭⲁⲓ~",
+        query: "",
+        symbolTooltips: {
+          "-": "Nominal state",
+          "=": "Pronominal state",
+          "†": "Stative form",
+          "~": "Construct participle",
+        },
+      }),
+    );
+
+    expect(markup).toContain('<span class="font-coptic">-</span>');
+    expect(markup).toContain('<span class="font-coptic">=</span>');
+    expect(markup).toContain(
+      '<sup class="align-super text-[0.65em] leading-none text-current font-coptic">†</sup>',
+    );
+    expect(markup).toContain(">~<");
+    expect(markup).not.toContain('<span class="font-coptic">~</span>');
+  });
+
   it("renders dictionary grammar abbreviations in lesson abbreviation style", () => {
     const markup = renderToStaticMarkup(
       React.createElement(HighlightText, {

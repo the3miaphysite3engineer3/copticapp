@@ -11,7 +11,8 @@ import {
 } from "@/features/dictionary/search";
 import type {
   DictionaryClientEntry,
-  DictionaryRootReference,
+  DictionaryEntryReference,
+  DictionaryRelationReference,
   LexicalEntry,
 } from "@/features/dictionary/types";
 import { assertServerOnly } from "@/lib/server/assertServerOnly.ts";
@@ -75,13 +76,27 @@ function getDictionaryLookupIndex(
   return lookupIndex;
 }
 
-export function toDictionaryRootReference(
+function toDictionaryEntryReference(
   entry: LexicalEntry,
-): DictionaryRootReference {
+): DictionaryEntryReference {
   return {
     dialects: entry.dialects,
     headword: entry.headword,
     id: entry.id,
+  };
+}
+
+function toDictionaryRelationReference(
+  relation: NonNullable<LexicalEntry["relations"]>[number],
+  entryLookup?: ReadonlyMap<number, LexicalEntry>,
+): DictionaryRelationReference {
+  const targetEntry = entryLookup?.get(relation.targetId);
+
+  return {
+    ...relation,
+    ...(targetEntry
+      ? { targetEntry: toDictionaryEntryReference(targetEntry) }
+      : {}),
   };
 }
 
@@ -91,7 +106,7 @@ export function toDictionaryRootReference(
  */
 export function toDictionaryClientEntry(
   entry: LexicalEntry,
-  rootEntries?: ReadonlyMap<number, LexicalEntry>,
+  entryLookup?: ReadonlyMap<number, LexicalEntry>,
 ): DictionaryClientEntry {
   const clientEntry: DictionaryClientEntry = {
     dialects: entry.dialects,
@@ -101,23 +116,14 @@ export function toDictionaryClientEntry(
     headword: entry.headword,
     id: entry.id,
     inflections: entry.inflections,
+    relations: entry.relations?.map((relation) =>
+      toDictionaryRelationReference(relation, entryLookup),
+    ),
     senses: entry.senses,
   };
 
-  if (entry.root_id !== undefined) {
-    clientEntry.root_id = entry.root_id;
-
-    const rootEntry = rootEntries?.get(entry.root_id);
-
-    if (rootEntry) {
-      clientEntry.rootEntry = toDictionaryRootReference(rootEntry);
-    }
-  }
-
-  const greek = entry.greek ?? [];
-
-  if (greek.length > 0) {
-    clientEntry.greek = greek;
+  if (entry.greekContext !== undefined) {
+    clientEntry.greekContext = entry.greekContext;
   }
 
   return clientEntry;

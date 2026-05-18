@@ -27,7 +27,6 @@ function createEntry(overrides: TestEntryOverrides): LexicalEntry {
     headword,
     dialects: {},
     etym: "Egy",
-    greek: [],
     ...rest,
     senses,
   };

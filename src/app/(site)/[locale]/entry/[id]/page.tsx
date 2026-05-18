@@ -6,7 +6,7 @@ import EntryPageClient from "@/features/dictionary/components/EntryPageClient";
 import EntryPageHeader from "@/features/dictionary/components/EntryPageHeader";
 import {
   getDictionaryEntryById,
-  toDictionaryRootReference,
+  toDictionaryClientEntry,
 } from "@/features/dictionary/lib/dictionary";
 import { buildEntryOpenGraphImageUrl } from "@/features/dictionary/lib/entryOpenGraph";
 import { buildEntryPreview } from "@/features/dictionary/lib/entryPreview";
@@ -109,15 +109,16 @@ export default async function EntryPage({
   });
   const headword = preview.heading;
   const description = preview.description;
-  const rootEntry = entry.root_id
-    ? getDictionaryEntryById(entry.root_id)
-    : null;
-  const displayEntry = rootEntry
-    ? {
-        ...entry,
-        rootEntry: toDictionaryRootReference(rootEntry),
-      }
-    : entry;
+  const relationTargetEntries =
+    entry.relations?.flatMap((relation) => {
+      const targetEntry = getDictionaryEntryById(relation.targetId);
+
+      return targetEntry ? ([[targetEntry.id, targetEntry]] as const) : [];
+    }) ?? [];
+  const displayEntry = toDictionaryClientEntry(
+    entry,
+    new Map(relationTargetEntries),
+  );
   const relatedGrammarLessons = listPublishedGrammarLessonsForEntry(
     String(entry.id),
   );

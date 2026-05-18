@@ -1,5 +1,8 @@
 import type {
+  DictionaryComplementizerGovernment,
+  DictionaryConstructionGovernment,
   DictionaryDialectCode,
+  DictionaryPrepGovernment,
   DictionarySenseCode,
   PartOfSpeech,
 } from "@/features/dictionary/config";
@@ -9,8 +12,13 @@ import type {
  * and entry UI.
  */
 export type LexicalGender = "" | "BOTH" | "F" | "M";
-export type DictionaryEtymology = "Egy" | "Gr" | "Unknown";
+export type DictionaryEtymology = "Egy" | "Gr" | "Lat" | "Sem" | "Unknown";
 export type DictionaryGenderedMeaningMarker = "f" | "m" | "pl";
+export type DictionaryRelationType =
+  | "CAUS_OF"
+  | "COMPOUND_WITH"
+  | "DERIVED_FROM"
+  | "SEE_ALSO";
 type DictionaryInflectedFormKind =
   | "dual"
   | "feminine"
@@ -18,13 +26,14 @@ type DictionaryInflectedFormKind =
   | "masculine"
   | "plural";
 type DictionaryInflectedFormRole = "absolute" | "nominal" | "pronominal";
+type DictionaryInflectedFormValue = string | DictionaryInflectedFormDetails;
 type DictionarySenseGrammarAffix = "PFX" | "SFX";
 type DictionarySenseGrammarCaseRole = "DAT" | "OBJ";
 type DictionarySenseGrammarDerivation = "CAUS";
 type DictionarySenseGrammarForm = "ABS" | "PC" | "STA" | "VBAL";
 export type DictionarySenseGrammarGender = Exclude<LexicalGender, "">;
 type DictionarySenseGrammarMood = "IMP";
-type DictionarySenseGrammarNumber = "PL" | "SG";
+export type DictionarySenseGrammarNumber = "PL" | "SG";
 export type DictionarySenseGrammarPartOfSpeech = PartOfSpeech | "PRON";
 type DictionarySenseGrammarPolarity = "NEG";
 type DictionarySenseGrammarValency = "INTR" | "TR";
@@ -37,24 +46,30 @@ type DictionarySenseGrammarVoice = "REFL";
 export interface DictionaryInflectedFormDetails {
   form: string;
   entryId?: number;
+  gender?: DictionarySenseGrammarGender;
   notes?: string[];
+  number?: DictionarySenseGrammarNumber;
   uncertain?: boolean;
 }
+
+type DictionaryInflectedFormRoleMap = Partial<
+  Record<
+    DictionaryInflectedFormRole | "default",
+    DictionaryInflectedFormValue[]
+  >
+> & {
+  variants?: Partial<
+    Record<
+      DictionaryInflectedFormRole | "default",
+      DictionaryInflectedFormValue[]
+    >
+  >;
+};
 
 export type DictionaryInflections = Partial<
   Record<
     DictionaryInflectedFormKind,
-    Partial<
-      Record<
-        DictionaryDialectCode,
-        Partial<
-          Record<
-            DictionaryInflectedFormRole | "default",
-            (string | DictionaryInflectedFormDetails)[]
-          >
-        >
-      >
-    >
+    Partial<Record<DictionaryDialectCode, DictionaryInflectedFormRoleMap>>
   >
 >;
 
@@ -82,6 +97,8 @@ export type DictionaryDialectFormsMap = Partial<
 export interface DictionarySenseGrammar {
   affix?: DictionarySenseGrammarAffix;
   caseRole?: DictionarySenseGrammarCaseRole;
+  complementizerGovernment?: DictionaryComplementizerGovernment[];
+  constructionGovernment?: DictionaryConstructionGovernment[];
   derivation?: DictionarySenseGrammarDerivation;
   form?: DictionarySenseGrammarForm;
   gender?: DictionarySenseGrammarGender;
@@ -89,12 +106,14 @@ export interface DictionarySenseGrammar {
   number?: DictionarySenseGrammarNumber;
   polarity?: DictionarySenseGrammarPolarity;
   pos: DictionarySenseGrammarPartOfSpeech;
+  prepGovernment?: DictionaryPrepGovernment[];
   tags?: DictionarySenseCode[];
   valency?: DictionarySenseGrammarValency;
   voice?: DictionarySenseGrammarVoice;
 }
 
 export interface DictionarySense {
+  dialects?: DictionaryDialectCode[];
   meanings?: {
     en?: string[];
     nl?: string[];
@@ -132,24 +151,42 @@ export interface DictionaryDialectMeaning {
   };
 }
 
+export interface DictionaryRelation {
+  type: DictionaryRelationType;
+  targetId: number;
+  notes?: {
+    en?: string[];
+    nl?: string[];
+  };
+}
+
+export type DictionaryRelationReference = DictionaryRelation & {
+  targetEntry?: DictionaryEntryReference;
+};
+
+export interface DictionaryGreekContext {
+  sources?: string[];
+  equivalents?: string[];
+}
+
 /**
  * Represents one normalized dictionary entry as consumed by the app and the
  * generated public JSON snapshot.
  */
 export interface LexicalEntry {
   id: number;
-  root_id?: number;
   headword: string;
   dialects: DictionaryDialectFormsMap;
   senses: DictionarySenses;
   genderedMeanings?: DictionaryGenderedMeaning[];
   dialectMeanings?: DictionaryDialectMeaning[];
-  greek?: string[];
+  greekContext?: DictionaryGreekContext;
   etym: DictionaryEtymology;
   inflections?: DictionaryInflections;
+  relations?: DictionaryRelation[];
 }
 
-export type DictionaryRootReference = Pick<
+export type DictionaryEntryReference = Pick<
   LexicalEntry,
   "dialects" | "headword" | "id"
 >;
@@ -164,12 +201,11 @@ export type DictionaryClientEntry = Pick<
   | "dialectMeanings"
   | "etym"
   | "genderedMeanings"
+  | "greekContext"
   | "headword"
   | "id"
   | "inflections"
-  | "root_id"
   | "senses"
 > & {
-  rootEntry?: DictionaryRootReference;
-  greek?: string[];
+  relations?: DictionaryRelationReference[];
 };

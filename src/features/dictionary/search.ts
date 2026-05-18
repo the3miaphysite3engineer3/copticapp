@@ -21,6 +21,13 @@ interface PreparedLexicalEntry {
   normalizedInflectedForms: string;
 }
 
+function getGreekContextSearchValues(entry: DictionaryClientEntry): string[] {
+  return [
+    ...(entry.greekContext?.sources ?? []),
+    ...(entry.greekContext?.equivalents ?? []),
+  ];
+}
+
 export interface DictionarySearchPageOptions {
   exactMatch?: boolean;
   limit?: number;
@@ -73,6 +80,16 @@ function getSearchableInflectedFormText(
   }
 
   const texts: string[] = [];
+  const addForms = (forms: unknown) => {
+    if (!Array.isArray(forms)) {
+      return;
+    }
+
+    for (const form of forms) {
+      texts.push(typeof form === "string" ? form : form.form);
+    }
+  };
+
   for (const dialects of Object.values(entry.inflections)) {
     if (!dialects) {
       continue;
@@ -83,13 +100,18 @@ function getSearchableInflectedFormText(
         continue;
       }
 
-      for (const forms of Object.values(roles)) {
-        if (!forms) {
-          continue;
-        }
-
-        for (const form of forms) {
-          texts.push(typeof form === "string" ? form : form.form);
+      for (const [role, forms] of Object.entries(roles)) {
+        if (
+          role === "variants" &&
+          forms &&
+          typeof forms === "object" &&
+          !Array.isArray(forms)
+        ) {
+          for (const variantForms of Object.values(forms)) {
+            addForms(variantForms);
+          }
+        } else {
+          addForms(forms);
         }
       }
     }
@@ -115,7 +137,9 @@ export function prepareDictionaryForSearch(
       dutchSearchText: [...getLocalizedMeaningValues(entry, "nl")]
         .join(" ")
         .toLowerCase(),
-      greekSearchText: (entry.greek ?? []).join(" ").toLowerCase(),
+      greekSearchText: getGreekContextSearchValues(entry)
+        .join(" ")
+        .toLowerCase(),
       index,
       normalizedHeadword: normalizeCopticSearchText(entry.headword),
       normalizedDialectForms: normalizeCopticSearchText(dialectForms),

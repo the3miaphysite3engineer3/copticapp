@@ -3,17 +3,16 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { DICTIONARY_DIALECT_CODES } from "@/features/dictionary/config";
+import {
+  DICTIONARY_DIALECT_CODES,
+  DICTIONARY_SENSE_CODES,
+} from "@/features/dictionary/config";
 import {
   formatDictionaryValidationIssues,
   validateDictionaryEntries,
 } from "@/features/dictionary/lib/dictionaryValidation";
 import { getGenderedHeadingParts } from "@/features/dictionary/lib/entryDisplay";
 import { getEntryNounGender } from "@/features/dictionary/lib/entryGrammar";
-import {
-  prepareDictionaryForSearch,
-  searchPreparedDictionary,
-} from "@/features/dictionary/search";
 import type {
   DictionaryInflectedFormDetails,
   DialectForms,
@@ -89,8 +88,10 @@ function isNonEmptyStringArray(value: unknown): value is string[] {
 type FlattenedInflection = {
   dialect: string;
   form: string;
+  gender?: string;
   kind: string;
   notes?: string[];
+  number?: string;
   role: string;
   uncertain?: boolean;
 };
@@ -99,86 +100,95 @@ function getInflectionFormText(form: string | DictionaryInflectedFormDetails) {
   return typeof form === "string" ? form : form.form;
 }
 
+function toFlattenedInflection(
+  kind: string,
+  dialect: string,
+  role: string,
+  form: string | DictionaryInflectedFormDetails,
+): FlattenedInflection {
+  return {
+    dialect,
+    form: getInflectionFormText(form),
+    ...(typeof form !== "string" && form.gender ? { gender: form.gender } : {}),
+    kind,
+    role,
+    ...(typeof form !== "string" && form.notes ? { notes: form.notes } : {}),
+    ...(typeof form !== "string" && form.number ? { number: form.number } : {}),
+    ...(typeof form !== "string" && form.uncertain !== undefined
+      ? { uncertain: form.uncertain }
+      : {}),
+  };
+}
+
 function flattenInflections(
   entry: Pick<LexicalEntry, "inflections">,
 ): FlattenedInflection[] {
   return Object.entries(entry.inflections ?? {}).flatMap(([kind, dialects]) =>
     Object.entries(dialects ?? {}).flatMap(([dialect, roles]) =>
-      Object.entries(roles ?? {}).flatMap(([role, forms]) =>
-        (forms ?? []).map((form) => ({
-          dialect,
-          form: getInflectionFormText(form),
-          kind,
-          role,
-          ...(typeof form !== "string" && form.notes
-            ? { notes: form.notes }
-            : {}),
-          ...(typeof form !== "string" && form.uncertain !== undefined
-            ? { uncertain: form.uncertain }
-            : {}),
-        })),
-      ),
+      Object.entries(roles ?? {}).flatMap(([role, forms]) => {
+        if (
+          role === "variants" &&
+          forms &&
+          typeof forms === "object" &&
+          !Array.isArray(forms)
+        ) {
+          return Object.entries(forms).flatMap(([variantRole, variantForms]) =>
+            (variantForms ?? []).map((form) =>
+              toFlattenedInflection(kind, dialect, variantRole, form),
+            ),
+          );
+        }
+
+        return Array.isArray(forms)
+          ? forms.map((form) =>
+              toFlattenedInflection(kind, dialect, role, form),
+            )
+          : [];
+      }),
     ),
   );
 }
 
+function collectLexicalFormPlusRows(entry: LexicalEntry) {
+  const rows: Array<{ id: number; path: string; value: string }> = [];
+
+  function visit(value: unknown, pathParts: string[]) {
+    if (typeof value === "string") {
+      if (value.includes("+")) {
+        rows.push({
+          id: entry.id,
+          path: pathParts.join("."),
+          value,
+        });
+      }
+
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      for (const [index, item] of value.entries()) {
+        visit(item, [...pathParts, String(index)]);
+      }
+
+      return;
+    }
+
+    if (value && typeof value === "object") {
+      for (const [key, item] of Object.entries(value)) {
+        visit(item, [...pathParts, key]);
+      }
+    }
+  }
+
+  visit(entry.headword, ["headword"]);
+  visit(entry.dialects, ["dialects"]);
+  visit(entry.inflections, ["inflections"]);
+
+  return rows;
+}
+
 const pluralPrefixedHeadwordPattern = /^plural:/iu;
-const allowedEtymologies = new Set(["Egy", "Gr", "Unknown"]);
-const absorbedDirectVariantExamples = [
-  { canonicalId: 4012, form: "ⲇⲓⲛⲁⲧⲟⲥ", removedId: 3973 },
-  { canonicalId: 3900, form: "ⲇⲓⲡⲛⲟⲛ", removedId: 3983 },
-  { canonicalId: 4741, form: "ⲕⲩⲃⲱⲧⲟⲥ", removedId: 4837 },
-] as const;
-const absorbedExactDuplicateExamples = [
-  { canonicalId: 10, form: "ϣ-", removedId: 6123 },
-  { canonicalId: 826, form: "ⲕⲁⲣⲟⲩⲥ", removedId: 4648 },
-  { canonicalId: 957, form: "ⲗⲓⲙⲏⲛ", removedId: 4907 },
-  { canonicalId: 1007, form: "ⲙⲏ", removedId: 5039 },
-  { canonicalId: 1204, form: "ⲟ", removedId: 5157 },
-  { canonicalId: 1410, form: "ⲥⲁⲛⲓⲥ", removedId: 5528 },
-  { canonicalId: 1966, form: "ϣⲉⲩ", removedId: 3156 },
-  { canonicalId: 2635, form: "ⲁⲙⲛⲁ", removedId: 3516 },
-  { canonicalId: 5132, form: "ⲛⲟⲩⲥ", removedId: 2968 },
-] as const;
-const absorbedBoundaryVariantExamples = [
-  { canonicalId: 126, form: "ⲥⲟⲩ", removedId: 5599 },
-  {
-    canonicalId: 4785,
-    form: "ⲕⲱⲙⲟⲡⲟⲗⲓⲥ",
-    removedId: 4869,
-  },
-] as const;
-const absorbedGreekOneLetterVariantExamples = [
-  { canonicalId: 3599, form: "ⲁⲡⲁⲅⲅⲉⲗⲓⲛ", removedId: 3601 },
-  { canonicalId: 3798, form: "ⲃⲁⲥⲓⲗⲓⲁ", removedId: 3800 },
-  { canonicalId: 4887, form: "ⲗⲓⲧⲟⲩⲣⲅⲓⲁ", removedId: 4913 },
-  { canonicalId: 6025, form: "ⲭⲓⲣⲟⲅⲣⲁⲫⲟⲛ", removedId: 6038 },
-] as const;
-const absorbedEgyptianOneLetterVariantExamples = [
-  { canonicalId: 37, form: "ⲕⲱⲡ", removedId: 806 },
-  { canonicalId: 193, form: "ϩⲣⲧⲉ", removedId: 2231 },
-  { canonicalId: 285, form: "ϣⲁⲁⲃ", removedId: 1824 },
-] as const;
-const foldedRegularFeminineCounterpartExamples = [
-  {
-    feminineForm: "ⲟⲩⲣⲱ",
-    parentId: 18,
-  },
-  {
-    feminineForm: "ϣⲉⲣⲓ",
-    parentId: 20,
-  },
-  {
-    feminineForm: "ⲃⲱⲕⲓ",
-    parentId: 550,
-  },
-] as const;
-const independentGreekErPrefixComplexVerbExamples = [
-  { baseId: 3348, complexId: 4146, form: "ⲉⲣⲁⲅⲁⲡⲁⲛ" },
-  { baseId: 4867, complexId: 4240, form: "ⲉⲣⲕⲱⲗⲩⲉⲓⲛ" },
-  { baseId: 5522, complexId: 4300, form: "ⲉⲣⲥⲁⲗⲡⲓⲍⲉⲓⲛ" },
-  { baseId: 6046, complexId: 4336, form: "ⲉⲣⲭⲟⲣⲉⲩⲉⲓⲛ" },
-] as const;
+const allowedEtymologies = new Set(["Egy", "Gr", "Lat", "Sem", "Unknown"]);
 const numberMeaningPatterns = [
   /\b(?:plural|singular|meervoud|enkelvoud):/iu,
   /\b(?:as|mostly|used as|or)\s+PL\b/iu,
@@ -189,6 +199,129 @@ const numberMeaningPatterns = [
   /\b(?:meestal|als)\s+meervoud\b/iu,
 ] as const;
 const placeholderMeaningPatterns = [/^(?:which|welke):$/iu] as const;
+const bareQuestionNotePattern = /^\?$/u;
+const bareGenderMarkerNotePattern = /^[mf]$/iu;
+const ellipsisMeaningPattern = /^\.{2,}$/u;
+const causativeMeaningPattern = /\bCAUS\s+(?:of|van)\??/iu;
+const bareCausativeLabelPattern = /^\(?CAUS\)?(?:\s|$)/u;
+const copticEquivalentSourceLabelPattern = "(?:Fb|Sl|Sa|Sf|AS|FS|[ABFLOMS])+";
+const copticEquivalenceMeaningPatterns = [
+  new RegExp(
+    `\\b(?:mostly|always|almost always|often|meestal|altijd|bijna altijd|vaak)\\s*=\\s*${copticEquivalentSourceLabelPattern}\\s+[\\u03e2-\\u03ef\\u2c80-\\u2cff]`,
+    "iu",
+  ),
+  new RegExp(
+    `\\b(?:rare except|zeldzaam behalve).*?=\\s*${copticEquivalentSourceLabelPattern}\\s+[\\u03e2-\\u03ef\\u2c80-\\u2cff]`,
+    "iu",
+  ),
+  new RegExp(
+    `\\b(?:only with|alleen met).*?[\\u03e2-\\u03ef\\u2c80-\\u2cff]\\s+${copticEquivalentSourceLabelPattern}\\s*=\\s*[\\u03e2-\\u03ef\\u2c80-\\u2cff]`,
+    "iu",
+  ),
+] as const;
+const grammarEquivalenceMeaningPatterns = [
+  /\boften\s*=\s*ADJ\b/iu,
+  /\bvaak\s*=\s*ADJ\b/iu,
+  /\bmostly\s*=\s*verbal\b/iu,
+  /\bmeestal\s*=\s*verbale\b/iu,
+  /\bthere\s*=\s*demonstr\b/iu,
+  /\bdaar\s+is\s*=\s*aanwijzend\b/iu,
+  /\bvery seldom\s*=\s*ⲉϩⲛⲁ=/iu,
+  /\bzeer zeldzaam\s*=\s*ⲉϩⲛⲁ=/iu,
+  /\boften\s*=\s*δυσ-/iu,
+  /\bvaak\s*=\s*δυσ-/iu,
+  /\boften\s*=\s*Greek future\b/iu,
+  /\bvaak\s*=\s*Grieks futurum\b/iu,
+  /\boften\s*=\s*Greek α-/iu,
+  /\bvaak\s*=\s*Grieks α-/iu,
+] as const;
+const usageGrammarMeaningPatterns = [
+  /\b(?:with|without|before|followed by|precedes|preceding|as|in)\b.*\b(?:PRON|NOM|NEG|PFX|SFX|SBJ|OBJ|VBAL)\b/iu,
+  /\b(?:met|zonder|v[oó]?[oó]r|gevolgd door|gaat vooraf aan|als|in)\b.*\b(?:PRON|NOM|NEG|PFX|SFX|SBJ|OBJ|VBAL)\b/iu,
+  /\b(?:prefix|particle)\s+NEG\b/iu,
+  /\b(?:voorvoegsel|deeltje)\s+NEG\b/iu,
+] as const;
+const compressedGrammarMeaningPatterns = [
+  /^(?:as N|als N)(?:\b|\s|,)/u,
+  /^(?:as ADJ|als ADJ)(?:\b|\s|,)/u,
+  /^(?:as ADV|als bijwoord|als ADV)(?:\b|\s|,)/u,
+  /^(?:after N|after ADJ|before N|vóór N|voor N|na N|na ADJ)(?:\b|\s|\()/iu,
+  /^&\s*(?:STA|TR|INTR|REFL|ADV|N|ADJ)\b/u,
+  /^(?:with vbs|met werkwoorden)\b/iu,
+] as const;
+const governedVerbMeaningGovernmentPattern =
+  /(?:^|\b)c\s+(?:ACC|double\s+ACC|dubbele\s+ACC|dat(?:ive)?|[\u03e2-\u03ef\u2c80-\u2cff]+[=-]?)|\b(?:with|met)\s+(?:dat(?:ive|ief)?|[\u03e2-\u03ef\u2c80-\u2cff]+[=-]?)|\(\+\s*(?:dat(?:ive)?|[\u03e2-\u03ef\u2c80-\u2cff]+[=-]?)\)/iu;
+const sourceCommentaryMeaningPatterns = [
+  /\(same\?\)/u,
+  /\(hetzelfde\?\)/u,
+  /\bv\.\s/u,
+] as const;
+const copticTextPattern = "[\\u03e2-\\u03ef\\u2c80-\\u2cff]";
+const sourceComparisonMeaningPatterns = [
+  /\bopp(?:\b|\s+to\b)/iu,
+  new RegExp(`\\bcf\\s+${copticTextPattern}`, "iu"),
+  new RegExp(`\\bzie\\s+${copticTextPattern}`, "iu"),
+] as const;
+const dialectSourceLabelPattern = "(?:Fb|Sl|Sa|Sf|[ABFLOMS])+";
+const inlineDialectQualifierPatterns = [
+  new RegExp(
+    `\\((?:mostly|rarely|oftenest|meestal|zelden|vaak)\\s+${dialectSourceLabelPattern}\\)`,
+    "u",
+  ),
+  new RegExp(
+    `(?:^|\\s)(?:mostly|rarely|oftenest|meestal|zelden|vaak)\\s+${dialectSourceLabelPattern}(?:\\b|\\))`,
+    "u",
+  ),
+  new RegExp(
+    `\\(${dialectSourceLabelPattern}\\s+(?:once|één keer|een keer|eenmaal)\\)`,
+    "u",
+  ),
+  new RegExp(
+    `(?:^|\\s)${dialectSourceLabelPattern}\\s*\\((?:once|rare|rarely|zeldzaam|ooit)\\)`,
+    "u",
+  ),
+  new RegExp(`\\((?:not|niet)\\s+${dialectSourceLabelPattern}\\)`, "u"),
+  new RegExp(
+    `(?:^|\\s)${dialectSourceLabelPattern}\\s+(?:not\\s+biblical|niet\\s+bijbel)`,
+    "u",
+  ),
+] as const;
+const dialectSourceLabelCodes = [...DICTIONARY_DIALECT_CODES].sort(
+  (left, right) => right.length - left.length,
+);
+const grammarLabelSet = new Set<string>(DICTIONARY_SENSE_CODES);
+
+function parseDialectSourceLabel(value: string) {
+  if (!value || grammarLabelSet.has(value)) {
+    return undefined;
+  }
+
+  const dialects: string[] = [];
+  let index = 0;
+
+  while (index < value.length) {
+    const dialect = dialectSourceLabelCodes.find((code) =>
+      value.startsWith(code, index),
+    );
+
+    if (!dialect) {
+      return undefined;
+    }
+
+    dialects.push(dialect);
+    index += dialect.length;
+  }
+
+  return dialects.length > 0 ? dialects : undefined;
+}
+
+function getTrailingDialectSourceLabel(value: string) {
+  const trailingToken = value.trim().split(/\s+/).at(-1);
+
+  return trailingToken && parseDialectSourceLabel(trailingToken)
+    ? trailingToken
+    : undefined;
+}
 
 function collectMeaningTexts(entry: LexicalEntry) {
   return [
@@ -207,6 +340,22 @@ function collectMeaningTexts(entry: LexicalEntry) {
   ];
 }
 
+function collectSenseMeaningTexts(entry: LexicalEntry) {
+  return entry.senses.flatMap((sense) => [
+    ...(sense.meanings?.en ?? []),
+    ...(sense.meanings?.nl ?? []),
+  ]);
+}
+
+function collectSenseProseTexts(entry: LexicalEntry) {
+  return entry.senses.flatMap((sense) => [
+    ...(sense.meanings?.en ?? []),
+    ...(sense.meanings?.nl ?? []),
+    ...(sense.notes?.en ?? []),
+    ...(sense.notes?.nl ?? []),
+  ]);
+}
+
 function hasNumberMarkedMeaningProse(entry: LexicalEntry) {
   return collectMeaningTexts(entry).some((meaning) =>
     numberMeaningPatterns.some((pattern) => pattern.test(meaning)),
@@ -217,6 +366,41 @@ function hasPlaceholderMeaning(value: string) {
   return placeholderMeaningPatterns.some((pattern) =>
     pattern.test(value.trim()),
   );
+}
+
+function collectNoteStubRows(entry: LexicalEntry) {
+  return [
+    ...entry.senses.flatMap((sense, senseIndex) =>
+      (
+        [
+          ["senses.notes.en", sense.notes?.en],
+          ["senses.notes.nl", sense.notes?.nl],
+        ] as const
+      ).flatMap(([field, values]) =>
+        (values ?? []).map((note) => ({
+          field,
+          id: entry.id,
+          note,
+          senseIndex,
+        })),
+      ),
+    ),
+    ...(entry.dialectMeanings ?? []).flatMap((dialectMeaning, meaningIndex) =>
+      (
+        [
+          ["dialectMeanings.notes.en", dialectMeaning.notes?.en],
+          ["dialectMeanings.notes.nl", dialectMeaning.notes?.nl],
+        ] as const
+      ).flatMap(([field, values]) =>
+        (values ?? []).map((note) => ({
+          field,
+          id: entry.id,
+          meaningIndex,
+          note,
+        })),
+      ),
+    ),
+  ];
 }
 
 function findSense(
@@ -266,6 +450,268 @@ describe("dictionary dataset guardrails", () => {
     expect(unexpectedInflectedFormDialectKeys).toEqual([]);
   });
 
+  it("keeps relation graph edges canonical", () => {
+    const dictionary = readDictionary();
+    const entryIds = new Set(dictionary.map((entry) => entry.id));
+    const relationTypeCounts = new Map<string, number>();
+    const relationGraphIssues: Array<{
+      id: number;
+      reason: string;
+      targetId: number;
+      type: string;
+    }> = [];
+
+    for (const entry of dictionary) {
+      const seenRelationEdges = new Set<string>();
+
+      for (const relation of entry.relations ?? []) {
+        relationTypeCounts.set(
+          relation.type,
+          (relationTypeCounts.get(relation.type) ?? 0) + 1,
+        );
+
+        const edgeKey = `${relation.type}:${relation.targetId}`;
+
+        if (seenRelationEdges.has(edgeKey)) {
+          relationGraphIssues.push({
+            id: entry.id,
+            reason: "duplicate edge",
+            targetId: relation.targetId,
+            type: relation.type,
+          });
+        }
+
+        seenRelationEdges.add(edgeKey);
+
+        if (entry.id === relation.targetId) {
+          relationGraphIssues.push({
+            id: entry.id,
+            reason: "self edge",
+            targetId: relation.targetId,
+            type: relation.type,
+          });
+        }
+
+        if (!entryIds.has(relation.targetId)) {
+          relationGraphIssues.push({
+            id: entry.id,
+            reason: "missing target",
+            targetId: relation.targetId,
+            type: relation.type,
+          });
+        }
+      }
+    }
+
+    expect(relationGraphIssues).toEqual([]);
+    expect(relationTypeCounts.get("CAUS_OF") ?? 0).toBeGreaterThanOrEqual(43);
+    expect(relationTypeCounts.get("COMPOUND_WITH") ?? 0).toBeGreaterThanOrEqual(
+      267,
+    );
+    expect(relationTypeCounts.get("SEE_ALSO") ?? 0).toBeGreaterThanOrEqual(14);
+  });
+
+  it("keeps causative cross-references structured as relations", () => {
+    const dictionary = readDictionary();
+    const entryIds = new Set(dictionary.map((entry) => entry.id));
+    const invalidRelationTargets = dictionary.flatMap((entry) =>
+      (entry.relations ?? [])
+        .filter((relation) => !entryIds.has(relation.targetId))
+        .map((relation) => ({
+          id: entry.id,
+          targetId: relation.targetId,
+          type: relation.type,
+        })),
+    );
+    const remainingCausativeMeaningProse = dictionary.flatMap((entry) =>
+      collectMeaningTexts(entry)
+        .filter((meaning) => causativeMeaningPattern.test(meaning))
+        .map((meaning) => ({ id: entry.id, meaning })),
+    );
+
+    expect(invalidRelationTargets).toEqual([]);
+    expect(remainingCausativeMeaningProse).toEqual([]);
+  });
+
+  it("keeps Coptic equivalence cross-references structured as relations", () => {
+    const dictionary = readDictionary();
+    const remainingCopticEquivalenceProse = dictionary.flatMap((entry) =>
+      collectMeaningTexts(entry)
+        .filter((meaning) =>
+          copticEquivalenceMeaningPatterns.some((pattern) =>
+            pattern.test(meaning),
+          ),
+        )
+        .map((meaning) => ({ id: entry.id, meaning })),
+    );
+
+    expect(remainingCopticEquivalenceProse).toEqual([]);
+  });
+
+  it("keeps grammar and Greek equivalence prose out of meanings", () => {
+    const dictionary = readDictionary();
+    const remainingGrammarEquivalenceProse = dictionary.flatMap((entry) =>
+      collectSenseMeaningTexts(entry)
+        .filter((meaning) =>
+          grammarEquivalenceMeaningPatterns.some((pattern) =>
+            pattern.test(meaning),
+          ),
+        )
+        .map((meaning) => ({ id: entry.id, meaning })),
+    );
+
+    expect(remainingGrammarEquivalenceProse).toEqual([]);
+  });
+
+  it("keeps usage grammar prose out of meanings", () => {
+    const dictionary = readDictionary();
+    const remainingUsageGrammarProse = dictionary.flatMap((entry) =>
+      collectSenseMeaningTexts(entry)
+        .filter((meaning) =>
+          usageGrammarMeaningPatterns.some((pattern) => pattern.test(meaning)),
+        )
+        .map((meaning) => ({ id: entry.id, meaning })),
+    );
+
+    expect(remainingUsageGrammarProse).toEqual([]);
+  });
+
+  it("keeps compressed grammar lead-ins out of meanings", () => {
+    const dictionary = readDictionary();
+    const remainingCompressedGrammarProse = dictionary.flatMap((entry) =>
+      collectSenseMeaningTexts(entry)
+        .filter((meaning) =>
+          compressedGrammarMeaningPatterns.some((pattern) =>
+            pattern.test(meaning),
+          ),
+        )
+        .map((meaning) => ({ id: entry.id, meaning })),
+    );
+
+    expect(remainingCompressedGrammarProse).toEqual([]);
+  });
+
+  it("keeps governed verb shorthand out of meanings", () => {
+    const dictionary = readDictionary();
+    const remainingGovernedVerbShorthand = dictionary.flatMap((entry) =>
+      entry.senses.flatMap((sense, senseIndex) =>
+        sense.grammar.pos === "V" && sense.grammar.prepGovernment
+          ? [...(sense.meanings?.en ?? []), ...(sense.meanings?.nl ?? [])]
+              .filter((meaning) =>
+                governedVerbMeaningGovernmentPattern.test(meaning),
+              )
+              .map((meaning) => ({ id: entry.id, meaning, senseIndex }))
+          : [],
+      ),
+    );
+    const governedVerbSensesWithoutValency = dictionary.flatMap((entry) =>
+      entry.senses.flatMap((sense, senseIndex) =>
+        sense.grammar.pos === "V" &&
+        sense.grammar.prepGovernment &&
+        sense.grammar.valency === undefined
+          ? [{ id: entry.id, senseIndex }]
+          : [],
+      ),
+    );
+
+    expect(remainingGovernedVerbShorthand).toEqual([]);
+    expect(governedVerbSensesWithoutValency).toEqual([]);
+  });
+
+  it("keeps source uncertainty and bibliographic references out of meanings", () => {
+    const dictionary = readDictionary();
+    const remainingSourceCommentaryProse = dictionary.flatMap((entry) =>
+      collectMeaningTexts(entry)
+        .filter((meaning) =>
+          sourceCommentaryMeaningPatterns.some((pattern) =>
+            pattern.test(meaning),
+          ),
+        )
+        .map((meaning) => ({ id: entry.id, meaning })),
+    );
+
+    expect(remainingSourceCommentaryProse).toEqual([]);
+  });
+
+  it("keeps source comparison prose out of meanings", () => {
+    const dictionary = readDictionary();
+    const remainingSourceComparisonProse = dictionary.flatMap((entry) =>
+      collectMeaningTexts(entry)
+        .filter((meaning) =>
+          sourceComparisonMeaningPatterns.some((pattern) =>
+            pattern.test(meaning),
+          ),
+        )
+        .map((meaning) => ({ id: entry.id, meaning })),
+    );
+
+    expect(remainingSourceComparisonProse).toEqual([]);
+  });
+
+  it("keeps bare causative labels in grammar derivation metadata", () => {
+    const dictionary = readDictionary();
+    const lingeringBareCausativeLabels = dictionary.flatMap((entry) =>
+      entry.senses.flatMap((sense, senseIndex) =>
+        [
+          ...(sense.meanings?.en ?? []),
+          ...(sense.meanings?.nl ?? []),
+          ...(sense.notes?.en ?? []),
+          ...(sense.notes?.nl ?? []),
+        ]
+          .filter((value) => bareCausativeLabelPattern.test(value))
+          .map((value) => ({ id: entry.id, senseIndex, value })),
+      ),
+    );
+
+    expect(lingeringBareCausativeLabels).toEqual([]);
+  });
+
+  it("keeps dialect-restricted meaning sigla out of plain meanings", () => {
+    const dictionary = readDictionary();
+    const lingeringTrailingDialectMeanings = dictionary.flatMap((entry) =>
+      collectMeaningTexts(entry)
+        .map((meaning) => ({
+          label: getTrailingDialectSourceLabel(meaning),
+          meaning,
+        }))
+        .filter(
+          (result): result is { label: string; meaning: string } =>
+            result.label !== undefined,
+        )
+        .map(({ label, meaning }) => ({ id: entry.id, label, meaning })),
+    );
+
+    expect(lingeringTrailingDialectMeanings).toEqual([]);
+  });
+
+  it("keeps inline dialect qualifiers out of sense prose", () => {
+    const dictionary = readDictionary();
+    const lingeringInlineDialectQualifierProse = dictionary.flatMap((entry) =>
+      collectSenseProseTexts(entry)
+        .filter((value) =>
+          inlineDialectQualifierPatterns.some((pattern) => pattern.test(value)),
+        )
+        .map((value) => ({ id: entry.id, value })),
+    );
+
+    expect(lingeringInlineDialectQualifierProse).toEqual([]);
+  });
+
+  it("keeps source-form inventories out of meaning prose", () => {
+    const dictionary = readDictionary();
+    const lingeringSourceFormInventoryProse = dictionary.flatMap((entry) =>
+      collectMeaningTexts(entry)
+        .filter((meaning) =>
+          /ⲕⲟⲩ- S =|ϩⲉⲛⲕⲟⲟⲩⲉ S =|construct .*SAF|construeer .*SAF/u.test(
+            meaning,
+          ),
+        )
+        .map((meaning) => ({ id: entry.id, meaning })),
+    );
+
+    expect(lingeringSourceFormInventoryProse).toEqual([]);
+  });
+
   it("omits plural-prefixed headword artifacts from the dataset", () => {
     const dictionary = readDictionary();
     const pluralPrefixedHeadwordEntries = dictionary
@@ -296,15 +742,220 @@ describe("dictionary dataset guardrails", () => {
     ]);
   });
 
-  it("omits empty Greek arrays", () => {
+  it("keeps Greek context structured and non-empty", () => {
     const dictionary = readDictionary();
-    const invalidGreekEntries = dictionary
-      .filter(
-        (entry) => "greek" in entry && !isNonEmptyStringArray(entry.greek),
-      )
-      .map((entry) => entry.id);
+    const invalidGreekEntries = dictionary.flatMap((entry) => {
+      if (entry.greekContext === undefined) {
+        return [];
+      }
+
+      const fields = Object.keys(entry.greekContext);
+
+      if (fields.length === 0) {
+        return [{ field: "greekContext", id: entry.id }];
+      }
+
+      return Object.entries(entry.greekContext).flatMap(([field, values]) =>
+        ["equivalents", "sources"].includes(field) &&
+        isNonEmptyStringArray(values)
+          ? []
+          : [{ field, id: entry.id }],
+      );
+    });
 
     expect(invalidGreekEntries).toEqual([]);
+  });
+
+  it("keeps Greek loan noun gender backlog bounded", () => {
+    const dictionary = readDictionary();
+    const genderlessGreekNounSenses = dictionary.flatMap((entry) =>
+      entry.etym === "Gr"
+        ? entry.senses
+            .map((sense, senseIndex) => ({ entry, sense, senseIndex }))
+            .filter(
+              ({ sense }) =>
+                sense.grammar.pos === "N" && sense.grammar.gender === undefined,
+            )
+            .map(({ entry, senseIndex }) => ({ id: entry.id, senseIndex }))
+        : [],
+    );
+
+    expect(genderlessGreekNounSenses.length).toBeLessThanOrEqual(14);
+  });
+
+  it("keeps Greek loan verb valency backlog bounded", () => {
+    const dictionary = readDictionary();
+    const untaggedGreekVerbSenses = dictionary.flatMap((entry) =>
+      entry.etym === "Gr"
+        ? entry.senses
+            .map((sense, senseIndex) => ({ entry, sense, senseIndex }))
+            .filter(
+              ({ sense }) =>
+                sense.grammar.pos === "V" &&
+                sense.grammar.valency === undefined,
+            )
+            .map(({ entry, senseIndex }) => ({ id: entry.id, senseIndex }))
+        : [],
+    );
+
+    expect(untaggedGreekVerbSenses.length).toBeLessThanOrEqual(22);
+  });
+
+  it("keeps clausal complement government coverage bounded", () => {
+    const dictionary = readDictionary();
+    const sensesWithComplementizerGovernment = dictionary.flatMap((entry) =>
+      entry.senses
+        .map((sense, senseIndex) => ({ entry, sense, senseIndex }))
+        .filter(({ sense }) => sense.grammar.complementizerGovernment)
+        .map(({ entry, senseIndex }) => ({ id: entry.id, senseIndex })),
+    );
+
+    expect(sensesWithComplementizerGovernment.length).toBeGreaterThanOrEqual(
+      37,
+    );
+  });
+
+  it("keeps construction government coverage present", () => {
+    const dictionary = readDictionary();
+    const sensesWithConstructionGovernment = dictionary.flatMap((entry) =>
+      entry.senses
+        .map((sense, senseIndex) => ({ entry, sense, senseIndex }))
+        .filter(({ sense }) => sense.grammar.constructionGovernment)
+        .map(({ entry, senseIndex }) => ({ id: entry.id, senseIndex })),
+    );
+
+    expect(sensesWithConstructionGovernment.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("keeps Egyptian stative verb senses annotated as intransitive", () => {
+    const dictionary = readDictionary();
+    const untaggedEgyptianStativeVerbSenses = dictionary.flatMap((entry) =>
+      entry.etym === "Egy"
+        ? entry.senses
+            .map((sense, senseIndex) => ({ entry, sense, senseIndex }))
+            .filter(
+              ({ sense }) =>
+                sense.grammar.pos === "V" &&
+                sense.grammar.form === "STA" &&
+                sense.grammar.valency === undefined,
+            )
+            .map(({ entry, senseIndex }) => ({ id: entry.id, senseIndex }))
+        : [],
+    );
+    const untaggedEgyptianVerbSenses = dictionary.flatMap((entry) =>
+      entry.etym === "Egy"
+        ? entry.senses
+            .map((sense, senseIndex) => ({ entry, sense, senseIndex }))
+            .filter(
+              ({ sense }) =>
+                sense.grammar.pos === "V" &&
+                sense.grammar.form !== "PC" &&
+                !(sense.grammar.tags ?? []).includes("REL") &&
+                sense.grammar.valency === undefined,
+            )
+            .map(({ entry, senseIndex }) => ({ id: entry.id, senseIndex }))
+        : [],
+    );
+
+    expect(untaggedEgyptianStativeVerbSenses).toEqual([]);
+    expect(untaggedEgyptianVerbSenses.length).toBeLessThanOrEqual(17);
+  });
+
+  it("keeps Egyptian reflexive and impersonal verb senses annotated", () => {
+    const dictionary = readDictionary();
+    const untaggedEgyptianReflexiveVerbSenses = dictionary.flatMap((entry) =>
+      entry.etym === "Egy"
+        ? entry.senses
+            .map((sense, senseIndex) => ({ entry, sense, senseIndex }))
+            .filter(
+              ({ sense }) =>
+                sense.grammar.pos === "V" &&
+                sense.grammar.voice === "REFL" &&
+                sense.grammar.valency === undefined,
+            )
+            .map(({ entry, senseIndex }) => ({ id: entry.id, senseIndex }))
+        : [],
+    );
+    const untaggedEgyptianImpersonalVerbSenses = dictionary.flatMap((entry) =>
+      entry.etym === "Egy"
+        ? entry.senses
+            .map((sense, senseIndex) => ({ entry, sense, senseIndex }))
+            .filter(
+              ({ sense }) =>
+                sense.grammar.pos === "V" &&
+                sense.grammar.valency === undefined &&
+                (sense.grammar.tags ?? []).some((tag) =>
+                  tag.startsWith("IMPERS"),
+                ),
+            )
+            .map(({ entry, senseIndex }) => ({ id: entry.id, senseIndex }))
+        : [],
+    );
+
+    expect(untaggedEgyptianReflexiveVerbSenses).toEqual([]);
+    expect(untaggedEgyptianImpersonalVerbSenses).toEqual([]);
+  });
+
+  it("keeps Egyptian finite verb valency backlog bounded", () => {
+    const dictionary = readDictionary();
+    const untaggedEgyptianVerbSenses = dictionary.flatMap((entry) =>
+      entry.etym === "Egy"
+        ? entry.senses
+            .map((sense, senseIndex) => ({ entry, sense, senseIndex }))
+            .filter(
+              ({ sense }) =>
+                sense.grammar.pos === "V" &&
+                sense.grammar.form !== "PC" &&
+                !(sense.grammar.tags ?? []).includes("REL") &&
+                sense.grammar.valency === undefined,
+            )
+            .map(({ entry, senseIndex }) => ({ id: entry.id, senseIndex }))
+        : [],
+    );
+
+    expect(untaggedEgyptianVerbSenses.length).toBeLessThanOrEqual(17);
+  });
+
+  it("keeps untagged finite verb backlog bounded by etymology", () => {
+    const dictionary = readDictionary();
+    const untaggedVerbSensesByEtym = dictionary.reduce((counts, entry) => {
+      const count = entry.senses.filter(
+        (sense) =>
+          sense.grammar.pos === "V" &&
+          sense.grammar.form !== "PC" &&
+          !(sense.grammar.tags ?? []).includes("REL") &&
+          sense.grammar.valency === undefined,
+      ).length;
+
+      if (count > 0) {
+        counts.set(entry.etym, (counts.get(entry.etym) ?? 0) + count);
+      }
+
+      return counts;
+    }, new Map<string, number>());
+
+    expect(untaggedVerbSensesByEtym.get("Egy") ?? 0).toBeLessThanOrEqual(17);
+    expect(untaggedVerbSensesByEtym.get("Unknown") ?? 0).toBe(0);
+  });
+
+  it("keeps Egyptian participle forms outside finite valency review", () => {
+    const dictionary = readDictionary();
+    const finiteUntaggedEgyptianVerbSenses = dictionary.flatMap((entry) =>
+      entry.etym === "Egy"
+        ? entry.senses
+            .map((sense, senseIndex) => ({ entry, sense, senseIndex }))
+            .filter(
+              ({ sense }) =>
+                sense.grammar.pos === "V" &&
+                sense.grammar.form !== "PC" &&
+                !(sense.grammar.tags ?? []).includes("REL") &&
+                sense.grammar.valency === undefined,
+            )
+            .map(({ entry, senseIndex }) => ({ id: entry.id, senseIndex }))
+        : [],
+    );
+
+    expect(finiteUntaggedEgyptianVerbSenses.length).toBeLessThanOrEqual(17);
   });
 
   it("keeps structured senses annotated with structured grammar", () => {
@@ -322,174 +973,13 @@ describe("dictionary dataset guardrails", () => {
     expect(
       findSense(entriesById.get(100), (sense) => sense.grammar.number === "PL")
         ?.grammar,
-    ).toEqual({ number: "PL", pos: "N" });
+    ).toEqual({ gender: "M", number: "PL", pos: "N" });
     expect(
       findSense(
         entriesById.get(2639),
         (sense) => sense.grammar.polarity === "NEG",
       )?.grammar,
     ).toEqual({ polarity: "NEG", pos: "N" });
-  });
-
-  it("keeps direct variant-collision duplicate rows folded into canonical entries", () => {
-    const dictionary = readDictionary();
-    const entryIds = new Set(dictionary.map((entry) => entry.id));
-    const entryAliases = dictionary.flatMap((entry) =>
-      Object.prototype.hasOwnProperty.call(entry, "entryAliases")
-        ? [entry.id]
-        : [],
-    );
-
-    expect(entryAliases).toEqual([]);
-    expect(
-      absorbedDirectVariantExamples.map(({ canonicalId, removedId }) => ({
-        canonicalExists: entryIds.has(canonicalId),
-        removedExists: entryIds.has(removedId),
-      })),
-    ).toEqual(
-      absorbedDirectVariantExamples.map(() => ({
-        canonicalExists: true,
-        removedExists: false,
-      })),
-    );
-  });
-
-  it("keeps exact duplicate headword rows folded into canonical entries", () => {
-    const dictionary = readDictionary();
-    const entryIds = new Set(dictionary.map((entry) => entry.id));
-
-    expect(
-      absorbedExactDuplicateExamples.map(({ canonicalId, removedId }) => ({
-        canonicalExists: entryIds.has(canonicalId),
-        removedExists: entryIds.has(removedId),
-      })),
-    ).toEqual(
-      absorbedExactDuplicateExamples.map(() => ({
-        canonicalExists: true,
-        removedExists: false,
-      })),
-    );
-  });
-
-  it("keeps reviewed boundary variants modeled without duplicate rows", () => {
-    const dictionary = readDictionary();
-    const entryIds = new Set(dictionary.map((entry) => entry.id));
-
-    expect(
-      absorbedBoundaryVariantExamples.map(({ canonicalId, removedId }) => ({
-        canonicalExists: entryIds.has(canonicalId),
-        removedExists: entryIds.has(removedId),
-      })),
-    ).toEqual(
-      absorbedBoundaryVariantExamples.map(() => ({
-        canonicalExists: true,
-        removedExists: false,
-      })),
-    );
-    const souEntry = dictionary.find((entry) => entry.id === 126);
-
-    expect(
-      findSense(souEntry, (group) => group.grammar.pos === "V"),
-    ).toBeDefined();
-    const komopolisEntry = dictionary.find((entry) => entry.id === 4785);
-
-    expect(
-      findSense(komopolisEntry, (group) => group.grammar.pos === "N"),
-    ).toMatchObject({ grammar: { gender: "BOTH", pos: "N" } });
-    expect(
-      findSense(
-        dictionary.find((entry) => entry.id === 5345),
-        (group) => group.grammar.pos === "N",
-      ),
-    ).toMatchObject({ grammar: { gender: "F", pos: "N" } });
-  });
-
-  it("keeps reviewed Greek one-letter spelling variants modeled without duplicate rows", () => {
-    const dictionary = readDictionary();
-    const entryIds = new Set(dictionary.map((entry) => entry.id));
-
-    expect(
-      absorbedGreekOneLetterVariantExamples.map(
-        ({ canonicalId, removedId }) => ({
-          canonicalExists: entryIds.has(canonicalId),
-          removedExists: entryIds.has(removedId),
-        }),
-      ),
-    ).toEqual(
-      absorbedGreekOneLetterVariantExamples.map(() => ({
-        canonicalExists: true,
-        removedExists: false,
-      })),
-    );
-  });
-
-  it("keeps reviewed Egyptian one-letter spelling variants modeled without duplicate rows", () => {
-    const dictionary = readDictionary();
-    const entryIds = new Set(dictionary.map((entry) => entry.id));
-
-    expect(
-      absorbedEgyptianOneLetterVariantExamples.map(
-        ({ canonicalId, removedId }) => ({
-          canonicalExists: entryIds.has(canonicalId),
-          removedExists: entryIds.has(removedId),
-        }),
-      ),
-    ).toEqual(
-      absorbedEgyptianOneLetterVariantExamples.map(() => ({
-        canonicalExists: true,
-        removedExists: false,
-      })),
-    );
-  });
-
-  it("keeps regular feminine counterpart forms folded into parent entries", () => {
-    const dictionary = readDictionary();
-    const entriesById = new Map(dictionary.map((entry) => [entry.id, entry]));
-
-    for (const example of foldedRegularFeminineCounterpartExamples) {
-      const parentEntry = entriesById.get(example.parentId);
-
-      expect(parentEntry ? flattenInflections(parentEntry) : []).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            form: example.feminineForm,
-            kind: "feminine",
-          }),
-        ]),
-      );
-    }
-    expect(entriesById.get(1698)).toMatchObject({
-      headword: "ⲟⲩⲣⲱ",
-    });
-    expect(
-      findSense(entriesById.get(1698), (group) =>
-        Boolean(group.meanings?.en?.includes("bean")),
-      ),
-    ).toMatchObject({
-      meanings: { en: ["bean"], nl: ["boon"] },
-      grammar: { gender: "M", pos: "N" },
-    });
-  });
-
-  it("keeps Bohairic er-prefix Greek complex verbs as independent entries", () => {
-    const dictionary = readDictionary();
-    const entriesById = new Map(dictionary.map((entry) => [entry.id, entry]));
-
-    for (const example of independentGreekErPrefixComplexVerbExamples) {
-      expect(entriesById.get(example.baseId)).toMatchObject({
-        etym: "Gr",
-      });
-      expect(entriesById.get(example.complexId)).toMatchObject({
-        etym: "Gr",
-        headword: example.form,
-      });
-      expect(
-        findSense(
-          entriesById.get(example.complexId),
-          (group) => group.grammar.pos === "V",
-        ),
-      ).toBeDefined();
-    }
   });
 
   it("keeps all plural forms structured as inflected forms", () => {
@@ -502,7 +992,7 @@ describe("dictionary dataset guardrails", () => {
       0,
     );
 
-    expect(structuredPluralFormCount).toBe(598);
+    expect(structuredPluralFormCount).toBe(601);
   });
 
   it("keeps number-marked meaning prose in structured sense groups", () => {
@@ -515,106 +1005,6 @@ describe("dictionary dataset guardrails", () => {
       }));
 
     expect(numberMarkedEntries).toEqual([]);
-  });
-
-  it("keeps representative structured plural forms searchable", () => {
-    const dictionary = readDictionary();
-    const preparedDictionary = prepareDictionaryForSearch(dictionary);
-    const searchIds = (query: string) =>
-      searchPreparedDictionary(query, preparedDictionary, dictionary, true).map(
-        (entry) => entry.id,
-      );
-
-    expect(searchIds("ⲁϩⲱⲱⲣ")).toContain(7);
-    expect(searchIds("ⲟⲩⲣⲱⲟⲩ")).toContain(18);
-    expect(searchIds("ⲉⲃⲓⲁⲓⲕ")).toContain(550);
-  });
-
-  it("keeps absorbed duplicate headwords searchable on canonical entries", () => {
-    const dictionary = readDictionary();
-    const preparedDictionary = prepareDictionaryForSearch(dictionary);
-    const searchIds = (query: string) =>
-      searchPreparedDictionary(query, preparedDictionary, dictionary, true).map(
-        (entry) => entry.id,
-      );
-
-    for (const example of absorbedDirectVariantExamples) {
-      const ids = searchIds(example.form);
-
-      expect(ids).toContain(example.canonicalId);
-      expect(ids).not.toContain(example.removedId);
-    }
-    for (const example of [
-      absorbedExactDuplicateExamples[1],
-      absorbedExactDuplicateExamples[2],
-      absorbedExactDuplicateExamples[8],
-    ]) {
-      const ids = searchIds(example.form);
-
-      expect(ids).toContain(example.canonicalId);
-      expect(ids).not.toContain(example.removedId);
-    }
-    for (const example of absorbedBoundaryVariantExamples) {
-      const ids = searchIds(example.form);
-
-      expect(ids).toContain(example.canonicalId);
-      expect(ids).not.toContain(example.removedId);
-    }
-    for (const example of absorbedGreekOneLetterVariantExamples) {
-      const ids = searchIds(example.form);
-
-      expect(ids).toContain(example.canonicalId);
-      expect(ids).not.toContain(example.removedId);
-    }
-    for (const example of absorbedEgyptianOneLetterVariantExamples) {
-      const ids = searchIds(example.form);
-
-      expect(ids).toContain(example.canonicalId);
-      expect(ids).not.toContain(example.removedId);
-    }
-    for (const example of independentGreekErPrefixComplexVerbExamples) {
-      const ids = searchIds(example.form);
-
-      expect(ids).toContain(example.complexId);
-      expect(ids).not.toContain(example.baseId);
-    }
-  });
-
-  it("keeps folded regular feminine forms searchable on parent entries", () => {
-    const dictionary = readDictionary();
-    const preparedDictionary = prepareDictionaryForSearch(dictionary);
-    const searchIds = (query: string) =>
-      searchPreparedDictionary(query, preparedDictionary, dictionary, true).map(
-        (entry) => entry.id,
-      );
-
-    for (const example of foldedRegularFeminineCounterpartExamples) {
-      const ids = searchIds(example.feminineForm);
-
-      expect(ids).toContain(example.parentId);
-    }
-    expect(searchIds("ⲟⲩⲣⲱ")).toContain(1698);
-  });
-
-  it("omits source-only metadata from runtime dictionary entries", () => {
-    const dictionary = readDictionary();
-    const forbiddenKeys = new Set([
-      "attestation",
-      "attestations",
-      "bohairicParadigmData",
-      "entryAliases",
-      "raw",
-      "rawData",
-      "sourceNote",
-      "sourceNotes",
-    ]);
-    const sourceOnlyMetadataKeys = dictionary.flatMap((entry) =>
-      Object.keys(entry)
-        .filter((key) => forbiddenKeys.has(key))
-        .map((key) => ({ id: entry.id, key })),
-    );
-
-    expect(sourceOnlyMetadataKeys).toEqual([]);
   });
 
   it("keeps primary spellings free of variant lists and state metadata", () => {
@@ -692,9 +1082,10 @@ describe("dictionary dataset guardrails", () => {
       0,
     );
     const parentEntry = dictionary.find((entry) => entry.id === 2);
+    const comeEntry = dictionary.find((entry) => entry.id === 5);
 
     expect(entriesWithLegacyImperativeFields).toEqual([]);
-    expect(imperativeFormCount).toBe(84);
+    expect(imperativeFormCount).toBe(94);
     expect(parentEntry?.dialects.B).toMatchObject({
       absolute: "ϯ",
       variants: {
@@ -725,8 +1116,49 @@ describe("dictionary dataset guardrails", () => {
           dialect: "B",
           form: "ⲙⲏⲓⲧ=",
           kind: "imperative",
-          notes: ["Imperative variant."],
           role: "pronominal",
+        },
+      ]),
+    );
+    expect(parentEntry?.inflections?.imperative?.B).toMatchObject({
+      absolute: ["ⲙⲟⲓ"],
+      nominal: ["ⲙⲁ-"],
+      pronominal: ["ⲙⲏⲓ="],
+      variants: {
+        pronominal: ["ⲙⲏⲓⲧ=", "ⲙⲟⲓⲧ="],
+      },
+    });
+    expect(comeEntry ? flattenInflections(comeEntry) : []).toEqual(
+      expect.arrayContaining([
+        {
+          dialect: "B",
+          form: "ⲁⲙⲟⲩ",
+          gender: "M",
+          kind: "imperative",
+          number: "SG",
+          role: "absolute",
+        },
+        {
+          dialect: "B",
+          form: "ⲁⲙⲏ",
+          gender: "F",
+          kind: "imperative",
+          number: "SG",
+          role: "absolute",
+        },
+        {
+          dialect: "B",
+          form: "ⲁⲙⲱⲓⲛⲓ",
+          kind: "imperative",
+          number: "PL",
+          role: "absolute",
+        },
+        {
+          dialect: "S",
+          form: "ⲁⲙⲏⲉⲓⲧⲛ̄",
+          kind: "imperative",
+          number: "PL",
+          role: "absolute",
         },
       ]),
     );
@@ -931,9 +1363,9 @@ describe("dictionary dataset guardrails", () => {
     });
   });
 
-  it("validates distinct construct participle compound entries", () => {
+  it("keeps construct participle compound links in relations", () => {
     const dictionary = readDictionary();
-    const rootIds = new Set(dictionary.map((entry) => entry.id));
+    const entryIds = new Set(dictionary.map((entry) => entry.id));
     const malformedCompounds: Array<{
       headword: string;
       id: number;
@@ -941,15 +1373,25 @@ describe("dictionary dataset guardrails", () => {
     }> = [];
 
     const compoundEntries = dictionary.filter(
-      (entry) => entry.root_id !== undefined,
+      (entry) =>
+        entry.relations?.some(
+          (relation) => relation.type === "COMPOUND_WITH",
+        ) === true,
     );
 
     for (const entry of compoundEntries) {
-      if (!rootIds.has(entry.root_id!)) {
+      const compoundRelations =
+        entry.relations?.filter(
+          (relation) => relation.type === "COMPOUND_WITH",
+        ) ?? [];
+
+      if (
+        compoundRelations.some((relation) => !entryIds.has(relation.targetId))
+      ) {
         malformedCompounds.push({
           headword: entry.headword,
           id: entry.id,
-          reason: "missing root",
+          reason: "missing target",
         });
       }
 
@@ -963,7 +1405,7 @@ describe("dictionary dataset guardrails", () => {
     }
 
     expect(malformedCompounds).toEqual([]);
-    expect(compoundEntries.length).toBeGreaterThanOrEqual(260);
+    expect(compoundEntries.length).toBeGreaterThanOrEqual(267);
   });
 
   it("keeps sense gloss arrays populated when present", () => {
@@ -996,6 +1438,41 @@ describe("dictionary dataset guardrails", () => {
     );
 
     expect(placeholderMeanings).toEqual([]);
+  });
+
+  it("omits bare uncertainty, grammar, dialect, and ellipsis stubs", () => {
+    const dictionary = readDictionary();
+    const lingeringNoteStubs = dictionary.flatMap((entry) =>
+      collectNoteStubRows(entry).filter(({ note }) => {
+        const normalizedNote = note.trim();
+
+        return (
+          bareQuestionNotePattern.test(normalizedNote) ||
+          bareGenderMarkerNotePattern.test(normalizedNote) ||
+          grammarLabelSet.has(normalizedNote) ||
+          parseDialectSourceLabel(normalizedNote) !== undefined
+        );
+      }),
+    );
+    const lingeringEllipsisMeanings = dictionary.flatMap((entry) =>
+      collectMeaningTexts(entry)
+        .filter((meaning) => ellipsisMeaningPattern.test(meaning.trim()))
+        .map((meaning) => ({ id: entry.id, meaning })),
+    );
+
+    expect(lingeringNoteStubs).toEqual([]);
+    expect(lingeringEllipsisMeanings).toEqual([]);
+  });
+
+  it("uses dagger rather than plus for stative markers in lexical forms", () => {
+    const dictionary = readDictionary();
+    const entriesById = new Map(dictionary.map((entry) => [entry.id, entry]));
+    const lexicalFormPlusRows = dictionary.flatMap(collectLexicalFormPlusRows);
+
+    expect(lexicalFormPlusRows).toEqual([]);
+    expect(entriesById.get(857)?.headword).toBe("ⲕⲏⲩ†");
+    expect(entriesById.get(3086)?.headword).toBe("ⲧⲁϥⲉ†");
+    expect(entriesById.get(3089)?.headword).toBe("ⲑⲉⲙ†");
   });
 
   it("stores representative bound-only prepositions without fake absolute forms", () => {

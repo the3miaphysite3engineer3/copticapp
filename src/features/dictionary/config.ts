@@ -67,7 +67,40 @@ export const DICTIONARY_SENSE_CODES = [
   "ABS",
 ] as const;
 
+export const DICTIONARY_PREP_GOVERNMENT_FORMS = [
+  "ⲉ-",
+  "ⲉϫⲛ-",
+  "ⲉⲧⲃⲉ-",
+  "ⲙⲛ-",
+  "ⲟⲩⲃⲉ-",
+  "ϩⲛ-",
+  "ϩⲁ-",
+  "ϩⲓ-",
+  "ϩⲓϫⲛ-",
+  "ϩⲓⲧⲛ-",
+  "ϣⲁ-",
+  "ⲛ-/ⲛⲁ=",
+  "ⲛ-/ⲙⲙⲟ=",
+] as const;
+
+export const DICTIONARY_COMPLEMENTIZER_GOVERNMENT_FORMS = [
+  "ϫⲉ-",
+  "ϫⲉⲕⲁⲥ",
+] as const;
+
+export const DICTIONARY_CONSTRUCTION_GOVERNMENT_FORMS = [
+  "ⲛⲑⲉ ⲛ-",
+  "ⲙⲫⲣⲏϯ ⲛ-",
+  "ⲱⲥ",
+] as const;
+
 export type DictionaryDialectCode = (typeof DICTIONARY_DIALECT_CODES)[number];
+export type DictionaryComplementizerGovernment =
+  (typeof DICTIONARY_COMPLEMENTIZER_GOVERNMENT_FORMS)[number];
+export type DictionaryConstructionGovernment =
+  (typeof DICTIONARY_CONSTRUCTION_GOVERNMENT_FORMS)[number];
+export type DictionaryPrepGovernment =
+  (typeof DICTIONARY_PREP_GOVERNMENT_FORMS)[number];
 export type DictionarySenseCode = (typeof DICTIONARY_SENSE_CODES)[number];
 export type AnalyticsDialect = (typeof ANALYTICS_DIALECTS)[number];
 export type DialectFilter = AnalyticsDialect;

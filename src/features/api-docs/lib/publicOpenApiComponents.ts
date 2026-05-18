@@ -1,3 +1,9 @@
+import {
+  DICTIONARY_COMPLEMENTIZER_GOVERNMENT_FORMS,
+  DICTIONARY_CONSTRUCTION_GOVERNMENT_FORMS,
+  DICTIONARY_DIALECT_CODES,
+  DICTIONARY_PREP_GOVERNMENT_FORMS,
+} from "@/features/dictionary/config";
 import { MAX_DICTIONARY_SEARCH_QUERY_LENGTH } from "@/features/dictionary/search";
 
 import {
@@ -398,10 +404,46 @@ export function buildPublicOpenApiComponents(context: PublicOpenApiContext) {
         },
         additionalProperties: false,
       },
+      DictionaryRelation: {
+        type: "object",
+        required: ["type", "targetId"],
+        properties: {
+          type: {
+            type: "string",
+            enum: ["CAUS_OF", "COMPOUND_WITH", "DERIVED_FROM", "SEE_ALSO"],
+          },
+          targetId: {
+            type: "number",
+            example: 13,
+          },
+          notes: {
+            $ref: "#/components/schemas/DictionaryLocalizedStringArrays",
+          },
+          targetEntry: {
+            $ref: "#/components/schemas/DictionaryEntryReference",
+          },
+        },
+        additionalProperties: false,
+      },
+      DictionaryRelations: {
+        type: "array",
+        items: {
+          $ref: "#/components/schemas/DictionaryRelation",
+        },
+      },
       DictionarySense: {
         type: "object",
         required: ["grammar"],
         properties: {
+          dialects: {
+            description:
+              "Dialect codes when the entire sense, not merely an alternate translation, is dialect-restricted.",
+            type: "array",
+            items: {
+              type: "string",
+              enum: [...DICTIONARY_DIALECT_CODES],
+            },
+          },
           grammar: {
             $ref: "#/components/schemas/DictionarySenseGrammar",
           },
@@ -425,6 +467,24 @@ export function buildPublicOpenApiComponents(context: PublicOpenApiContext) {
           caseRole: {
             type: "string",
             enum: ["DAT", "OBJ"],
+          },
+          complementizerGovernment: {
+            description:
+              "Canonical Coptic complementizers introducing clausal complements governed by this verb sense.",
+            type: "array",
+            items: {
+              type: "string",
+              enum: [...DICTIONARY_COMPLEMENTIZER_GOVERNMENT_FORMS],
+            },
+          },
+          constructionGovernment: {
+            description:
+              "Canonical fixed constructions governed by this verb sense, especially comparative or as-constructions.",
+            type: "array",
+            items: {
+              type: "string",
+              enum: [...DICTIONARY_CONSTRUCTION_GOVERNMENT_FORMS],
+            },
           },
           derivation: {
             type: "string",
@@ -464,6 +524,15 @@ export function buildPublicOpenApiComponents(context: PublicOpenApiContext) {
               "UNKNOWN",
               "PRON",
             ],
+          },
+          prepGovernment: {
+            description:
+              "Canonical Coptic prepositional government required by this verb sense.",
+            type: "array",
+            items: {
+              type: "string",
+              enum: [...DICTIONARY_PREP_GOVERNMENT_FORMS],
+            },
           },
           tags: {
             type: "array",
@@ -656,7 +725,28 @@ export function buildPublicOpenApiComponents(context: PublicOpenApiContext) {
         },
         additionalProperties: false,
       },
-      DictionaryRootReference: {
+      DictionaryGreekContext: {
+        type: "object",
+        minProperties: 1,
+        properties: {
+          sources: {
+            type: "array",
+            minItems: 1,
+            items: {
+              type: "string",
+            },
+          },
+          equivalents: {
+            type: "array",
+            minItems: 1,
+            items: {
+              type: "string",
+            },
+          },
+        },
+        additionalProperties: false,
+      },
+      DictionaryEntryReference: {
         type: "object",
         required: ["id", "headword", "dialects"],
         properties: {
@@ -682,10 +772,6 @@ export function buildPublicOpenApiComponents(context: PublicOpenApiContext) {
             type: "number",
             example: 2,
           },
-          root_id: {
-            type: "number",
-            example: 2,
-          },
           headword: {
             type: "string",
             example: "ⲙⲟⲓ",
@@ -693,11 +779,8 @@ export function buildPublicOpenApiComponents(context: PublicOpenApiContext) {
           dialects: {
             $ref: "#/components/schemas/DictionaryDialectFormsMap",
           },
-          greek: {
-            type: "array",
-            items: {
-              type: "string",
-            },
+          greekContext: {
+            $ref: "#/components/schemas/DictionaryGreekContext",
           },
           senses: {
             $ref: "#/components/schemas/DictionarySenses",
@@ -716,13 +799,13 @@ export function buildPublicOpenApiComponents(context: PublicOpenApiContext) {
           },
           etym: {
             type: "string",
-            enum: ["Egy", "Gr", "Unknown"],
+            enum: ["Egy", "Gr", "Lat", "Sem", "Unknown"],
           },
           inflections: {
             $ref: "#/components/schemas/DictionaryInflections",
           },
-          rootEntry: {
-            $ref: "#/components/schemas/DictionaryRootReference",
+          relations: {
+            $ref: "#/components/schemas/DictionaryRelations",
           },
         },
         additionalProperties: false,

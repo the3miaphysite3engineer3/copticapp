@@ -1,5 +1,8 @@
 import {
+  type DictionaryComplementizerGovernment,
+  type DictionaryConstructionGovernment,
   type DictionaryDialectCode,
+  type DictionaryPrepGovernment,
   DICTIONARY_SENSE_CODES,
   getPartOfSpeechLabel,
 } from "@/features/dictionary/config";
@@ -33,9 +36,13 @@ type SenseDisplayOptions = {
 
 type LocalizedDictionarySense = {
   code: string;
+  complementizerGovernment?: DictionaryComplementizerGovernment[];
+  constructionGovernment?: DictionaryConstructionGovernment[];
+  dialects?: DictionaryDialectCode[];
   genderedRows?: LocalizedDictionaryGenderedMeaning[];
   meanings: string[];
   notes: string[];
+  prepGovernment?: DictionaryPrepGovernment[];
 };
 
 type LocalizedDictionaryDialectMeaning = {
@@ -257,6 +264,10 @@ export function getLocalizedSenseGroups(
 
     const meanings = getLocalizedTextValues(sense.meanings, locale);
     const notes = getLocalizedTextValues(sense.notes, locale);
+    const complementizerGovernment =
+      sense.grammar.complementizerGovernment ?? [];
+    const constructionGovernment = sense.grammar.constructionGovernment ?? [];
+    const prepGovernment = sense.grammar.prepGovernment ?? [];
     const genderedRows =
       sense.grammar.pos === "N" && !attachedGenderedMeanings
         ? genderedMeanings
@@ -269,9 +280,19 @@ export function getLocalizedSenseGroups(
     return [
       {
         code,
+        ...(complementizerGovernment.length > 0
+          ? { complementizerGovernment }
+          : {}),
+        ...(constructionGovernment.length > 0
+          ? { constructionGovernment }
+          : {}),
+        ...(sense.dialects && sense.dialects.length > 0
+          ? { dialects: sense.dialects }
+          : {}),
         ...(genderedRows.length > 0 ? { genderedRows } : {}),
         meanings,
         notes: notes.filter(isDisplayableSenseNote),
+        ...(prepGovernment.length > 0 ? { prepGovernment } : {}),
       },
     ];
   });

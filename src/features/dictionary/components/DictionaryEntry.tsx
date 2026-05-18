@@ -19,12 +19,16 @@ import {
   formatImperativeForms,
   getPreferredEntryPrincipalSpelling,
   getAllPluralForms,
-  getDialectImperativeForms,
+  getDialectImperativeVariantForms,
   getDialectPluralForms,
+  getDialectPrimaryImperativeForms,
+  getDialectPrimaryImperativeDisplayForms,
   getDialectVariantRows,
   getGenderedDialectFormParts,
   getGenderedHeadingParts,
   getPreferredEntryDialectKey,
+  hasImperativeDisplayFormMorphology,
+  type ImperativeDisplayForm,
   type GenderedHeadingMarker,
 } from "@/features/dictionary/lib/entryDisplay";
 import {
@@ -38,6 +42,7 @@ import {
 } from "@/features/dictionary/lib/entryText";
 import type {
   DictionaryClientEntry,
+  DictionaryRelationType,
   LexicalGender,
 } from "@/features/dictionary/types";
 import { cx } from "@/lib/classes";
@@ -65,6 +70,12 @@ type DialectEntryTuple = [
   NonNullable<DictionaryClientEntry["dialects"][DictionaryDialectCode]>,
 ];
 type EntryDialectSelection = "ALL" | DictionaryDialectCode;
+type EntryVariantRow = {
+  dialect: DictionaryDialectCode;
+  forms: string[];
+  label?: string;
+  state: string;
+};
 
 function getFormSymbolTooltips(
   t: ReturnType<typeof useLanguage>["t"],
@@ -112,6 +123,116 @@ function getGenderedHeadingMarkerLabel(
     case "pl":
       return t("entry.abbreviation.pl");
   }
+}
+
+function getImperativeFormMorphologyMarkers(
+  form: ImperativeDisplayForm,
+  t: ReturnType<typeof useLanguage>["t"],
+) {
+  const markers: { code: string; label: string }[] = [];
+
+  if (form.gender === "BOTH") {
+    markers.push(
+      { code: "m", label: t("entry.gender.masculine") },
+      { code: "f", label: t("entry.gender.feminine") },
+    );
+  } else if (form.gender === "M") {
+    markers.push({ code: "m", label: t("entry.gender.masculine") });
+  } else if (form.gender === "F") {
+    markers.push({ code: "f", label: t("entry.gender.feminine") });
+  }
+
+  if (form.number === "SG") {
+    markers.push({ code: "sg", label: t("entry.abbreviation.sg") });
+  } else if (form.number === "PL") {
+    markers.push({ code: "pl", label: t("entry.abbreviation.pl") });
+  }
+
+  return markers;
+}
+
+function getRelationTypeLabel(
+  type: DictionaryRelationType,
+  t: ReturnType<typeof useLanguage>["t"],
+) {
+  switch (type) {
+    case "CAUS_OF":
+      return t("entry.relation.causativeOf");
+    case "COMPOUND_WITH":
+      return t("entry.relation.compoundWith");
+    case "DERIVED_FROM":
+      return t("entry.relation.derivedFrom");
+    case "SEE_ALSO":
+      return t("entry.relation.seeAlso");
+  }
+}
+
+function getUniqueDisplayNotes(noteGroups: readonly string[][]) {
+  const seenNotes = new Set<string>();
+  const notes: string[] = [];
+
+  for (const note of noteGroups.flat()) {
+    const normalizedNote = note.trim();
+    const noteKey = normalizedNote.toLocaleLowerCase();
+
+    if (!normalizedNote || seenNotes.has(noteKey)) {
+      continue;
+    }
+
+    seenNotes.add(noteKey);
+    notes.push(normalizedNote);
+  }
+
+  return notes;
+}
+
+function GovernmentBadges({
+  forms,
+  label,
+  tone = "prep",
+}: {
+  forms: readonly string[] | undefined;
+  label: string;
+  tone?: "complementizer" | "construction" | "prep";
+}) {
+  if (!forms || forms.length === 0) {
+    return null;
+  }
+
+  const badgeToneClassName = getGovernmentBadgeToneClassName(tone);
+
+  return (
+    <span className="inline-flex min-w-0 flex-wrap items-baseline gap-1 text-xs text-muted">
+      <span className="font-semibold">({label}</span>
+      {forms.map((form, index) => (
+        <span key={`${form}-${index}`} className="inline-flex">
+          <span
+            className={`${antinoou.className} rounded-md border px-1.5 py-0.5 text-sm leading-none ${badgeToneClassName}`}
+          >
+            {form}
+          </span>
+          {index < forms.length - 1 && (
+            <span className="ml-1 text-muted/70">,</span>
+          )}
+        </span>
+      ))}
+      <span className="font-semibold">)</span>
+    </span>
+  );
+}
+
+function getGovernmentBadgeToneClassName(
+  tone: "complementizer" | "construction" | "prep",
+) {
+  if (tone === "complementizer") {
+    return "border-accent/20 bg-accent-soft/80 text-accent-strong dark:border-accent/30 dark:text-accent";
+  }
+
+  if (tone === "construction") {
+    return "border-line bg-elevated text-ink dark:border-line";
+  }
+
+  return "border-coptic/15 bg-coptic/5 text-coptic dark:border-coptic/25 dark:bg-coptic/10";
 }
 
 export default function DictionaryEntryCard({
@@ -263,12 +384,25 @@ export default function DictionaryEntryCard({
       )}
     </HeadingTag>
   );
-  const imperativeForms = primaryDialectKey
-    ? getDialectImperativeForms(entry, primaryDialectKey)
+  const primaryImperativeForms = primaryDialectKey
+    ? getDialectPrimaryImperativeForms(entry, primaryDialectKey)
+    : {};
+  const primaryImperativeDisplayForms = primaryDialectKey
+    ? getDialectPrimaryImperativeDisplayForms(entry, primaryDialectKey)
+    : [];
+  const hasAnnotatedPrimaryImperativeForms = primaryImperativeDisplayForms.some(
+    hasImperativeDisplayFormMorphology,
+  );
+  const hasPrimaryImperativeForms = hasAnnotatedPrimaryImperativeForms
+    ? primaryImperativeDisplayForms.length > 0
+    : Object.values(primaryImperativeForms).some(Boolean);
+  const imperativeVariantForms = primaryDialectKey
+    ? getDialectImperativeVariantForms(entry, primaryDialectKey)
     : [];
   const localizedSenses = getLocalizedSenseGroups(entry, language, {
     dialectForms: primaryForms,
-    hasImperativeForms: imperativeForms.length > 0,
+    hasImperativeForms:
+      hasPrimaryImperativeForms || imperativeVariantForms.length > 0,
   });
   const hasGroupedGenderedMeanings = localizedSenses.some(
     (group) => (group.genderedRows?.length ?? 0) > 0,
@@ -277,25 +411,58 @@ export default function DictionaryEntryCard({
     ? []
     : getLocalizedGenderedMeanings(entry, language);
   const dialectMeanings = getLocalizedDisplayDialectMeanings(entry, language);
-  const variantRows = [
+  const localizedSenseRows = localizedSenses.filter(
+    (group) =>
+      (group.genderedRows?.length ?? 0) > 0 ||
+      group.meanings.length > 0 ||
+      (group.dialects?.length ?? 0) > 0 ||
+      (group.complementizerGovernment?.length ?? 0) > 0 ||
+      (group.constructionGovernment?.length ?? 0) > 0 ||
+      (group.prepGovernment?.length ?? 0) > 0,
+  );
+  const displayDialectMeanings = dialectMeanings.filter(
+    (dialectMeaning) => dialectMeaning.meanings.length > 0,
+  );
+  const relations = entry.relations ?? [];
+  const compoundRelations = relations.filter(
+    (relation) => relation.type === "COMPOUND_WITH",
+  );
+  const relationRows = relations
+    .filter((relation) => relation.type !== "COMPOUND_WITH")
+    .map((relation, index) => ({
+      href: getEntryPath(relation.targetId, language),
+      key: `${relation.type}-${relation.targetId}-${index}`,
+      label: getRelationTypeLabel(relation.type, t),
+      notes: relation.notes?.[language] ?? [],
+      targetLabel: relation.targetEntry
+        ? getPreferredEntryPrincipalSpelling(relation.targetEntry, viewDialect)
+        : String(relation.targetId),
+    }));
+  const greekSources = entry.greekContext?.sources ?? [];
+  const greekEquivalents = entry.greekContext?.equivalents ?? [];
+  const translationNotes = getUniqueDisplayNotes([
+    localizedSenses.flatMap((group) => group.notes),
+    dialectMeanings.flatMap((dialectMeaning) => dialectMeaning.notes),
+  ]);
+  const variantRows: EntryVariantRow[] = [
     ...(primaryDialectKey && primaryForms
       ? getDialectVariantRows(primaryForms).map((row) => ({
           dialect: primaryDialectKey,
           ...row,
         }))
       : []),
+    ...(primaryDialectKey && imperativeVariantForms.length > 0
+      ? [
+          {
+            dialect: primaryDialectKey,
+            forms: imperativeVariantForms,
+            label: "IMP",
+            state: "imperative",
+          },
+        ]
+      : []),
   ];
   const compactBadgeClassName = "h-8 min-h-8 min-w-8 justify-center px-3";
-  let compoundRootLabel = "";
-
-  if (entry.rootEntry) {
-    compoundRootLabel = getPreferredEntryPrincipalSpelling(
-      entry.rootEntry,
-      viewDialect,
-    );
-  } else if (entry.root_id !== undefined) {
-    compoundRootLabel = String(entry.root_id);
-  }
 
   const handleDialectViewChange = (dialect: DictionaryDialectCode) => {
     setViewDialect(dialect);
@@ -309,24 +476,34 @@ export default function DictionaryEntryCard({
   };
   const metadataBadges = (
     <>
-      {entry.root_id !== undefined && (
-        <Link
-          href={getEntryPath(entry.root_id, language)}
-          prefetch={false}
-          className="inline-flex min-h-8 max-w-full items-center gap-2 rounded-lg border border-accent/25 bg-accent-soft/80 px-3 text-xs font-semibold text-accent-strong transition hover:border-accent/45 hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:text-accent"
-        >
-          <span>{t("entry.compoundOf")}</span>
-          <span
-            className={`${antinoou.className} min-w-0 truncate text-sm font-normal tracking-wide`}
+      {compoundRelations.map((relation, index) => {
+        const compoundTargetLabel = relation.targetEntry
+          ? getPreferredEntryPrincipalSpelling(
+              relation.targetEntry,
+              viewDialect,
+            )
+          : String(relation.targetId);
+
+        return (
+          <Link
+            key={`${relation.type}-${relation.targetId}-${index}`}
+            href={getEntryPath(relation.targetId, language)}
+            prefetch={false}
+            className="inline-flex min-h-8 max-w-full items-center gap-2 rounded-lg border border-accent/25 bg-accent-soft/80 px-3 text-xs font-semibold text-accent-strong transition hover:border-accent/45 hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:text-accent"
           >
-            <HighlightText
-              text={compoundRootLabel}
-              query={query}
-              symbolTooltips={formSymbolTooltips}
-            />
-          </span>
-        </Link>
-      )}
+            <span>{t("entry.compoundOf")}</span>
+            <span
+              className={`${antinoou.className} min-w-0 truncate text-sm font-normal tracking-wide`}
+            >
+              <HighlightText
+                text={compoundTargetLabel}
+                query={query}
+                symbolTooltips={formSymbolTooltips}
+              />
+            </span>
+          </Link>
+        );
+      })}
       {primaryDialectKey && (
         <Badge tone="neutral" size="sm" className={compactBadgeClassName}>
           <DialectSiglum siglum={primaryDialectKey} />
@@ -437,6 +614,7 @@ export default function DictionaryEntryCard({
                       />
                       <span>
                         <HighlightText
+                          className="italic"
                           text={meaning}
                           query={query}
                           grammarAbbreviationTooltips={
@@ -454,9 +632,9 @@ export default function DictionaryEntryCard({
             ))}
           </ul>
         )}
-        {localizedSenses.length > 0 && (
+        {localizedSenseRows.length > 0 && (
           <div className="grid gap-3">
-            {localizedSenses.map((group, groupIndex) => {
+            {localizedSenseRows.map((group, groupIndex) => {
               const groupGenderedRows = group.genderedRows ?? [];
               const hasMeaningRows =
                 groupGenderedRows.length > 0 || group.meanings.length > 0;
@@ -476,20 +654,27 @@ export default function DictionaryEntryCard({
                       }
                       size="body"
                     />
-                    {group.notes.map((note, idx) => (
-                      <span
-                        key={`${group.code}-note-${idx}`}
-                        className="text-sm text-muted"
-                      >
-                        <HighlightText
-                          text={note}
-                          query={query}
-                          grammarAbbreviationTooltips={
-                            grammarAbbreviationTooltips
-                          }
-                        />
+                    {group.dialects && group.dialects.length > 0 && (
+                      <span className="inline-flex flex-wrap items-center gap-1">
+                        {group.dialects.map((dialect) => (
+                          <DialectSiglum
+                            key={`${group.code}-${groupIndex}-${dialect}`}
+                            siglum={dialect}
+                          />
+                        ))}
                       </span>
-                    ))}
+                    )}
+                    <GovernmentBadges forms={group.prepGovernment} label="+" />
+                    <GovernmentBadges
+                      forms={group.complementizerGovernment}
+                      label="cl."
+                      tone="complementizer"
+                    />
+                    <GovernmentBadges
+                      forms={group.constructionGovernment}
+                      label="constr."
+                      tone="construction"
+                    />
                   </div>
                   {hasMeaningRows && (
                     <ul
@@ -519,6 +704,7 @@ export default function DictionaryEntryCard({
                                   />
                                   <span>
                                     <HighlightText
+                                      className="italic"
                                       text={meaning}
                                       query={query}
                                       grammarAbbreviationTooltips={
@@ -541,6 +727,7 @@ export default function DictionaryEntryCard({
                           className="leading-relaxed pl-1"
                         >
                           <HighlightText
+                            className="italic"
                             text={meaning}
                             query={query}
                             grammarAbbreviationTooltips={
@@ -556,9 +743,9 @@ export default function DictionaryEntryCard({
             })}
           </div>
         )}
-        {dialectMeanings.length > 0 && (
+        {displayDialectMeanings.length > 0 && (
           <div className="grid gap-3">
-            {dialectMeanings.map((dialectMeaning) => (
+            {displayDialectMeanings.map((dialectMeaning) => (
               <div
                 key={dialectMeaning.sourceLabel}
                 className="grid gap-2 border-l-2 border-coptic/25 pl-3"
@@ -572,20 +759,6 @@ export default function DictionaryEntryCard({
                       <DialectSiglum siglum={dialect} />
                     </span>
                   ))}
-                  {dialectMeaning.notes.map((note, idx) => (
-                    <span
-                      key={`${dialectMeaning.sourceLabel}-note-${idx}`}
-                      className="text-sm text-muted"
-                    >
-                      <HighlightText
-                        text={note}
-                        query={query}
-                        grammarAbbreviationTooltips={
-                          grammarAbbreviationTooltips
-                        }
-                      />
-                    </span>
-                  ))}
                 </div>
                 {dialectMeaning.meanings.length > 0 && (
                   <ul
@@ -596,6 +769,7 @@ export default function DictionaryEntryCard({
                     {dialectMeaning.meanings.map((meaning, idx) => (
                       <li key={idx} className="leading-relaxed pl-1">
                         <HighlightText
+                          className="italic"
                           text={meaning}
                           query={query}
                           grammarAbbreviationTooltips={
@@ -610,20 +784,168 @@ export default function DictionaryEntryCard({
             ))}
           </div>
         )}
+        {translationNotes.length > 0 && (
+          <div
+            className="mt-5 flex flex-col gap-3"
+            data-testid="dictionary-entry-notes-section"
+          >
+            <span className="text-xs font-semibold uppercase tracking-widest text-muted">
+              {t("entry.notes")}
+            </span>
+            <ul
+              className={`ml-5 list-disc space-y-1.5 text-ink marker:text-coptic ${
+                isDetailView ? "text-base md:text-lg" : "text-base"
+              }`}
+            >
+              {translationNotes.map((note, idx) => (
+                <li key={idx} className="leading-relaxed pl-1">
+                  <HighlightText
+                    text={note}
+                    query={query}
+                    grammarAbbreviationTooltips={grammarAbbreviationTooltips}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {isDetailView && relationRows.length > 0 && (
+          <div
+            className="mt-5 flex flex-col gap-3"
+            data-testid="dictionary-entry-relations-section"
+          >
+            <span className="text-xs font-semibold uppercase tracking-widest text-muted">
+              {t("entry.relatedEntries")}
+            </span>
+            <ul className="flex flex-col gap-2.5">
+              {relationRows.map((relation) => (
+                <li
+                  key={relation.key}
+                  className="flex min-w-0 flex-col items-start gap-1.5"
+                >
+                  <Link
+                    href={relation.href}
+                    prefetch={false}
+                    className="inline-flex max-w-full flex-wrap items-baseline gap-x-2 gap-y-1 rounded-lg border border-line bg-elevated/65 px-3 py-2 text-sm text-ink transition hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coptic/30 focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+                  >
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
+                      {relation.label}
+                    </span>
+                    <span
+                      className={`${antinoou.className} min-w-0 break-words text-base leading-snug text-coptic [overflow-wrap:anywhere]`}
+                    >
+                      <HighlightText
+                        text={relation.targetLabel}
+                        query={query}
+                        symbolTooltips={formSymbolTooltips}
+                      />
+                    </span>
+                  </Link>
+                  {relation.notes.length > 0 && (
+                    <ul className="ml-5 list-disc space-y-1 text-sm text-muted marker:text-coptic">
+                      {relation.notes.map((note, noteIndex) => (
+                        <li key={noteIndex}>
+                          <HighlightText
+                            text={note}
+                            query={query}
+                            grammarAbbreviationTooltips={
+                              grammarAbbreviationTooltips
+                            }
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {hasPrimaryImperativeForms && primaryDialectKey && (
+          <div
+            className="mt-5 flex flex-col gap-3"
+            data-testid="dictionary-entry-imperative-section"
+          >
+            <span className="text-xs font-semibold uppercase tracking-widest text-muted">
+              {t("entry.imperatives")}
+            </span>
+            <div className="flex flex-wrap gap-2.5">
+              <span className="inline-flex max-w-full items-baseline gap-2 rounded-lg border border-line bg-elevated/65 px-3 py-2 text-sm text-ink">
+                <span className="inline-flex min-h-6 shrink-0 items-center rounded-md bg-surface px-2 text-[10px] font-bold text-muted">
+                  <DialectSiglum siglum={primaryDialectKey} />
+                </span>
+                {hasAnnotatedPrimaryImperativeForms ? (
+                  <span className="inline-flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
+                    {primaryImperativeDisplayForms.map((form, index) => (
+                      <span
+                        key={`${form.role}-${form.form}-${form.gender ?? ""}-${form.number ?? ""}-${index}`}
+                        className="inline-flex min-w-0 items-baseline gap-x-2"
+                      >
+                        {index > 0 && <span className="text-muted/60">·</span>}
+                        <span className="inline-flex min-w-0 items-baseline gap-x-1.5">
+                          <span
+                            className={`${antinoou.className} min-w-0 break-words text-base leading-snug [overflow-wrap:anywhere]`}
+                          >
+                            <HighlightText
+                              text={form.form}
+                              query={query}
+                              symbolTooltips={formSymbolTooltips}
+                            />
+                          </span>
+                          <LinguisticGlossGroup
+                            markers={getImperativeFormMorphologyMarkers(
+                              form,
+                              t,
+                            )}
+                            size="inline"
+                          />
+                        </span>
+                      </span>
+                    ))}
+                  </span>
+                ) : (
+                  <span
+                    className={`${antinoou.className} min-w-0 break-words text-base leading-snug [overflow-wrap:anywhere]`}
+                  >
+                    <HighlightText
+                      text={formatImperativeForms(primaryImperativeForms)}
+                      query={query}
+                      symbolTooltips={formSymbolTooltips}
+                    />
+                  </span>
+                )}
+              </span>
+            </div>
+          </div>
+        )}
         {variantRows.length > 0 && (
-          <div className="mt-5 flex flex-col gap-3">
+          <div
+            className="mt-5 flex flex-col gap-3"
+            data-testid="dictionary-entry-variants-section"
+          >
             <span className="text-xs font-semibold uppercase tracking-widest text-muted">
               {t("entry.variants")}
             </span>
             <div className="flex flex-wrap gap-2.5">
-              {variantRows.map(({ dialect, forms, state }, index) => (
+              {variantRows.map(({ dialect, forms, label, state }, index) => (
                 <span
                   key={`${dialect}-${state}-${index}`}
-                  className="inline-flex max-w-full items-start gap-2 rounded-lg border border-line bg-elevated/65 px-3 py-2 text-sm text-ink"
+                  className="inline-flex max-w-full items-baseline gap-2 rounded-lg border border-line bg-elevated/65 px-3 py-2 text-sm text-ink"
                 >
                   <span className="inline-flex min-h-6 shrink-0 items-center rounded-md bg-surface px-2 text-[10px] font-bold text-muted">
                     <DialectSiglum siglum={dialect} />
                   </span>
+                  {label ? (
+                    <LinguisticGloss
+                      code={label}
+                      label={
+                        grammarAbbreviationTooltips[
+                          label.toLocaleLowerCase()
+                        ] ?? label
+                      }
+                      size="body"
+                    />
+                  ) : null}
                   <span
                     className={`${antinoou.className} min-w-0 break-words text-base leading-snug [overflow-wrap:anywhere]`}
                   >
@@ -638,37 +960,32 @@ export default function DictionaryEntryCard({
             </div>
           </div>
         )}
-        {imperativeForms.length > 0 && primaryDialectKey && (
+
+        {greekSources.length > 0 && (
           <div className="mt-5 flex flex-col gap-3">
             <span className="text-xs font-semibold uppercase tracking-widest text-muted">
-              {t("entry.imperatives")}
+              {t("entry.greekSources")}
             </span>
-            <div className="flex flex-wrap gap-2.5">
-              <span className="inline-flex max-w-full items-start gap-2 rounded-lg border border-line bg-elevated/65 px-3 py-2 text-sm text-ink">
-                <span className="inline-flex min-h-6 shrink-0 items-center rounded-md bg-surface px-2 text-[10px] font-bold text-muted">
-                  <DialectSiglum siglum={primaryDialectKey} />
-                </span>
+            <div className="flex flex-wrap gap-2">
+              {greekSources.map((gr, idx) => (
                 <span
-                  className={`${antinoou.className} min-w-0 break-words text-base leading-snug [overflow-wrap:anywhere]`}
+                  key={idx}
+                  className="rounded-lg border border-coptic/20 bg-coptic-soft px-3 py-1.5 text-sm font-medium text-coptic"
                 >
-                  <HighlightText
-                    text={formatImperativeForms(imperativeForms)}
-                    query={query}
-                    symbolTooltips={formSymbolTooltips}
-                  />
+                  <HighlightText text={gr} query={query} />
                 </span>
-              </span>
+              ))}
             </div>
           </div>
         )}
 
-        {(entry.greek?.length ?? 0) > 0 && (
+        {greekEquivalents.length > 0 && (
           <div className="mt-5 flex flex-col gap-3">
             <span className="text-xs font-semibold uppercase tracking-widest text-muted">
               {t("entry.greekEquivalents")}
             </span>
             <div className="flex flex-wrap gap-2">
-              {entry.greek?.map((gr, idx) => (
+              {greekEquivalents.map((gr, idx) => (
                 <span
                   key={idx}
                   className="rounded-lg border border-coptic/20 bg-coptic-soft px-3 py-1.5 text-sm font-medium text-coptic"
