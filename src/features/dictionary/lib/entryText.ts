@@ -32,6 +32,7 @@ type EntryMeaningSource = Pick<
 type SenseDisplayOptions = {
   dialectForms?: DialectForms;
   hasImperativeForms?: boolean;
+  viewDialect?: DictionaryDialectCode;
 };
 
 type LocalizedDictionarySense = {
@@ -267,7 +268,22 @@ export function getLocalizedSenseGroups(
     const complementizerGovernment =
       sense.grammar.complementizerGovernment ?? [];
     const constructionGovernment = sense.grammar.constructionGovernment ?? [];
-    const prepGovernment = sense.grammar.prepGovernment ?? [];
+    const prepGovMap = sense.grammar.prepGovernment;
+    let prepGovernment: DictionaryPrepGovernment[] = [];
+    if (prepGovMap) {
+      if (options.viewDialect && options.viewDialect in prepGovMap) {
+        prepGovernment = prepGovMap[options.viewDialect] ?? [];
+      } else {
+        const availableDialects = Object.keys(
+          prepGovMap,
+        ) as DictionaryDialectCode[];
+        if (availableDialects.includes("S")) {
+          prepGovernment = prepGovMap["S"] ?? [];
+        } else if (availableDialects.length > 0) {
+          prepGovernment = prepGovMap[availableDialects[0]] ?? [];
+        }
+      }
+    }
     const genderedRows =
       sense.grammar.pos === "N" && !attachedGenderedMeanings
         ? genderedMeanings

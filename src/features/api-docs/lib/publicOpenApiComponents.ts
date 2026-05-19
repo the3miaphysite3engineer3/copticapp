@@ -2,7 +2,7 @@ import {
   DICTIONARY_COMPLEMENTIZER_GOVERNMENT_FORMS,
   DICTIONARY_CONSTRUCTION_GOVERNMENT_FORMS,
   DICTIONARY_DIALECT_CODES,
-  DICTIONARY_PREP_GOVERNMENT_FORMS,
+  DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT,
 } from "@/features/dictionary/config";
 import { MAX_DICTIONARY_SEARCH_QUERY_LENGTH } from "@/features/dictionary/search";
 
@@ -527,12 +527,25 @@ export function buildPublicOpenApiComponents(context: PublicOpenApiContext) {
           },
           prepGovernment: {
             description:
-              "Canonical Coptic prepositional government required by this verb sense.",
-            type: "array",
-            items: {
-              type: "string",
-              enum: [...DICTIONARY_PREP_GOVERNMENT_FORMS],
+              "Dialect-aware prepositional government mapping dialect codes to lists of canonical Coptic prepositional forms.",
+            type: "object",
+            properties: {
+              S: {
+                type: "array",
+                items: {
+                  type: "string",
+                  enum: [...DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT.S],
+                },
+              },
+              B: {
+                type: "array",
+                items: {
+                  type: "string",
+                  enum: [...DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT.B],
+                },
+              },
             },
+            additionalProperties: false,
           },
           tags: {
             type: "array",

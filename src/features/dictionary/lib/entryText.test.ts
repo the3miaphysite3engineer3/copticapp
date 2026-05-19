@@ -177,25 +177,32 @@ describe("localized sense groups", () => {
 
   it("carries prepositional government through sense groups", () => {
     expect(
-      getLocalizedSenseGroups({
-        ...groupedVerbEntry,
-        senses: [
-          {
-            grammar: {
-              pos: "V",
-              prepGovernment: ["ⲉ-", "ⲙⲛ-"],
-              valency: "INTR",
+      getLocalizedSenseGroups(
+        {
+          ...groupedVerbEntry,
+          senses: [
+            {
+              grammar: {
+                pos: "V",
+                prepGovernment: {
+                  S: ["ⲉ-/ⲉⲣⲟ=", "ⲙⲛ-/ⲛⲙⲙⲁ="],
+                  B: ["ⲉ-/ⲉⲣⲟ=", "ⲛⲉⲙ-/ⲛⲉⲙⲁ="],
+                },
+                valency: "INTR",
+              },
+              meanings: { en: ["believe"] },
             },
-            meanings: { en: ["believe"] },
-          },
-        ],
-      }),
+          ],
+        },
+        "en",
+        { viewDialect: "B" },
+      ),
     ).toEqual([
       {
         code: "INTR",
         meanings: ["believe"],
         notes: [],
-        prepGovernment: ["ⲉ-", "ⲙⲛ-"],
+        prepGovernment: ["ⲉ-/ⲉⲣⲟ=", "ⲛⲉⲙ-/ⲛⲉⲙⲁ="],
       },
     ]);
   });

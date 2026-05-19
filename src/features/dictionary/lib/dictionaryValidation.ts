@@ -2,6 +2,7 @@ import {
   DICTIONARY_COMPLEMENTIZER_GOVERNMENT_FORMS,
   DICTIONARY_CONSTRUCTION_GOVERNMENT_FORMS,
   DICTIONARY_DIALECT_CODES,
+  DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT,
   DICTIONARY_PREP_GOVERNMENT_FORMS,
   DICTIONARY_SENSE_CODES,
   PARTS_OF_SPEECH,
@@ -74,6 +75,10 @@ const allowedConstructionGovernmentForms = new Set<string>(
 const allowedPrepGovernmentForms = new Set<string>(
   DICTIONARY_PREP_GOVERNMENT_FORMS,
 );
+const allowedPrepGovernmentFormsForDialect = {
+  S: new Set<string>(DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT.S),
+  B: new Set<string>(DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT.B),
+};
 const allowedSenseGrammarTags = new Set<string>(DICTIONARY_SENSE_CODES);
 const senseGrammarEnumFields = {
   affix: ["PFX", "SFX"],
@@ -302,14 +307,84 @@ function validatePrepGovernment(
   value: unknown,
   path: string,
 ) {
-  validateGovernmentForms(
-    issues,
-    allowedPrepGovernmentForms,
-    "prepGovernment",
-    "prepositional government",
-    value,
-    path,
-  );
+  if (!isPlainRecord(value)) {
+    addIssue(
+      issues,
+      path,
+      "expected a dialect-keyed prepositional government object",
+      value,
+    );
+    return;
+  }
+
+  for (const [dialect, prepList] of Object.entries(value)) {
+    const dialectPath = `${path}.${dialect}`;
+    if (!allowedDialectCodes.has(dialect)) {
+      addIssue(
+        issues,
+        dialectPath,
+        "expected a supported dialect code",
+        dialect,
+      );
+      continue;
+    }
+    if (dialect !== "S" && dialect !== "B") {
+      addIssue(
+        issues,
+        dialectPath,
+        "prepositional government is only supported for S and B dialects currently",
+        dialect,
+      );
+      continue;
+    }
+
+    if (!Array.isArray(prepList) || prepList.length === 0) {
+      addIssue(
+        issues,
+        dialectPath,
+        "expected a non-empty prepositional government array",
+        prepList,
+      );
+      continue;
+    }
+
+    const seen = new Set<string>();
+    for (const [index, prep] of prepList.entries()) {
+      const itemPath = `${dialectPath}[${index}]`;
+      if (typeof prep !== "string" || !allowedPrepGovernmentForms.has(prep)) {
+        addIssue(
+          issues,
+          itemPath,
+          "expected a supported prepositional government form",
+          prep,
+        );
+        continue;
+      }
+
+      const dialectAllowedPreps =
+        allowedPrepGovernmentFormsForDialect[dialect as "S" | "B"];
+      if (!dialectAllowedPreps.has(prep)) {
+        addIssue(
+          issues,
+          itemPath,
+          `preposition "${prep}" is not standard for dialect ${dialect}`,
+          prep,
+        );
+        continue;
+      }
+
+      if (seen.has(prep)) {
+        addIssue(
+          issues,
+          itemPath,
+          "prepositional government forms must be unique",
+          prep,
+        );
+        continue;
+      }
+      seen.add(prep);
+    }
+  }
 }
 
 function validateDialectCodeArray(

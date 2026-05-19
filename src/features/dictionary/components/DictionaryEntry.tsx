@@ -403,6 +403,7 @@ export default function DictionaryEntryCard({
     dialectForms: primaryForms,
     hasImperativeForms:
       hasPrimaryImperativeForms || imperativeVariantForms.length > 0,
+    viewDialect: primaryDialectKey,
   });
   const hasGroupedGenderedMeanings = localizedSenses.some(
     (group) => (group.genderedRows?.length ?? 0) > 0,

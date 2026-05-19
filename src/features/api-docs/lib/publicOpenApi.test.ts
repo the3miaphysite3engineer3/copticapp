@@ -4,7 +4,7 @@ import {
   DICTIONARY_COMPLEMENTIZER_GOVERNMENT_FORMS,
   DICTIONARY_CONSTRUCTION_GOVERNMENT_FORMS,
   DICTIONARY_DIALECT_CODES,
-  DICTIONARY_PREP_GOVERNMENT_FORMS,
+  DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT,
 } from "@/features/dictionary/config";
 
 import { getPublicOpenApiDocument } from "./publicOpenApi";
@@ -132,10 +132,31 @@ describe("public OpenAPI document", () => {
     expect(
       (
         document.components.schemas.DictionarySenseGrammar as {
-          properties: Record<string, { items?: { enum?: string[] } }>;
+          properties: {
+            prepGovernment: {
+              properties: {
+                S: { items: { enum: string[] } };
+                B: { items: { enum: string[] } };
+              };
+            };
+          };
         }
-      ).properties.prepGovernment.items?.enum,
-    ).toEqual([...DICTIONARY_PREP_GOVERNMENT_FORMS]);
+      ).properties.prepGovernment.properties.S.items.enum,
+    ).toEqual([...DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT.S]);
+    expect(
+      (
+        document.components.schemas.DictionarySenseGrammar as {
+          properties: {
+            prepGovernment: {
+              properties: {
+                S: { items: { enum: string[] } };
+                B: { items: { enum: string[] } };
+              };
+            };
+          };
+        }
+      ).properties.prepGovernment.properties.B.items.enum,
+    ).toEqual([...DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT.B]);
     expect(
       (
         document.components.schemas.DictionarySenseGrammar as {

@@ -86,22 +86,22 @@
         "nominal": "ϯ-",
         "pronominal": "ⲧⲉⲉ=",
         "stative": "ⲧⲁ(ⲁ)ⲓ†",
+        "participles": ["ⲧⲁⲓ~"],
         "variants": {
           "absolute": ["ⲧⲓ"],
           "nominal": ["ⲧⲉ-", "ⲧⲁ-"],
           "pronominal": ["ⲧⲉⲉⲓⲧ=", "ⲧⲉⲓ=", "ⲧⲉⲓⲉⲓ=", "ⲧⲉⲓⲧ=", "ⲧⲁⲓⲧ="],
           "stative": ["ⲧⲁⲁⲓⲉ†"]
-        },
-        "participles": ["ⲧⲁⲓ~"]
+        }
       },
       "L": {
         "absolute": "ϯ",
         "pronominal": "ⲧⲉⲉ=",
         "stative": "ⲧⲟⲉⲓⲉ†",
+        "participles": ["ⲧⲁⲓ~"],
         "variants": {
           "pronominal": ["ⲧⲉⲉⲧ=", "ⲧⲉⲉⲓⲧ="]
-        },
-        "participles": ["ⲧⲁⲓ~"]
+        }
       },
       "Sl": {
         "pronominal": "ⲙⲁ="
@@ -111,12 +111,12 @@
         "nominal": "ϯ-",
         "pronominal": "ⲧⲁ(ⲁ)=",
         "stative": "ⲧⲟ†",
+        "participles": ["ⲧⲁⲓ̈~"],
         "variants": {
           "absolute": ["ϯⲉⲓ", "ⲧⲉⲓ", "ⲧⲛ", "ⲧⲓ", "ϯⲓ"],
           "pronominal": ["ϯ=", "ⲙⲏⲉⲓ="],
           "stative": ["ⲧⲱ†"]
-        },
-        "participles": ["ⲧⲁⲓ̈~"]
+        }
       },
       "Sf": {
         "stative": "ⲧⲁ†"
@@ -138,7 +138,10 @@
         "grammar": {
           "pos": "V",
           "valency": "TR",
-          "prepGovernment": ["ⲛ-/ⲛⲁ="]
+          "prepGovernment": {
+            "S": ["ⲛ-/ⲛⲁ="],
+            "B": ["ⲛ-/ⲛⲁ="]
+          }
         },
         "meanings": {
           "en": ["pay", "smite"],
@@ -233,20 +236,20 @@
       },
       "F": {
         "absolute": "ⲛⲉⲓ",
+        "participles": ["ⲛⲁ~"],
         "variants": {
           "absolute": ["ⲛⲉⲉⲓ"]
-        },
-        "participles": ["ⲛⲁ~"]
+        }
       },
       "L": {
         "absolute": "ⲛⲁⲉ"
       },
       "S": {
         "absolute": "ⲛⲁ",
+        "participles": ["ⲛⲁ~"],
         "variants": {
           "absolute": ["ⲛⲁⲁ", "ⲛⲁⲉ", "ⲛⲁⲓ", "ⲛⲁⲉⲓⲏ"]
-        },
-        "participles": ["ⲛⲁ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -655,7 +658,7 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "INTR"
+          "valency": "TR"
         },
         "meanings": {
           "en": ["open, be open"],
@@ -672,7 +675,8 @@
         "dialects": ["O"],
         "grammar": {
           "pos": "V",
-          "form": "PC"
+          "form": "PC",
+          "valency": "TR"
         }
       }
     ],
@@ -716,10 +720,10 @@
         "nominal": "ϣⲉⲡ-",
         "pronominal": "ϣⲟⲡ=",
         "stative": "ϣⲏⲡ†",
+        "participles": ["ϣⲁⲡ~"],
         "variants": {
           "nominal": ["ϣⲡ-"]
-        },
-        "participles": ["ϣⲁⲡ~"]
+        }
       },
       "F": {
         "absolute": "ϣⲱⲡ",
@@ -731,10 +735,10 @@
         "absolute": "ϣⲱⲡ",
         "nominal": "ϣⲡ-",
         "pronominal": "ϣⲁⲡ=",
+        "participles": ["ϣⲁⲡ~"],
         "variants": {
           "nominal": ["ϣⲱⲡ-"]
-        },
-        "participles": ["ϣⲁⲡ~"]
+        }
       },
       "S": {
         "absolute": "ϣⲱⲡ",
@@ -1221,10 +1225,10 @@
         "nominal": "ϭⲉⲥ-",
         "pronominal": "ϭⲁⲥ=",
         "stative": "ϭⲟⲥⲓ†",
+        "participles": ["ϭⲁⲥⲓ~"],
         "variants": {
           "nominal": ["ϭⲁⲥ-"]
-        },
-        "participles": ["ϭⲁⲥⲓ~"]
+        }
       },
       "F": {
         "absolute": "ϫⲓⲥⲓ",
@@ -1237,21 +1241,21 @@
         "nominal": "ϫⲉⲥⲧ-",
         "pronominal": "ϫⲉⲥⲧ=",
         "stative": "ϫⲁⲥⲉ†",
+        "participles": ["ϫⲁⲥⲓ~"],
         "variants": {
           "stative": ["ϫⲁⲥⲓ†"]
-        },
-        "participles": ["ϫⲁⲥⲓ~"]
+        }
       },
       "S": {
         "absolute": "ϫⲓⲥⲉ",
         "nominal": "ϫⲉⲥⲧ-",
         "pronominal": "ϫⲁⲥⲧ=",
         "stative": "ϫⲟⲥⲉ†",
+        "participles": ["ϫⲁⲥⲓ~"],
         "variants": {
           "nominal": ["ϫⲁⲥⲧ-"],
           "pronominal": ["ϫⲓⲥⲧ="]
-        },
-        "participles": ["ϫⲁⲥⲓ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -1899,10 +1903,10 @@
         "nominal": "ⲉⲣ-",
         "pronominal": "ⲁⲓ=",
         "stative": "ⲟⲓ†",
+        "participles": ["ⲣⲁ~"],
         "variants": {
           "absolute": ["ⲗⲁ", "ⲣⲁ"]
-        },
-        "participles": ["ⲣⲁ~"]
+        }
       },
       "F": {
         "absolute": "ⲓⲗⲓ",
@@ -1948,11 +1952,11 @@
         "nominal": "ⲣ-",
         "pronominal": "ⲁⲁ=",
         "stative": "ⲟ†",
+        "participles": ["ⲣⲁ~"],
         "variants": {
           "nominal": ["ⲉⲣ-"],
           "pronominal": ["ⲉⲓⲁⲧ="]
-        },
-        "participles": ["ⲣⲁ~"]
+        }
       }
     },
     "dialectMeanings": [
@@ -1991,7 +1995,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲛ-/ⲛⲁ="]
+          "prepGovernment": {
+            "S": ["ⲛ-/ⲛⲁ="],
+            "B": ["ⲛ-/ⲛⲁ="]
+          }
         },
         "meanings": {
           "en": ["act", "become, befall"],
@@ -2213,29 +2220,29 @@
         "absolute": "ⲙⲓⲥⲉ",
         "nominal": "ⲙⲉⲥ-",
         "pronominal": "ⲙⲁⲥⲧ=",
+        "participles": ["ⲙⲁⲥ~"],
         "variants": {
           "pronominal": ["ⲙⲉⲥⲧ="],
           "constructParticiples": ["ⲙⲉⲥ~"]
-        },
-        "participles": ["ⲙⲁⲥ~"]
+        }
       },
       "B": {
         "absolute": "ⲙⲓⲥⲓ",
         "nominal": "ⲙⲉⲥ-",
         "pronominal": "ⲙⲁⲥ=",
         "stative": "ⲙⲟⲥⲓ†",
+        "participles": ["ⲙⲁⲥ~"],
         "variants": {
           "nominal": ["ⲙⲁⲥ-"]
-        },
-        "participles": ["ⲙⲁⲥ~"]
+        }
       },
       "F": {
         "absolute": "ⲙⲓⲥⲓ",
         "nominal": "ⲙⲉⲥ-",
+        "participles": ["ⲙⲁⲥ~"],
         "variants": {
           "constructParticiples": ["ⲙⲉⲥ~"]
-        },
-        "participles": ["ⲙⲁⲥ~"]
+        }
       },
       "L": {
         "absolute": "ⲙⲓⲥⲉ"
@@ -2249,12 +2256,12 @@
         "nominal": "ⲙⲁⲥ-",
         "pronominal": "ⲙⲁⲥⲧ=",
         "stative": "ⲙⲟⲥⲉ†",
+        "participles": ["ⲙⲁⲥ~"],
         "variants": {
           "nominal": ["ⲙⲉⲥ-", "ⲙⲉⲥⲧ-"],
           "pronominal": ["ⲙⲉⲥⲧ=", "ⲙⲁⲥ="],
           "constructParticiples": ["ⲙⲉⲥ~"]
-        },
-        "participles": ["ⲙⲁⲥ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -2326,12 +2333,12 @@
         "nominal": "ϭ(ⲉ)ⲗⲡ-",
         "pronominal": "ϭⲟⲗⲡ=",
         "stative": "ϭⲟⲗⲡ†",
+        "participles": ["ϭⲁⲗⲡ̄~"],
         "variants": {
           "absolute": ["ⲕⲱⲗⲡ"],
           "pronominal": ["ⲕⲟⲗⲡ="],
           "stative": ["ⲕⲟⲗⲡ†"]
-        },
-        "participles": ["ϭⲁⲗⲡ̄~"]
+        }
       },
       "Sa": {
         "stative": "ϭⲁⲗⲡ†"
@@ -2492,7 +2499,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲉ-"],
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          },
           "complementizerGovernment": ["ϫⲉ-"]
         },
         "meanings": {
@@ -2712,7 +2722,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲛ-/ⲙⲙⲟ=", "ⲛ-/ⲛⲁ="]
+          "prepGovernment": {
+            "S": ["ⲛ-/ⲙⲙⲟ=", "ⲛ-/ⲛⲁ="],
+            "B": ["ⲛ-/ⲙⲙⲟ=", "ⲛ-/ⲛⲁ="]
+          }
         },
         "meanings": {
           "en": ["be", "have"],
@@ -2738,7 +2751,10 @@
           "pos": "V",
           "valency": "INTR",
           "tags": ["AUX"],
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "notes": {
           "en": ["With another verb.", "With ⲉ- before verbal forms."],
@@ -2809,11 +2825,11 @@
         "nominal": "ⲟⲩⲉϩ-",
         "pronominal": "ⲟⲩⲁϩ=",
         "stative": "ⲟⲩⲏϩ†",
+        "participles": ["ⲟⲩⲁϩ~"],
         "variants": {
           "nominal": ["ⲟⲩⲱϩ-"],
           "stative": ["ⲟⲩⲏⲏϩ†"]
-        },
-        "participles": ["ⲟⲩⲁϩ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -3164,11 +3180,11 @@
         "absolute": "ϫⲱ",
         "nominal": "ϫⲉ-",
         "pronominal": "ϫⲟⲟ=",
+        "participles": ["ϫⲁⲧ~"],
         "variants": {
           "absolute": ["ϫⲟⲩ", "ϫⲟⲟⲩⲉ"],
           "pronominal": ["ϫⲓ=", "ϫⲟ=", "ⲉϫⲓ="]
-        },
-        "participles": ["ϫⲁⲧ~"]
+        }
       },
       "M": {
         "absolute": "ⲁϫⲱ",
@@ -3185,12 +3201,12 @@
         "absolute": "ϫⲱ",
         "nominal": "ϫⲉ-",
         "pronominal": "ϫⲟⲟ=",
+        "participles": ["ϫⲁⲧ~"],
         "variants": {
           "absolute": ["ϫⲓ"],
           "nominal": ["ⲁϫⲓ-"],
           "pronominal": ["ϫⲓⲧ="]
-        },
-        "participles": ["ϫⲁⲧ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -3700,11 +3716,11 @@
         "absolute": "ϣⲓⲛⲉ",
         "nominal": "ϣⲉⲛ-",
         "pronominal": "ϣⲛⲧ=",
+        "participles": ["ϣⲁⲛ(ⲁ/ⲉ)~"],
         "variants": {
           "nominal": ["ϣⲉⲛⲧ-"],
           "constructParticiples": ["ϣⲛ̄~"]
-        },
-        "participles": ["ϣⲁⲛ(ⲁ/ⲉ)~"]
+        }
       }
     },
     "etym": "Egy",
@@ -3894,10 +3910,10 @@
         "nominal": "ⲥⲕ-",
         "pronominal": "ⲥⲟⲕ=",
         "stative": "ⲥⲏⲕ†",
+        "participles": ["ⲥⲁⲕ~"],
         "variants": {
           "nominal": ["ⲥⲉⲕ-", "ⲥⲁⲕ-"]
-        },
-        "participles": ["ⲥⲁⲕ~"]
+        }
       },
       "Sf": {
         "pronominal": "ⲥⲁⲕ="
@@ -4188,40 +4204,40 @@
         "nominal": "ⲃⲉⲗ-",
         "pronominal": "ⲃⲟⲗ=",
         "stative": "ⲃⲏⲗ†",
+        "participles": ["ⲃⲁⲗ~"],
         "variants": {
           "pronominal": ["ⲃⲁⲗ="]
-        },
-        "participles": ["ⲃⲁⲗ~"]
+        }
       },
       "B": {
         "absolute": "ⲃⲱⲗ",
         "nominal": "ⲃⲉⲗ-",
         "pronominal": "ⲃⲟⲗ=",
         "stative": "ⲃⲏⲗ†",
+        "participles": ["ⲃⲁⲗ~"],
         "variants": {
           "pronominal": ["ⲃⲁⲗ="]
-        },
-        "participles": ["ⲃⲁⲗ~"]
+        }
       },
       "F": {
         "absolute": "ⲃⲱⲗ",
         "nominal": "ⲃⲉⲗ-",
         "pronominal": "ⲃⲟⲗ=",
         "stative": "ⲃⲏⲗ†",
+        "participles": ["ⲃⲁⲗ~"],
         "variants": {
           "pronominal": ["ⲃⲁⲗ="]
-        },
-        "participles": ["ⲃⲁⲗ~"]
+        }
       },
       "L": {
         "absolute": "ⲃⲱⲗ",
         "nominal": "ⲃⲉⲗ-",
         "pronominal": "ⲃⲟⲗ=",
         "stative": "ⲃⲏⲗ†",
+        "participles": ["ⲃⲁⲗ~"],
         "variants": {
           "pronominal": ["ⲃⲁⲗ="]
-        },
-        "participles": ["ⲃⲁⲗ~"]
+        }
       },
       "M": {
         "absolute": "ⲃⲟⲗ",
@@ -4232,20 +4248,20 @@
         "nominal": "ⲃⲉⲗ-",
         "pronominal": "ⲃⲟⲗ=",
         "stative": "ⲃⲏⲗ†",
+        "participles": ["ⲃⲁⲗ~"],
         "variants": {
           "pronominal": ["ⲃⲁⲗ="]
-        },
-        "participles": ["ⲃⲁⲗ~"]
+        }
       },
       "S": {
         "absolute": "ⲃⲱⲗ",
         "nominal": "ⲃⲉⲗ-",
         "pronominal": "ⲃⲟⲗ=",
         "stative": "ⲃⲏⲗ†",
+        "participles": ["ⲃⲁⲗ~"],
         "variants": {
           "pronominal": ["ⲃⲁⲗ="]
-        },
-        "participles": ["ⲃⲁⲗ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -4423,7 +4439,10 @@
           "pos": "V",
           "valency": "INTR",
           "caseRole": "OBJ",
-          "prepGovernment": ["ⲉ-", "ⲉⲧⲃⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ=", "ⲉⲧⲃⲉ-/ⲉⲧⲃⲏⲏⲧ="],
+            "B": ["ⲉ-/ⲉⲣⲟ=", "ⲉⲑⲃⲉ-/ⲉⲑⲃⲏⲧ="]
+          }
         }
       }
     ],
@@ -5919,10 +5938,10 @@
         "absolute": "ⲟⲩⲱⲙ",
         "nominal": "ⲟⲩⲉⲙ-",
         "pronominal": "ⲟⲩⲟⲙ=",
+        "participles": ["ⲟⲩⲁⲙ~"],
         "variants": {
           "nominal": ["ⲟⲩⲱⲙ-"]
-        },
-        "participles": ["ⲟⲩⲁⲙ~"]
+        }
       },
       "F": {
         "absolute": "ⲟⲩⲱⲙ",
@@ -5941,13 +5960,13 @@
         "absolute": "ⲟⲩⲱⲙ",
         "nominal": "ⲟⲩ(ⲉ)ⲙ-",
         "pronominal": "ⲟⲩⲟⲙ=",
+        "participles": ["ⲟⲩⲁⲙ~"],
         "variants": {
           "absolute": ["ⲟⲩⲟⲟⲙ"],
           "nominal": ["ⲟⲩⲱⲙ-"],
           "pronominal": ["ⲟⲩⲟⲟⲙ="],
           "constructParticiples": ["ⲁⲙ~"]
-        },
-        "participles": ["ⲟⲩⲁⲙ~"]
+        }
       },
       "Sa": {
         "pronominal": "ⲟⲩⲁⲙ="
@@ -6075,10 +6094,10 @@
         "absolute": "ⲙⲟⲥⲧⲉ",
         "nominal": "ⲙⲉⲥⲧⲉ-",
         "pronominal": "ⲙⲉⲥⲧⲱ=",
+        "participles": ["ⲙⲁⲥⲧ~"],
         "variants": {
           "constructParticiples": ["ⲙⲉⲥⲧⲉ~"]
-        },
-        "participles": ["ⲙⲁⲥⲧ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -6840,10 +6859,10 @@
         "nominal": "ϩⲁⲥⲧ-",
         "pronominal": "ϩⲁⲥⲧ=",
         "stative": "ϩⲟⲥⲉ†",
+        "participles": ["ϩⲁⲥⲧ̄~"],
         "variants": {
           "pronominal": ["ϩⲟⲥⲧ=", "ϩⲓⲥⲧ="]
-        },
-        "participles": ["ϩⲁⲥⲧ̄~"]
+        }
       },
       "Sa": {
         "stative": "ϩⲁⲥⲉ†"
@@ -7856,7 +7875,8 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "INTR"
+          "valency": "INTR",
+          "tags": ["ADJ"]
         },
         "meanings": {
           "en": ["nominal V be good, fair"],
@@ -7867,8 +7887,11 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "tags": ["IMPERS"],
-          "prepGovernment": ["ⲉ-"]
+          "tags": ["IMPERS", "ADJ"],
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["+ -ⲥ, it is good, right", "better than"],
@@ -7882,7 +7905,8 @@
       {
         "grammar": {
           "pos": "V",
-          "tags": ["REL"]
+          "tags": ["REL", "ADJ"],
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["ⲉⲛ., ⲉⲧⲛ. as ADJ good fair"],
@@ -8577,21 +8601,21 @@
         "nominal": "ϣ(ⲉ)ⲧ-",
         "pronominal": "ϣⲁⲧ=",
         "stative": "ϣⲁⲧ†",
+        "participles": ["ϣⲁⲧ~"],
         "variants": {
           "absolute": ["ϣⲱϯ"],
           "nominal": ["ϣⲁⲧ-"],
           "constructParticiples": ["ϣⲟⲧ~"]
-        },
-        "participles": ["ϣⲁⲧ~"]
+        }
       },
       "F": {
         "absolute": "ϣⲱⲱⲧ",
         "nominal": "ϣ(ⲉ)ⲧ-",
         "pronominal": "ϣⲉⲉⲧ=",
+        "participles": ["ϣⲁⲧ~"],
         "variants": {
           "nominal": ["ϣⲉⲉⲧ-"]
-        },
-        "participles": ["ϣⲁⲧ~"]
+        }
       },
       "L": {
         "absolute": "ϣⲱⲱⲧ",
@@ -8607,13 +8631,13 @@
         "nominal": "ϣ(ⲉ)ⲧ-",
         "pronominal": "ϣⲁⲁⲧ=",
         "stative": "ϣⲁⲁⲧ†",
+        "participles": ["ϣⲁⲧ~"],
         "variants": {
           "absolute": ["ϣⲱⲧ", "ϣⲱ(ⲱ)ⲧⲉ"],
           "nominal": ["ϣⲉⲉⲧ-"],
           "pronominal": ["ϣⲁⲧ="],
           "stative": ["ϣⲁⲧ†", "ϣⲏⲧ†"]
-        },
-        "participles": ["ϣⲁⲧ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -8688,11 +8712,11 @@
         "absolute": "ⲃⲱⲕ",
         "pronominal": "ⲃⲁⲕ=",
         "stative": "ⲃⲏⲕ†",
+        "participles": ["ⲃⲁⲕ~"],
         "variants": {
           "absolute": ["ϥⲱⲕ"],
           "stative": ["ϥⲏⲕ†"]
-        },
-        "participles": ["ⲃⲁⲕ~"]
+        }
       },
       "F": {
         "absolute": "ⲃⲱⲕ",
@@ -8868,7 +8892,10 @@
         "grammar": {
           "pos": "V",
           "valency": "TR",
-          "prepGovernment": ["ⲛ-/ⲙⲙⲟ="]
+          "prepGovernment": {
+            "S": ["ⲛ-/ⲙⲙⲟ="],
+            "B": ["ⲛ-/ⲙⲙⲟ="]
+          }
         },
         "meanings": {
           "en": ["resemble, be like"],
@@ -8934,10 +8961,10 @@
         "absolute": "ⲥⲱ",
         "nominal": "ⲥⲉ-",
         "pronominal": "ⲥⲟ=",
+        "participles": ["ⲥⲁⲩ~"],
         "variants": {
           "absolute": ["ⲥⲟⲩ"]
-        },
-        "participles": ["ⲥⲁⲩ~"]
+        }
       },
       "F": {
         "absolute": "ⲥⲱ",
@@ -8958,11 +8985,11 @@
         "absolute": "ⲥⲱ",
         "nominal": "ⲥⲉ-",
         "pronominal": "ⲥⲟⲟ=",
+        "participles": ["ⲥⲁⲩ~"],
         "variants": {
           "absolute": ["ⲥⲟⲩ"],
           "nominal": ["ⲥⲁ-", "ⲥⲉⲩ-", "ⲥⲟⲩ-"]
-        },
-        "participles": ["ⲥⲁⲩ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -9152,39 +9179,39 @@
         "nominal": "ϫⲓ-",
         "pronominal": "ϫⲓⲧ=",
         "stative": "ϫⲏⲩ†",
+        "participles": ["ϫⲁⲓ~"],
         "variants": {
           "stative": ["ϫⲏⲟⲩ†"]
-        },
-        "participles": ["ϫⲁⲓ~"]
+        }
       },
       "B": {
         "absolute": "ϭⲓ",
         "nominal": "ϭⲓ-",
         "pronominal": "ϭⲓⲧ=",
         "stative": "ϭⲏⲟⲩ†",
+        "participles": ["ϭⲁⲓ~"],
         "variants": {
           "constructParticiples": ["ϭⲁⲩ~"]
-        },
-        "participles": ["ϭⲁⲓ~"]
+        }
       },
       "F": {
         "absolute": "ϫⲓ",
         "nominal": "ϫⲓ-",
         "pronominal": "ϫⲓⲧ=",
+        "participles": ["ϫⲁⲓ~"],
         "variants": {
           "nominal": ["ϫⲉ-", "ϭⲓ-"]
-        },
-        "participles": ["ϫⲁⲓ~"]
+        }
       },
       "L": {
         "absolute": "ϫⲓ",
         "nominal": "ϫⲓ-",
         "pronominal": "ϫⲓⲧ=",
         "stative": "ϫⲏⲩ†",
+        "participles": ["ϫⲁⲓ~"],
         "variants": {
           "constructParticiples": ["ϫⲁⲉⲓ~", "ϫⲁⲩ~"]
-        },
-        "participles": ["ϫⲁⲓ~"]
+        }
       },
       "O": {
         "nominal": "ϫⲓ-",
@@ -9195,11 +9222,11 @@
         "nominal": "ϫⲓ-",
         "pronominal": "ϫⲓⲧ=",
         "stative": "ϫⲏⲩ†",
+        "participles": ["ϫⲁⲓ̈~"],
         "variants": {
           "nominal": ["ϫⲉ-", "ϫⲉⲓ-"],
           "constructParticiples": ["ϫⲁⲩ~"]
-        },
-        "participles": ["ϫⲁⲓ̈~"]
+        }
       },
       "Sf": {
         "absolute": "ϫⲉⲓ",
@@ -9448,39 +9475,39 @@
         "absolute": "ϥⲓ",
         "nominal": "ϥⲓ-",
         "pronominal": "ϥⲓⲧ=",
+        "participles": ["ϥⲁⲓ~"],
         "variants": {
           "constructParticiples": ["ϥⲁⲉⲓ~"]
-        },
-        "participles": ["ϥⲁⲓ~"]
+        }
       },
       "B": {
         "absolute": "ϥⲓ",
         "nominal": "ϥⲓ-",
         "pronominal": "ϥⲓⲧ=",
+        "participles": ["ϥⲁⲓ~"],
         "variants": {
           "absolute": ["ϥⲁⲓ"]
-        },
-        "participles": ["ϥⲁⲓ~"]
+        }
       },
       "F": {
         "absolute": "ϥⲓ",
         "nominal": "ϥⲓ-",
         "pronominal": "ϥⲓⲧ=",
+        "participles": ["ⲃⲁⲓ~"],
         "variants": {
           "absolute": ["ⲃⲓ"],
           "constructParticiples": ["ϥⲁⲉⲓ~", "ⲃⲁⲉⲓ~"]
-        },
-        "participles": ["ⲃⲁⲓ~"]
+        }
       },
       "L": {
         "absolute": "ϥⲓ",
         "nominal": "ϥⲓ-",
         "pronominal": "ϥⲓⲧ=",
+        "participles": ["ⲃⲁⲓ~"],
         "variants": {
           "absolute": ["ⲃⲓ"],
           "pronominal": ["ⲃⲓⲧ="]
-        },
-        "participles": ["ⲃⲁⲓ~"]
+        }
       },
       "O": {
         "absolute": "ⲃⲓ",
@@ -9491,12 +9518,12 @@
         "nominal": "ϥⲓ-",
         "pronominal": "ϥⲓⲧ=",
         "stative": "ϥⲏⲩ†",
+        "participles": ["ϥⲁⲓ̈~"],
         "variants": {
           "absolute": ["ϥⲉⲓ"],
           "nominal": ["ϥⲉⲓ-"],
           "constructParticiples": ["ⲃⲁⲓ̈~"]
-        },
-        "participles": ["ϥⲁⲓ̈~"]
+        }
       }
     },
     "etym": "Egy",
@@ -9804,10 +9831,10 @@
         "nominal": "ⲕⲁ-",
         "pronominal": "ⲕⲁⲁ=",
         "stative": "ⲕⲏ†",
+        "participles": ["ⲕⲁ~"],
         "variants": {
           "pronominal": ["ⲕⲉⲉ=", "ⲕⲉ="]
-        },
-        "participles": ["ⲕⲁ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -9816,7 +9843,10 @@
         "grammar": {
           "pos": "V",
           "valency": "TR",
-          "prepGovernment": ["ⲛ-/ⲛⲁ="]
+          "prepGovernment": {
+            "S": ["ⲛ-/ⲛⲁ="],
+            "B": ["ⲛ-/ⲛⲁ="]
+          }
         },
         "meanings": {
           "en": [
@@ -10052,7 +10082,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "TR"
         },
         "meanings": {
           "en": ["bend"],
@@ -10062,7 +10093,7 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "INTR"
+          "valency": "TR"
         },
         "meanings": {
           "en": ["with PREP"],
@@ -10276,7 +10307,10 @@
           "pos": "V",
           "valency": "INTR",
           "tags": ["SIM"],
-          "prepGovernment": ["ⲉ-", "ⲛ-/ⲛⲁ="]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ=", "ⲛ-/ⲛⲁ="],
+            "B": ["ⲉ-/ⲉⲣⲟ=", "ⲛ-/ⲛⲁ="]
+          }
         },
         "meanings": {
           "en": ["meditate doing, be about to do"],
@@ -10670,20 +10704,20 @@
         "absolute": "ⲕⲱⲕ",
         "pronominal": "ⲕⲁⲁⲕ=",
         "stative": "ⲕⲁⲁⲕ†",
+        "participles": ["ⲕⲁⲕ~"],
         "variants": {
           "stative": ["ⲕⲁⲕ†"]
-        },
-        "participles": ["ⲕⲁⲕ~"]
+        }
       },
       "B": {
         "absolute": "ⲕⲱⲕ",
         "nominal": "ⲕⲉⲕ-",
         "pronominal": "ⲕⲟⲕ=",
         "stative": "ⲕⲏⲕ†",
+        "participles": ["ⲕⲁⲕ~"],
         "variants": {
           "absolute": ["ⲭⲱⲕ"]
-        },
-        "participles": ["ⲕⲁⲕ~"]
+        }
       },
       "F": {
         "absolute": "ⲕⲱⲕ",
@@ -10703,10 +10737,10 @@
         "nominal": "ⲕⲉⲕ-",
         "pronominal": "ⲕⲟⲕ=",
         "stative": "ⲕⲏⲕ†",
+        "participles": ["ⲕⲁⲕ~"],
         "variants": {
           "pronominal": ["ⲕⲁⲕ=", "ⲕⲁⲁⲕ="]
-        },
-        "participles": ["ⲕⲁⲕ~"]
+        }
       }
     },
     "dialectMeanings": [
@@ -10931,21 +10965,21 @@
         "nominal": "ⲙⲉⲣ-",
         "pronominal": "ⲙⲟⲣ=",
         "stative": "ⲙⲏⲣ†",
+        "participles": ["ⲙⲁⲣ~"],
         "variants": {
-          "constructParticiples": ["ⲙⲟⲣ~", "ⲙⲁⲣ~"]
-        },
-        "participles": ["ⲙⲉⲣ~"]
+          "constructParticiples": ["ⲙⲉⲣ~"]
+        }
       },
       "F": {
         "absolute": "ⲙⲟⲩⲣ",
         "nominal": "ⲙⲁⲣ-",
         "pronominal": "ⲙⲁⲣ=",
         "stative": "ⲙⲏⲣ†",
+        "participles": ["ⲙⲁⲣ~"],
         "variants": {
           "pronominal": ["ⲙⲁⲗ="],
           "stative": ["ⲙⲉⲗ†"]
-        },
-        "participles": ["ⲙⲁⲣ~"]
+        }
       },
       "L": {
         "absolute": "ⲙⲟⲩⲣ",
@@ -10957,11 +10991,11 @@
         "nominal": "ⲙⲣ-",
         "pronominal": "ⲙⲟⲣ=",
         "stative": "ⲙⲏⲣ†",
+        "participles": ["ⲙⲁⲣ~"],
         "variants": {
           "nominal": ["ⲙⲉⲣ-"],
           "constructParticiples": ["ⲙⲉⲣ~"]
-        },
-        "participles": ["ⲙⲁⲣ~"]
+        }
       },
       "Sf": {
         "nominal": "ⲙⲁⲣ-",
@@ -10994,7 +11028,10 @@
         "grammar": {
           "pos": "V",
           "valency": "TR",
-          "prepGovernment": ["ϩⲛ-", "ⲉ-", "ⲉϫⲛ-", "ⲛ-/ⲙⲙⲟ="]
+          "prepGovernment": {
+            "S": ["ϩⲛ-/ⲛϩⲏⲧ=", "ⲉ-/ⲉⲣⲟ=", "ⲉϫⲛ-/ⲉϫⲱ=", "ⲛ-/ⲙⲙⲟ="],
+            "B": ["ⳳⲉⲛ-/ⲛⳳⲏⲧ=", "ⲉ-/ⲉⲣⲟ=", "ⲉϫⲉⲛ-/ⲉϫⲱ=", "ⲛ-/ⲙⲙⲟ="]
+          }
         },
         "meanings": {
           "en": [
@@ -11645,27 +11682,27 @@
         "absolute": "ⲙⲉⲓⲉ",
         "nominal": "ⲙⲣⲣⲉ-",
         "pronominal": "ⲙⲉⲣⲓⲧ=",
+        "participles": ["ⲙⲁⲉⲓ~"],
         "variants": {
           "pronominal": ["ⲙⲣⲣⲓⲧ="]
-        },
-        "participles": ["ⲙⲁⲉⲓ~"]
+        }
       },
       "B": {
         "absolute": "ⲙⲉⲓ",
         "pronominal": "ⲙⲉⲛⲣⲓⲧ=",
+        "participles": ["ⲙⲁⲓ~"],
         "variants": {
           "absolute": ["ⲙⲏⲓ", "ⲙⲉⲛⲣⲉ"]
-        },
-        "participles": ["ⲙⲁⲓ~"]
+        }
       },
       "F": {
         "absolute": "ⲙⲏⲓ",
         "nominal": "ⲙⲉⲣⲓ-",
+        "participles": ["ⲙⲁⲓ~"],
         "variants": {
           "absolute": ["ⲙⲓ"],
           "nominal": ["ⲙⲉⲗⲗⲓ-"]
-        },
-        "participles": ["ⲙⲁⲓ~"]
+        }
       },
       "L": {
         "absolute": "ⲙⲁⲉⲓⲉ",
@@ -11682,11 +11719,11 @@
         "absolute": "ⲙⲉ",
         "nominal": "ⲙⲉⲣⲉ-",
         "pronominal": "ⲙⲉⲣⲓⲧ=",
+        "participles": ["ⲙⲁⲓ̈~"],
         "variants": {
           "absolute": ["ⲙⲉⲓ"],
           "constructParticiples": ["ⲙⲁⲉⲓ~"]
-        },
-        "participles": ["ⲙⲁⲓ̈~"]
+        }
       }
     },
     "etym": "Egy",
@@ -12023,7 +12060,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲛ-/ⲛⲁ="]
+          "prepGovernment": {
+            "S": ["ⲛ-/ⲛⲁ="],
+            "B": ["ⲛ-/ⲛⲁ="]
+          }
         },
         "meanings": {
           "en": ["thirst", "without object"],
@@ -12977,12 +13017,12 @@
         "nominal": "ⲡⲉⲉⲛⲉ-",
         "pronominal": "ⲡⲟⲟⲛⲉ=",
         "stative": "ⲡⲟⲟⲛⲉ†",
+        "participles": ["ⲡⲁⲛⲉ~"],
         "variants": {
           "absolute": ["ⲡⲱⲛⲉ"],
           "nominal": ["ⲡⲉⲛⲉ-", "ⲡⲛⲛⲉ-"],
           "pronominal": ["ⲡⲉⲛ=", "ⲡⲁⲁⲛⲉ="]
-        },
-        "participles": ["ⲡⲁⲛⲉ~"]
+        }
       },
       "Sf": {
         "absolute": "ⲡⲱⲛⲓ"
@@ -15809,7 +15849,8 @@
       {
         "grammar": {
           "pos": "V",
-          "tags": ["N"]
+          "tags": ["N"],
+          "valency": "TR"
         },
         "meanings": {
           "en": ["bake", "baking"],
@@ -15823,7 +15864,7 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "INTR",
+          "valency": "TR",
           "tags": ["N"]
         },
         "meanings": {
@@ -16410,7 +16451,10 @@
           "pos": "V",
           "valency": "TR",
           "voice": "REFL",
-          "prepGovernment": ["ⲛ-/ⲙⲙⲟ="]
+          "prepGovernment": {
+            "S": ["ⲛ-/ⲙⲙⲟ="],
+            "B": ["ⲛ-/ⲙⲙⲟ="]
+          }
         },
         "meanings": {
           "en": ["consider"],
@@ -16559,7 +16603,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": [
@@ -16608,10 +16655,10 @@
         "participles": ["ϣⲁⲃⲓ~"]
       },
       "B": {
+        "participles": ["ϣⲉⲃⲓ~"],
         "variants": {
           "constructParticiples": ["ϣⲁⲃⲓ~"]
-        },
-        "participles": ["ϣⲉⲃⲓ~"]
+        }
       },
       "F": {
         "absolute": "ϣⲓⲃⲓ",
@@ -16627,13 +16674,13 @@
         "nominal": "ϣⲃ-",
         "pronominal": "ϣⲃⲧ=",
         "stative": "ϣⲟ(ⲟ)ⲃⲉ†",
+        "participles": ["ϣⲁⲃⲉ~"],
         "variants": {
           "nominal": ["ϣ(ⲉ)ⲃⲧ-", "ϣⲉϥⲧ-"],
           "pronominal": ["ϣⲉⲃⲧ=", "ϣⲉϥⲧ="],
           "stative": ["ϣⲟ(ⲟ)ϥⲉ†"],
           "constructParticiples": ["ϣⲁϥⲉ~"]
-        },
-        "participles": ["ϣⲁⲃⲉ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -16651,7 +16698,7 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "TR"
+          "valency": "INTR"
         }
       },
       {
@@ -16668,7 +16715,8 @@
       {
         "grammar": {
           "pos": "V",
-          "form": "PC"
+          "form": "PC",
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["changing, so strange, fearful"],
@@ -16866,7 +16914,7 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "TR"
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["make to turn, return, go round, also (as ⲕⲱⲧⲉ) surround"],
@@ -16890,7 +16938,7 @@
         "grammar": {
           "pos": "V",
           "voice": "REFL",
-          "valency": "TR"
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["turn self", "return", "bring round"],
@@ -16904,7 +16952,8 @@
       {
         "grammar": {
           "pos": "V",
-          "derivation": "CAUS"
+          "derivation": "CAUS",
+          "valency": "INTR"
         },
         "meanings": {
           "en": [
@@ -17143,7 +17192,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["meet, befall"],
@@ -17193,7 +17245,10 @@
           "pos": "V",
           "valency": "INTR",
           "caseRole": "OBJ",
-          "prepGovernment": ["ⲉ-", "ⲉϫⲛ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ=", "ⲉϫⲛ-/ⲉϫⲱ="],
+            "B": ["ⲉ-/ⲉⲣⲟ=", "ⲉϫⲉⲛ-/ⲉϫⲱ="]
+          }
         }
       }
     ],
@@ -19746,7 +19801,8 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "INTR"
+          "valency": "INTR",
+          "tags": ["ADJ"]
         },
         "meanings": {
           "en": ["nominal V be many, much"],
@@ -19756,7 +19812,8 @@
       {
         "grammar": {
           "pos": "V",
-          "tags": ["REL"]
+          "tags": ["REL", "ADJ"],
+          "valency": "INTR"
         },
         "meanings": {
           "en": [
@@ -19986,10 +20043,10 @@
         "nominal": "ⲟⲗ-",
         "pronominal": "ⲟⲗ=",
         "stative": "ⲏⲗ†",
+        "participles": ["ⲁⲗ~"],
         "variants": {
           "nominal": ["ⲱⲗ-"]
-        },
-        "participles": ["ⲁⲗ~"]
+        }
       },
       "Sf": {
         "pronominal": "ⲁⲗ="
@@ -20203,7 +20260,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["tree"],
@@ -20728,11 +20786,11 @@
         "nominal": "ⲥⲁϩⲧ-",
         "pronominal": "ⲥⲁϩⲧ=",
         "stative": "ⲥⲁϩⲧ†",
+        "participles": ["ⲥⲁϩⲧ̄~"],
         "variants": {
           "absolute": ["ⲥⲱϣⲉ", "ⲥⲱϩⲧ"],
           "stative": ["ⲥⲁϣⲧ†"]
-        },
-        "participles": ["ⲥⲁϩⲧ̄~"]
+        }
       }
     },
     "etym": "Egy",
@@ -20769,10 +20827,10 @@
       "A": {
         "absolute": "ϩⲣⲁϣ",
         "stative": "ϩⲁⲣϣ†",
+        "participles": ["ϩⲁⲣϣ~"],
         "variants": {
           "constructParticiples": ["ⲁⲣϣ~"]
-        },
-        "participles": ["ϩⲁⲣϣ~"]
+        }
       },
       "B": {
         "absolute": "ϩⲣⲟϣ",
@@ -20783,10 +20841,10 @@
       },
       "F": {
         "absolute": "ϩⲣⲟϣ",
+        "participles": ["ϩⲁⲣϣ~"],
         "variants": {
           "absolute": ["ϩⲣⲁϣ"]
-        },
-        "participles": ["ϩⲁⲣϣ~"]
+        }
       },
       "L": {
         "absolute": "ϩⲣⲁϣ",
@@ -21481,10 +21539,10 @@
         "nominal": "ϣⲉϣ-",
         "pronominal": "ϣⲟϣ=",
         "stative": "ϣⲏϣ†",
+        "participles": ["ϣⲁϣ~"],
         "variants": {
           "nominal": ["ϣⲁϣ-"]
-        },
-        "participles": ["ϣⲁϣ~"]
+        }
       },
       "F": {
         "absolute": "ϣⲱϣ",
@@ -22044,10 +22102,10 @@
         "absolute": "ϥⲱⲧⲉ",
         "nominal": "ϥⲉⲧ-",
         "pronominal": "ϥⲟⲧ=",
+        "participles": ["ⲃⲁⲧ~"],
         "variants": {
           "absolute": ["ⲃⲱⲧⲉ", "ⲃⲟⲧⲉ"]
-        },
-        "participles": ["ⲃⲁⲧ~"]
+        }
       }
     },
     "dialectMeanings": [
@@ -23954,7 +24012,10 @@
         "grammar": {
           "pos": "V",
           "valency": "TR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["shut, enclose, imprison"],
@@ -24250,12 +24311,12 @@
         "nominal": "ϩⲉϭⲃ-",
         "pronominal": "ϩⲟϭⲃ=",
         "stative": "ϩⲟϭⲃ†",
+        "participles": ["ϩⲁϭⲃ̄~"],
         "variants": {
           "absolute": ["ϩⲱϭϥ", "ϩⲱⲕⲙ"],
           "nominal": ["ϩⲉϭⲙ-"],
           "stative": ["ϩⲟϭϥ†"]
-        },
-        "participles": ["ϩⲁϭⲃ̄~"]
+        }
       }
     },
     "etym": "Egy",
@@ -24744,12 +24805,12 @@
         "nominal": "ⲕⲗϫ-",
         "pronominal": "ⲕⲟⲗϫ=",
         "stative": "ⲕⲟⲗϫ†",
+        "participles": ["ⲕⲁⲗϫ̄~"],
         "variants": {
           "absolute": ["ϭⲱⲗϫ"],
           "nominal": ["ϭⲗϫ-"],
           "stative": ["ϭⲟⲗϫ†"]
-        },
-        "participles": ["ⲕⲁⲗϫ̄~"]
+        }
       }
     },
     "etym": "Egy",
@@ -27162,10 +27223,10 @@
         "absolute": "ⲱϣ",
         "nominal": "ⲉϣ-",
         "pronominal": "ⲟϣ=",
+        "participles": ["ⲁ̀ϣ~"],
         "variants": {
           "nominal": ["ϣ-"]
-        },
-        "participles": ["ⲁ̀ϣ~"]
+        }
       },
       "F": {
         "absolute": "ⲱϣ",
@@ -27298,7 +27359,10 @@
         "grammar": {
           "pos": "V",
           "valency": "TR",
-          "prepGovernment": ["ⲛ-/ⲙⲙⲟ="]
+          "prepGovernment": {
+            "S": ["ⲛ-/ⲙⲙⲟ="],
+            "B": ["ⲛ-/ⲙⲙⲟ="]
+          }
         }
       },
       {
@@ -27678,10 +27742,10 @@
         "nominal": "ⲙⲉⲛⲕ-",
         "pronominal": "ⲙⲟⲛⲕ=",
         "stative": "ⲙⲟⲛⲕ†",
+        "participles": ["ⲙⲁⲛⲕ~"],
         "variants": {
           "absolute": ["ⲙⲟⲛⲕ"]
-        },
-        "participles": ["ⲙⲁⲛⲕ~"]
+        }
       },
       "F": {
         "absolute": "ⲙⲟⲩⲛⲕ"
@@ -28270,7 +28334,7 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "TR"
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["defile, pollute"],
@@ -28281,7 +28345,8 @@
         "dialects": ["B"],
         "grammar": {
           "pos": "V",
-          "form": "PC"
+          "form": "PC",
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["in ⲥⲁϥϩⲏⲧ, defiled in heart"],
@@ -28391,10 +28456,10 @@
       },
       "B": {
         "stative": "ϫⲉⲃⲓⲱⲟⲩ†",
+        "participles": ["ϫⲁⲃⲓ~"],
         "variants": {
           "stative": ["ϫⲱⲃⲓ†", "ϫⲱⲃ†"]
-        },
-        "participles": ["ϫⲁⲃⲓ~"]
+        }
       },
       "F": {
         "participles": ["ϭⲁⲃ~"]
@@ -28404,11 +28469,11 @@
       },
       "S": {
         "absolute": "ϭⲃⲃⲉ",
+        "participles": ["ϭⲁⲃ~"],
         "variants": {
           "absolute": ["ϭⲟⲟⲃ†", "ϭⲟⲟϥ†"],
           "stative": ["ϭⲟⲟϥ†"]
-        },
-        "participles": ["ϭⲁⲃ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -30936,7 +31001,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "F"
         },
         "meanings": {
           "en": ["barren female"],
@@ -31143,7 +31209,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "F"
         },
         "meanings": {
           "en": ["tree where its fruit is specified"],
@@ -31243,20 +31310,20 @@
         "absolute": "ⲃⲁⲁⲃⲉ",
         "nominal": "ⲃⲁⲃⲱ-",
         "pronominal": "ⲃⲁⲃⲱⲱ=",
+        "participles": ["ⲃⲁⲃⲉ~"],
         "variants": {
           "stative": ["ⲃⲁⲃⲱ†", "ⲃⲁⲃⲟⲧ†"]
-        },
-        "participles": ["ⲃⲁⲃⲉ~"]
+        }
       },
       "S": {
         "absolute": "ⲃⲁⲁⲃⲉ",
         "nominal": "ⲃⲁⲃⲱ-",
         "pronominal": "ⲃⲁⲃⲱⲱ=",
+        "participles": ["ⲃⲁⲃⲉ~"],
         "variants": {
           "absolute": ["ⲃⲁⲃⲉ"],
           "stative": ["ⲃⲁⲃⲱ†", "ⲃⲁⲃⲟⲧ†"]
-        },
-        "participles": ["ⲃⲁⲃⲉ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -31470,7 +31537,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["wage"],
@@ -31576,10 +31644,10 @@
     "dialects": {
       "S": {
         "absolute": "ⲃⲟⲗⲃⲗ",
+        "participles": ["ⲃⲁⲗⲃⲗ̄~"],
         "variants": {
           "pronominal": ["ⲃⲗⲃⲱⲗ="]
-        },
-        "participles": ["ⲃⲁⲗⲃⲗ̄~"]
+        }
       }
     },
     "etym": "Egy",
@@ -32106,7 +32174,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["vessel or receptacle, holding a medicinal mixture"],
@@ -32893,10 +32962,10 @@
         "nominal": "ⲃⲉϣ-",
         "pronominal": "ⲃⲟϣ=",
         "stative": "ⲃⲏϣ†",
+        "participles": ["ⲃⲁϣ~"],
         "variants": {
           "pronominal": ["ⲃⲁϣ="]
-        },
-        "participles": ["ⲃⲁϣ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -33211,7 +33280,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["a tree"],
@@ -34260,11 +34330,11 @@
         "nominal": "ⲟⲩⲁϩⲉⲙ-",
         "pronominal": "ⲟⲩⲁϩⲙ=",
         "stative": "ⲟⲩⲟϩⲉⲙ†",
+        "participles": ["ⲟⲩⲁϩⲉⲙ~"],
         "variants": {
           "absolute": ["ⲟⲩⲟϩⲉⲙ", "ⲃⲱϩⲉⲙ"],
           "nominal": ["ⲟⲩⲟϩⲉⲙ-", "ⲟⲩⲉϩⲉⲙ-"]
-        },
-        "participles": ["ⲟⲩⲁϩⲉⲙ~"]
+        }
       },
       "F": {
         "absolute": "ⲟⲩⲱϩⲙ",
@@ -34899,7 +34969,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["eyebrow"],
@@ -36495,7 +36566,10 @@
           "pos": "V",
           "valency": "INTR",
           "form": "STA",
-          "prepGovernment": ["ⲉ-", "ⲙⲛ-", "ⲛ-/ⲛⲁ="]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ=", "ⲙⲛ-/ⲛⲙⲙⲁ=", "ⲛ-/ⲛⲁ="],
+            "B": ["ⲉ-/ⲉⲣⲟ=", "ⲛⲉⲙ-/ⲛⲉⲙⲁ=", "ⲛ-/ⲛⲁ="]
+          }
         },
         "meanings": {
           "en": ["difficult, hard to", "of painful part"],
@@ -37158,7 +37232,8 @@
       {
         "grammar": {
           "pos": "N",
-          "tags": ["ADJ"]
+          "tags": ["ADJ"],
+          "gender": "BOTH"
         },
         "meanings": {
           "en": ["fool", "oolish"],
@@ -37203,11 +37278,11 @@
       "L": {
         "absolute": "ϩⲗⲁϭ",
         "stative": "ϩⲁⲗϭ†",
+        "participles": ["ϩⲁⲗϭ~"],
         "variants": {
           "stative": ["ϩⲁⲗⲉϭ†"],
           "constructParticiples": ["ϩⲗϭ~"]
-        },
-        "participles": ["ϩⲁⲗϭ~"]
+        }
       },
       "S": {
         "absolute": "ϩⲗⲟϭ",
@@ -37333,13 +37408,13 @@
         "nominal": "ⲧⲉⲕⲥ-",
         "pronominal": "ⲧⲟⲕⲥ=",
         "stative": "ⲧⲟⲕⲥ†",
+        "participles": ["ⲧⲁⲕⲥ~"],
         "variants": {
           "absolute": ["ⲧⲱϭⲥ", "ⲧⲱⲧⲥ"],
           "pronominal": ["ⲧⲟϭⲥ="],
           "stative": ["ⲧⲟϭⲥ†", "ⲧⲟⲧⲥ†"],
           "constructParticiples": ["ⲧⲁⲝ~"]
-        },
-        "participles": ["ⲧⲁⲕⲥ~"]
+        }
       },
       "Sf": {
         "stative": "ⲧⲁⲕⲥ†",
@@ -37698,10 +37773,10 @@
         "absolute": "ⲛⲟⲩϥⲣ",
         "nominal": "ⲛⲉϥⲣ-",
         "stative": "ⲛⲟϥⲣ†",
+        "participles": ["ⲛⲁϥⲣ~"],
         "variants": {
           "constructParticiples": ["ⲛⲁⲃⲉⲣ~"]
-        },
-        "participles": ["ⲛⲁϥⲣ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -37787,7 +37862,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["a measure (or vessel) of oil"],
@@ -39124,7 +39200,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "F"
         },
         "meanings": {
           "en": ["pan"],
@@ -39182,7 +39259,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "F"
         },
         "meanings": {
           "en": ["louse"],
@@ -39950,11 +40028,11 @@
     "dialects": {
       "B": {
         "absolute": "ⲕⲱⲗⲡ",
+        "participles": ["ⲕⲁⲗⲡ~"],
         "variants": {
           "absolute": ["ⲕⲉⲗⲡ-", "ⲕⲟⲗⲡ†"],
           "pronominal": ["ⲕⲟⲗⲡ="]
-        },
-        "participles": ["ⲕⲁⲗⲡ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -43088,10 +43166,10 @@
         "nominal": "ⲥⲗⲡ-",
         "pronominal": "ⲥⲟⲗⲡ=",
         "stative": "ⲥⲟⲗⲡ†",
+        "participles": ["ⲥⲁⲗⲡ̄~"],
         "variants": {
           "nominal": ["ⲥⲉⲗⲡ-"]
-        },
-        "participles": ["ⲥⲁⲗⲡ̄~"]
+        }
       },
       "Sf": {
         "pronominal": "ⲥⲁⲗⲡ="
@@ -43112,7 +43190,7 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "INTR"
+          "valency": "TR"
         },
         "meanings": {
           "en": ["break, burst"],
@@ -43132,7 +43210,8 @@
       {
         "grammar": {
           "pos": "V",
-          "form": "PC"
+          "form": "PC",
+          "valency": "TR"
         }
       }
     ],
@@ -43319,22 +43398,22 @@
         "nominal": "ϭⲉⲡ-",
         "pronominal": "ϭⲟⲡ=",
         "stative": "ϫⲏⲃ†",
+        "participles": ["ϭⲁⲡ~"],
         "variants": {
           "nominal": ["ϫⲉⲡ-"],
           "pronominal": ["ϫⲟⲡ="]
-        },
-        "participles": ["ϭⲁⲡ~"]
+        }
       },
       "F": {
         "absolute": "ϭⲱⲡⲉ",
         "nominal": "ϭⲁⲡ-",
         "pronominal": "ϭⲁⲡ=",
+        "participles": ["ϭⲁⲡ~"],
         "variants": {
           "absolute": ["ϭⲱⲡⲓ", "ϫⲱⲡⲓ"],
           "nominal": ["ⲕⲁⲡ-"],
           "pronominal": ["ϫⲁⲡ="]
-        },
-        "participles": ["ϭⲁⲡ~"]
+        }
       },
       "L": {
         "absolute": "ϭⲱⲡⲉ",
@@ -43349,13 +43428,13 @@
         "nominal": "ϭⲉⲡ-",
         "pronominal": "ϭⲟⲡ=",
         "stative": "ϭⲏⲡ†",
+        "participles": ["ϭⲁⲡ~"],
         "variants": {
           "absolute": ["ϣⲱⲡⲉ", "ϭⲱⲡ", "ⲕⲱⲡ", "ⲕⲱⲡⲉ"],
           "nominal": ["ϭⲡ-", "ϣⲁⲡ-", "ϭⲱⲡ-", "ϭⲟⲡ-", "ϭⲁⲡ-", "ⲕⲉⲡ-"],
           "pronominal": ["ϭⲁⲡ=", "ⲕⲁⲡ=", "ⲕⲟⲡ=", "ⲕⲱⲡ=", "ϭⲱⲡ="],
           "stative": ["ⲕⲏⲡ†", "ϭⲉⲡ†", "ⲕⲉⲡ†"]
-        },
-        "participles": ["ϭⲁⲡ~"]
+        }
       },
       "Sf": {
         "nominal": "ϭⲁⲡ-",
@@ -43779,11 +43858,11 @@
       },
       "S": {
         "absolute": "ⲡⲁⲕⲉ",
+        "participles": ["ⲡⲁⲕ~"],
         "variants": {
           "absolute": ["ⲡⲁⲁⲕⲉ", "ⲡⲟⲕⲉ†", "ⲡⲟⲕ†"],
           "stative": ["ⲡⲟⲕ†"]
-        },
-        "participles": ["ⲡⲁⲕ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -44476,7 +44555,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲛ-/ⲛⲁ="]
+          "prepGovernment": {
+            "S": ["ⲛ-/ⲛⲁ="],
+            "B": ["ⲛ-/ⲛⲁ="]
+          }
         },
         "meanings": {
           "en": ["provide, supply"],
@@ -44545,10 +44627,10 @@
       "B": {
         "absolute": "ⲗⲓⲃⲓ",
         "stative": "ⲗⲟⲃⲓ†",
+        "participles": ["ⲗⲁⲃ~"],
         "variants": {
           "constructParticiples": ["ⲗⲁ~", "ⲗⲁ(ϥ)~"]
-        },
-        "participles": ["ⲗⲁⲃ~"]
+        }
       },
       "L": {
         "absolute": "ⲗⲓⲃⲉ",
@@ -44558,10 +44640,10 @@
         "absolute": "ⲗⲓⲃⲉ",
         "pronominal": "ⲗⲉⲃⲧ=",
         "stative": "ⲗⲟⲃⲉ†",
+        "participles": ["ⲗⲁⲃ~"],
         "variants": {
           "constructParticiples": ["ⲗⲁ~"]
-        },
-        "participles": ["ⲗⲁⲃ~"]
+        }
       }
     },
     "dialectMeanings": [
@@ -44936,11 +45018,11 @@
       "B": {
         "absolute": "ⲙⲟⲛⲓ",
         "pronominal": "ⲙⲁⲛⲟⲩ=",
+        "participles": ["ⲙⲁⲛ~"],
         "variants": {
           "absolute": ["ⲁⲙⲟⲛⲓ"],
           "pronominal": ["ⲙⲁⲛⲟⲩⲟⲩ=", "ⲙⲉⲛⲛⲏⲧ="]
-        },
-        "participles": ["ⲙⲁⲛ~"]
+        }
       },
       "F": {
         "absolute": "ⲙⲁⲁⲛⲓ"
@@ -44949,11 +45031,11 @@
         "absolute": "ⲙⲟⲟⲛⲉ",
         "nominal": "ⲙⲉⲛⲉ-",
         "pronominal": "ⲙⲁⲛⲟⲩ=",
+        "participles": ["ⲙⲁⲛⲉ~"],
         "variants": {
           "pronominal": ["ⲙⲁⲛⲟⲩⲟⲩ="],
           "constructParticiples": ["ⲙⲁⲛ(ⲉ)~"]
-        },
-        "participles": ["ⲙⲁⲛⲉ~"]
+        }
       },
       "Sa": {
         "absolute": "ⲙⲁⲁⲛⲉ",
@@ -45302,7 +45384,10 @@
           "pos": "V",
           "valency": "INTR",
           "form": "STA",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["be familiar, accustomed"],
@@ -45998,10 +46083,10 @@
     "dialects": {
       "S": {
         "absolute": "ⲗⲱⲕϣ",
+        "participles": ["ⲗⲁⲕϣ~"],
         "variants": {
           "absolute": ["ⲗⲟⲕϣ†"]
-        },
-        "participles": ["ⲗⲁⲕϣ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -46135,14 +46220,20 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         }
       },
       {
         "grammar": {
           "pos": "V",
           "valency": "TR",
-          "prepGovernment": ["ⲛ-/ⲙⲙⲟ=", "ϩⲛ-", "ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲛ-/ⲙⲙⲟ=", "ϩⲛ-/ⲛϩⲏⲧ=", "ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲛ-/ⲙⲙⲟ=", "ⳳⲉⲛ-/ⲛⳳⲏⲧ=", "ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["smear, paint, overlay"],
@@ -47009,11 +47100,11 @@
         "absolute": "ⲛⲟⲩϣⲡ",
         "nominal": "ⲛⲉϣⲡ-",
         "pronominal": "ⲛⲟϣⲡ=",
+        "participles": ["ⲛⲁϣⲡ~"],
         "variants": {
           "nominal": ["ⲛⲁϣⲡ-"],
           "pronominal": ["ⲛⲁϣⲡ="]
-        },
-        "participles": ["ⲛⲁϣⲡ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -48605,7 +48696,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": [
@@ -51191,7 +51285,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["trough, tank"],
@@ -51913,7 +52008,7 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "TR"
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["rest, set at rest"],
@@ -51928,7 +52023,8 @@
         "dialects": ["S"],
         "grammar": {
           "pos": "V",
-          "form": "PC"
+          "form": "PC",
+          "valency": "INTR"
         }
       }
     ],
@@ -52867,10 +52963,10 @@
         "nominal": "ⲥⲉⲣ-",
         "pronominal": "ⲥⲟⲣ=",
         "stative": "ⲥⲏⲣ†",
+        "participles": ["ⲥⲁⲣ~"],
         "variants": {
           "nominal": ["ⲥⲟⲣ-"]
-        },
-        "participles": ["ⲥⲁⲣ~"]
+        }
       },
       "F": {
         "absolute": "ⲥⲱⲣ",
@@ -52889,11 +52985,11 @@
         "nominal": "ⲥⲣ-",
         "pronominal": "ⲥⲟⲣ=",
         "stative": "ⲥⲏⲣ†",
+        "participles": ["ⲥⲁⲣ~"],
         "variants": {
           "nominal": ["ⲥⲉⲣ-"],
           "pronominal": ["ⲥⲟⲟⲣ="]
-        },
-        "participles": ["ⲥⲁⲣ~"]
+        }
       },
       "Sf": {
         "pronominal": "ⲥⲁⲣ="
@@ -53719,7 +53815,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": [
@@ -54705,7 +54804,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["be beautiful", "more beautiful than"],
@@ -54719,7 +54821,8 @@
       {
         "grammar": {
           "pos": "V",
-          "tags": ["REL"]
+          "tags": ["REL", "ADJ"],
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["ⲉⲛ., ⲉⲧⲛ. as ADJ beautiful"],
@@ -55128,7 +55231,7 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "TR"
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["loosen, dissolve, settle, make terms for"],
@@ -55138,7 +55241,8 @@
       {
         "grammar": {
           "pos": "V",
-          "tags": ["ESP", "N"]
+          "tags": ["ESP", "N"],
+          "valency": "INTR"
         },
         "meanings": {
           "en": [
@@ -55476,33 +55580,33 @@
       "A": {
         "absolute": "ⲛⳉⲁⲧ",
         "stative": "ⲛⲁϣⲧ†",
+        "participles": ["ⲛⲁⳉⲧ~"],
         "variants": {
           "stative": ["ⲛⲁⳉⲧ†"]
-        },
-        "participles": ["ⲛⲁⳉⲧ~"]
+        }
       },
       "B": {
         "absolute": "ⲛϣⲟⲧ",
         "stative": "ⲛⲁϣⲧ†",
+        "participles": ["ⲛⲁϣⲧ~"],
         "variants": {
           "absolute": ["ⲉⲛϣⲟⲧ"]
-        },
-        "participles": ["ⲛⲁϣⲧ~"]
+        }
       },
       "F": {
         "stative": "ⲛⲁϣⲧ†",
+        "participles": ["ⲛⲁϣⲧ~"],
         "variants": {
           "stative": ["ⲛⲉϣⲧ†"]
-        },
-        "participles": ["ⲛⲁϣⲧ~"]
+        }
       },
       "S": {
         "absolute": "ⲛϣⲟⲧ",
         "stative": "ⲛⲁϣⲧ†",
+        "participles": ["ⲛⲁϣⲧ~"],
         "variants": {
           "absolute": ["ⲉⲛϣⲟⲧ"]
-        },
-        "participles": ["ⲛⲁϣⲧ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -58238,10 +58342,10 @@
         "nominal": "ⲫⲉⲥ-",
         "pronominal": "ⲫⲁⲥ=",
         "stative": "ⲫⲟⲥⲓ†",
+        "participles": ["ⲫⲁⲥ~"],
         "variants": {
           "nominal": ["ⲫⲁⲥ-"]
-        },
-        "participles": ["ⲫⲁⲥ~"]
+        }
       },
       "F": {
         "absolute": "ⲡⲓⲥⲓ",
@@ -58255,13 +58359,13 @@
         "nominal": "ⲡⲥⲥ-",
         "pronominal": "ⲡⲁⲥⲧ=",
         "stative": "ⲡⲟⲥⲉ†",
+        "participles": ["ⲡⲁⲥ~"],
         "variants": {
           "absolute": ["ⲡⲓⲥ"],
           "nominal": ["ⲡⲉⲥⲧ-", "ⲡⲓⲥ-"],
           "pronominal": ["ⲡⲓⲥⲧ=", "ⲡⲉⲥⲧ="],
           "stative": ["ⲡⲏⲥ†"]
-        },
-        "participles": ["ⲡⲁⲥ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -58554,7 +58658,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["trap, snare"],
@@ -58654,10 +58759,10 @@
         "nominal": "ⲫⲁⳳ-",
         "pronominal": "ⲫⲁⳳ=",
         "stative": "ⲫⲏⳳ†",
+        "participles": ["ⲫⲁⳳ~"],
         "variants": {
           "nominal": ["ⲫⲉⳳ-"]
-        },
-        "participles": ["ⲫⲁⳳ~"]
+        }
       },
       "F": {
         "absolute": "ⲡⲱϩ",
@@ -58673,12 +58778,12 @@
         "nominal": "ⲡⲉϩ-",
         "pronominal": "ⲡⲁϩ=",
         "stative": "ⲡⲏϩ†",
+        "participles": ["ⲡⲁϩ~"],
         "variants": {
           "nominal": ["ⲡⲁϩ-"],
           "pronominal": ["ⲡⲟϩ="],
           "stative": ["ⲡⲉϩ†"]
-        },
-        "participles": ["ⲡⲁϩ~"]
+        }
       }
     },
     "dialectMeanings": [
@@ -58907,11 +59012,11 @@
     "dialects": {
       "S": {
         "absolute": "ⲡⲱϫϭ",
+        "participles": ["ⲡⲁϫϭ̄~"],
         "variants": {
           "absolute": ["ⲡⲱϫⲕ", "ⲡⲱϫⲧ", "ⲡⲟϫⲧ†"],
           "constructParticiples": ["ⲡⲁϫⲕ̄~"]
-        },
-        "participles": ["ⲡⲁϫϭ̄~"]
+        }
       }
     },
     "etym": "Egy",
@@ -66596,7 +66701,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ϩⲁ-"]
+          "prepGovernment": {
+            "S": ["ϩⲁ-/ϩⲁⲣⲟ="],
+            "B": ["ϩⲁ-/ϩⲁⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["be withdrawn, recede from"],
@@ -68168,10 +68276,10 @@
         "nominal": "ⲧⲉⲕ-",
         "pronominal": "ⲧⲉⲕ=",
         "stative": "ⲧⲏⲕ†",
+        "participles": ["ⲧⲁⲕ~"],
         "variants": {
           "absolute": ["ⲧⲱϭⲉ"]
-        },
-        "participles": ["ⲧⲁⲕ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -68179,7 +68287,7 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "INTR"
+          "valency": "TR"
         }
       },
       {
@@ -68196,7 +68304,8 @@
         "dialects": ["S"],
         "grammar": {
           "pos": "V",
-          "form": "PC"
+          "form": "PC",
+          "valency": "TR"
         }
       }
     ],
@@ -69872,7 +69981,10 @@
         "grammar": {
           "pos": "V",
           "valency": "TR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["cause to do"],
@@ -70023,7 +70135,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["trefoil, clover"],
@@ -70578,10 +70691,10 @@
         "nominal": "ⲧⲉⲥ-",
         "pronominal": "ⲧⲟⲥ=",
         "stative": "ⲧⲏⲥ†",
+        "participles": ["ⲧⲁⲥ~"],
         "variants": {
           "stative": ["ⲧⲉⲥ†"]
-        },
-        "participles": ["ⲧⲁⲥ~"]
+        }
       },
       "Sf": {
         "pronominal": "ⲧⲁⲥ="
@@ -70897,10 +71010,10 @@
         "absolute": "ⲑⲱⲧ",
         "nominal": "ⲑⲉⲧ-",
         "stative": "ⲑⲏⲧ†",
+        "participles": ["ⲑⲁⲧ~"],
         "variants": {
           "nominal": ["ⲧⲁⲧ-"]
-        },
-        "participles": ["ⲑⲁⲧ~"]
+        }
       },
       "F": {
         "absolute": "ⲧⲱⲧ",
@@ -71433,7 +71546,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲛ-/ⲛⲁ="]
+          "prepGovernment": {
+            "S": ["ⲛ-/ⲛⲁ="],
+            "B": ["ⲛ-/ⲛⲁ="]
+          }
         }
       },
       {
@@ -75303,10 +75419,10 @@
       },
       "L": {
         "absolute": "ⲟⲩⲓϩⲉ",
+        "participles": ["ⲟⲩⲁϩⲓ~"],
         "variants": {
           "absolute": ["ⲟⲩⲁϩⲉ†"]
-        },
-        "participles": ["ⲟⲩⲁϩⲓ~"]
+        }
       },
       "S": {
         "stative": "ⲟⲩⲟϩⲉ†",
@@ -75381,7 +75497,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "TR"
         },
         "meanings": {
           "en": ["bend, twist"],
@@ -75731,18 +75848,18 @@
     "dialects": {
       "B": {
         "absolute": "ⲫⲟⲣⲡⲉⲣ",
+        "participles": ["ⲫⲁⲣⲫⲉⲣ~"],
         "variants": {
           "absolute": ["ⲫⲉⲣⲫⲱⲣ†"],
           "pronominal": ["ⲫⲉⲣⲫⲱⲣ="],
           "constructParticiples": ["ⲫⲁⲣⲡⲉⲣ~", "ⲡⲁⲣⲫⲉⲣ~"]
-        },
-        "participles": ["ⲫⲁⲣⲫⲉⲣ~"]
+        }
       },
       "S": {
+        "participles": ["ⲫⲁⲣⲫⲉⲣ~"],
         "variants": {
           "constructParticiples": ["ⲫⲁⲣⲡⲉⲣ~", "ⲡⲁⲣⲫⲉⲣ~"]
-        },
-        "participles": ["ⲫⲁⲣⲫⲉⲣ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -76118,7 +76235,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "F"
         },
         "meanings": {
           "en": ["tree xixyphus, nabk"],
@@ -77189,7 +77307,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲛ-/ⲙⲙⲟ="]
+          "prepGovernment": {
+            "S": ["ⲛ-/ⲙⲙⲟ="],
+            "B": ["ⲛ-/ⲙⲙⲟ="]
+          }
         },
         "meanings": {
           "en": ["smear, anoint"],
@@ -79361,10 +79482,10 @@
         "absolute": "ϣⲱⲗ",
         "nominal": "ϣⲉⲗ-",
         "pronominal": "ϣⲟⲗ=",
+        "participles": ["ϣⲁⲗ~"],
         "variants": {
           "nominal": ["ϣⲗ-"]
-        },
-        "participles": ["ϣⲁⲗ~"]
+        }
       },
       "Sa": {
         "pronominal": "ϩⲟⲗ=",
@@ -79425,7 +79546,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["flow"],
@@ -80249,11 +80373,11 @@
       },
       "S": {
         "absolute": "ϣⲱⲗϭ",
+        "participles": ["ϣⲁⲗϫ̄~"],
         "variants": {
           "absolute": ["ϣⲗϭ-", "ϣⲟⲗϭ†"],
           "pronominal": ["ϣⲁⲗⲕ="]
-        },
-        "participles": ["ϣⲁⲗϫ̄~"]
+        }
       }
     },
     "etym": "Egy",
@@ -80599,10 +80723,10 @@
       "S": {
         "absolute": "ϣⲙⲁ",
         "stative": "ϣⲟⲟⲙⲉ†",
+        "participles": ["ϣⲁⲙⲁ~"],
         "variants": {
           "stative": ["ϣⲟⲙⲉ†"]
-        },
-        "participles": ["ϣⲁⲙⲁ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -82450,7 +82574,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["trader, merchant"],
@@ -82536,12 +82661,12 @@
         "absolute": "ϣⲓϯ",
         "nominal": "ϣⲁⲧ-",
         "pronominal": "ϣⲁⲧ=",
+        "participles": ["ϣⲁⲧ~"],
         "variants": {
           "absolute": ["ϣⲱⲧ"],
           "nominal": ["ϣⲉⲧ-"],
           "pronominal": ["ϣⲉⲧ="]
-        },
-        "participles": ["ϣⲁⲧ~"]
+        }
       },
       "F": {
         "absolute": "ϣⲓⲧⲉ",
@@ -83136,7 +83261,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["trunk, stump, piece"],
@@ -85791,7 +85917,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "BOTH"
         },
         "meanings": {
           "en": ["child, young"],
@@ -87885,7 +88012,8 @@
       {
         "grammar": {
           "pos": "V",
-          "form": "PC"
+          "form": "PC",
+          "valency": "TR"
         },
         "meanings": {
           "en": ["in ϩⲁⲗⲃϩⲟ, deceiver or SIM"],
@@ -90740,7 +90868,10 @@
           "pos": "V",
           "valency": "TR",
           "voice": "REFL",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["guard against, take heed"],
@@ -92716,7 +92847,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["tribute"],
@@ -92994,11 +93126,11 @@
         "absolute": "ⳳⲱⲧⲉⲃ",
         "nominal": "ⳳⲉⲧⲉⲃ-",
         "pronominal": "ⳳⲟⲑⲃ=",
+        "participles": ["ⳳⲁⲑⲉⲃ~"],
         "variants": {
           "nominal": ["ⳳⲁⲧⲉⲃ-"],
           "constructParticiples": ["ⳳⲁⲧⲉⲃ~"]
-        },
-        "participles": ["ⳳⲁⲑⲉⲃ~"]
+        }
       },
       "F": {
         "absolute": "ϩⲱⲧⲉⲃ",
@@ -93010,20 +93142,20 @@
         "nominal": "ϩⲁⲧⲃ-",
         "pronominal": "ϩⲁⲧⲃ=",
         "stative": "ϩⲁⲧⲃⲉ†",
+        "participles": ["ϩⲁⲧⲃⲉ~"],
         "variants": {
           "absolute": ["ϩⲱⲧⲃⲉ"]
-        },
-        "participles": ["ϩⲁⲧⲃⲉ~"]
+        }
       },
       "S": {
         "absolute": "ϩⲱⲧⲃ",
         "nominal": "ϩⲉⲧⲃ-",
         "pronominal": "ϩⲟⲧⲃ=",
         "stative": "ϩⲟⲧⲃ†",
+        "participles": ["ϩⲁⲧⲃ̄~"],
         "variants": {
           "absolute": ["ϩⲱⲧⲉⲃ"]
-        },
-        "participles": ["ϩⲁⲧⲃ̄~"]
+        }
       }
     },
     "etym": "Egy",
@@ -93518,10 +93650,10 @@
         "absolute": "ϩⲓⲟⲩⲉ",
         "nominal": "ϩⲓ-",
         "pronominal": "ϩⲓⲧ=",
+        "participles": ["ϩⲁⲩ~"],
         "variants": {
           "nominal": ["ϩⲟⲩ-"]
-        },
-        "participles": ["ϩⲁⲩ~"]
+        }
       }
     },
     "dialectMeanings": [
@@ -93665,7 +93797,10 @@
         "grammar": {
           "pos": "V",
           "valency": "TR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["deprive", "passive"],
@@ -97261,7 +97396,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["try, test", "begin"],
@@ -97951,10 +98089,10 @@
     "dialects": {
       "B": {
         "absolute": "(ϫⲱⲣⲉⲃ)",
+        "participles": ["ϫⲁⲣⲉⲃ~"],
         "variants": {
           "constructParticiples": ["ϫⲁⲣⲡ~", "ϫⲉⲣⲉⲃ~", "ϫⲁⲣ(ⲉ)ⲃ~"]
-        },
-        "participles": ["ϫⲁⲣⲉⲃ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -99066,10 +99204,10 @@
         "nominal": "ϫⲉϥ-",
         "pronominal": "ϫⲟϥ=",
         "stative": "ϫⲏϥ†",
+        "participles": ["ϫⲁϥ~"],
         "variants": {
           "absolute": ["ϫⲱϥ"]
-        },
-        "participles": ["ϫⲁϥ~"]
+        }
       },
       "L": {
         "absolute": "ϫⲟⲩϥ",
@@ -99520,12 +99658,12 @@
     "dialects": {
       "S": {
         "absolute": "ϫⲁ(ⲁ)ϫⲉ",
+        "participles": ["ϫⲁϫ~"],
         "variants": {
           "absolute": ["ϫⲁϫⲱ†", "ϫⲁϫⲱⲟⲩ†"],
           "stative": ["ϫⲁϫⲱⲟⲩ†"],
           "constructParticiples": ["ϫⲁϭ~"]
-        },
-        "participles": ["ϫⲁϫ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -100288,12 +100426,12 @@
         "absolute": "ϭⲱⲗ",
         "pronominal": "ϭⲟ(ⲟ)ⲗ=",
         "stative": "ⲕⲉⲗ†",
+        "participles": ["ϭⲁⲗ~"],
         "variants": {
           "absolute": ["ϭ(ⲉ)ⲗ-", "ϭⲱⲗ-"],
           "nominal": ["ϭⲱⲗ-"],
           "pronominal": ["ⲕⲟⲗ="]
-        },
-        "participles": ["ϭⲁⲗ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -103977,10 +104115,10 @@
       "B": {
         "absolute": "ϭⲱⲧⲡ",
         "stative": "ϭⲟⲧⲡ†",
+        "participles": ["ϭⲁⲧⲡ̄~"],
         "variants": {
           "absolute": ["ϭⲱϥⲧ", "ϭⲱⲧϥ"]
-        },
-        "participles": ["ϭⲁⲧⲡ̄~"]
+        }
       },
       "F": {
         "absolute": "ϭⲱⲧⲡ",
@@ -103998,11 +104136,11 @@
         "nominal": "ϭⲉⲧⲡ-",
         "pronominal": "ϭⲟⲧⲡ=",
         "stative": "ϭⲟⲧⲡ†",
+        "participles": ["ϭⲁⲧⲡ̄~"],
         "variants": {
           "absolute": ["ϭⲱⲡⲧ"],
           "nominal": ["ϭⲱⲧⲡ-"]
-        },
-        "participles": ["ϭⲁⲧⲡ̄~"]
+        }
       },
       "Sf": {
         "absolute": "ϭⲱⲡⲧ"
@@ -104592,10 +104730,10 @@
         "nominal": "ϫⲉϫ-",
         "pronominal": "ϫⲟϫ=",
         "stative": "ϫⲏϫⲓ†",
+        "participles": ["ϫⲁϫ~"],
         "variants": {
           "nominal": ["ϫⲁϫ-"]
-        },
-        "participles": ["ϫⲁϫ~"]
+        }
       },
       "F": {
         "stative": "ϭⲁⲁϫⲉ†",
@@ -104609,10 +104747,10 @@
         "nominal": "ϫⲉϫ-",
         "pronominal": "ϭⲟϫϩ=",
         "stative": "ϭⲟⲟϫⲉ†",
+        "participles": ["ϭⲁ(ⲁ)ϫⲉ~"],
         "variants": {
           "absolute": ["ϭⲱϫⲉ", "ϭⲱϫ"]
-        },
-        "participles": ["ϭⲁ(ⲁ)ϫⲉ~"]
+        }
       },
       "Sf": {
         "stative": "ϭⲁⲁϫⲉ†"
@@ -109497,7 +109635,8 @@
       {
         "grammar": {
           "pos": "V",
-          "form": "PC"
+          "form": "PC",
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["hairless on the front of the head"],
@@ -110197,11 +110336,11 @@
     "dialects": {
       "B": {
         "absolute": "ⲕⲱⲣϫ",
+        "participles": ["ⲕⲁⲣϫ~"],
         "variants": {
           "absolute": ["ⲕⲉⲣϫ-"],
           "pronominal": ["ⲕⲟⲣϫ="]
-        },
-        "participles": ["ⲕⲁⲣϫ~"]
+        }
       }
     },
     "etym": "Egy",
@@ -110273,7 +110412,9 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲉ-"],
+          "prepGovernment": {
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          },
           "complementizerGovernment": ["ϫⲉ-"]
         },
         "meanings": {
@@ -110593,7 +110734,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["trunk of tree"],
@@ -112268,7 +112410,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["trough, mortar among household vessels"],
@@ -112509,7 +112652,8 @@
       {
         "grammar": {
           "pos": "N",
-          "tags": ["PRON"]
+          "tags": ["PRON"],
+          "gender": "BOTH"
         },
         "meanings": {
           "en": ["a certain person or thing"],
@@ -113090,7 +113234,8 @@
       },
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "notes": {
           "en": ["Meaning uncertain."],
@@ -119655,7 +119800,9 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "notes": {
           "en": ["Meaning unknown."],
@@ -120282,7 +120429,8 @@
       {
         "grammar": {
           "pos": "V",
-          "derivation": "CAUS"
+          "derivation": "CAUS",
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["or N"],
@@ -120643,11 +120791,11 @@
       },
       "S": {
         "absolute": "ϫⲟⲉⲓⲧ",
+        "participles": ["ϫⲁⲉⲓⲧ~"],
         "variants": {
           "absolute": ["ϫⲱⲉⲓⲧ"],
           "pronominal": ["ϫⲟⲉⲓⲧ="]
-        },
-        "participles": ["ϫⲁⲉⲓⲧ~"]
+        }
       },
       "Sa": {
         "pronominal": "ϫⲁⲓⲧ="
@@ -128398,7 +128546,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": [
@@ -129229,7 +129378,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": [
@@ -129933,7 +130083,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["apologize, protest", "refute, defend"],
@@ -130997,7 +131148,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": ["ἄργος", "αργοσ"],
@@ -131274,7 +131426,10 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "S": ["ⲉ-/ⲉⲣⲟ="],
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["begin"],
@@ -131739,7 +131894,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["perfumed"],
@@ -137915,7 +138071,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": [
@@ -143821,7 +143978,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": [
@@ -143901,7 +144059,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["apologized", "protested, refuted, defended"],
@@ -144050,7 +144209,9 @@
         "grammar": {
           "pos": "V",
           "valency": "INTR",
-          "prepGovernment": ["ⲉ-"]
+          "prepGovernment": {
+            "B": ["ⲉ-/ⲉⲣⲟ="]
+          }
         },
         "meanings": {
           "en": ["begin"],
@@ -145892,7 +146053,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["satisfied, accepted", "was satisfied, beg, request, hoped"],
@@ -145969,7 +146131,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["kneaded, became dough, made a cake"],
@@ -147016,7 +147179,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "TR"
         },
         "meanings": {
           "en": ["sank, immersed, submerged"],
@@ -147346,7 +147510,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "TR"
         },
         "meanings": {
           "en": ["ῥιπίζειν"],
@@ -147356,7 +147521,7 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "INTR"
+          "valency": "TR"
         }
       }
     ],
@@ -150174,7 +150339,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["please, rejoice, extend, was pleased, happy"],
@@ -164268,7 +164434,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "TR"
         },
         "meanings": {
           "en": ["disciple, teach, you learn"],
@@ -171367,7 +171534,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": [
@@ -172122,7 +172290,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["pass through", "drove alongside, go away"],
@@ -172277,7 +172446,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": [
@@ -172759,7 +172929,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "TR"
         },
         "meanings": {
           "en": [
@@ -173607,7 +173778,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "TR"
         },
         "meanings": {
           "en": [
@@ -174015,7 +174187,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "F"
         },
         "meanings": {
           "en": [
@@ -177923,7 +178096,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "TR"
         },
         "meanings": {
           "en": ["preceded, came before", "came before"],
@@ -178472,7 +178646,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "TR"
         },
         "meanings": {
           "en": ["ῥιπίζειν"],
@@ -178482,7 +178657,7 @@
       {
         "grammar": {
           "pos": "V",
-          "valency": "INTR"
+          "valency": "TR"
         }
       }
     ],
@@ -185044,7 +185219,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["allocate, devote", "engage in, learn, study"],
@@ -188551,7 +188727,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": [
@@ -195189,7 +195366,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "V"
+          "pos": "V",
+          "valency": "INTR"
         },
         "meanings": {
           "en": ["shine, shed light on"],
@@ -199079,7 +199257,8 @@
     "senses": [
       {
         "grammar": {
-          "pos": "N"
+          "pos": "N",
+          "gender": "M"
         },
         "meanings": {
           "en": [

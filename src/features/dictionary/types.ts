@@ -83,15 +83,19 @@ export interface DialectFormVariants {
 
 export interface DialectForms {
   absolute?: string;
-  participles?: string[];
   nominal?: string;
   pronominal?: string;
   stative?: string;
+  participles?: string[];
   variants?: DialectFormVariants;
 }
 
 export type DictionaryDialectFormsMap = Partial<
   Record<DictionaryDialectCode, DialectForms>
+>;
+
+type DictionaryPrepGovernmentMap = Partial<
+  Record<DictionaryDialectCode, DictionaryPrepGovernment[]>
 >;
 
 export interface DictionarySenseGrammar {
@@ -106,7 +110,7 @@ export interface DictionarySenseGrammar {
   number?: DictionarySenseGrammarNumber;
   polarity?: DictionarySenseGrammarPolarity;
   pos: DictionarySenseGrammarPartOfSpeech;
-  prepGovernment?: DictionaryPrepGovernment[];
+  prepGovernment?: DictionaryPrepGovernmentMap;
   tags?: DictionarySenseCode[];
   valency?: DictionarySenseGrammarValency;
   voice?: DictionarySenseGrammarVoice;
