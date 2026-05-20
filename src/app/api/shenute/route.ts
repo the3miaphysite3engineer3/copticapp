@@ -37,7 +37,12 @@ import { createThothChatCompletion } from "@/lib/thoth";
 export const maxDuration = 300;
 export const runtime = "nodejs";
 
-type InferenceProvider = "gemini" | "hf" | "openrouter" | "thoth";
+type InferenceProvider =
+  | "gemini"
+  | "gemini_nmt"
+  | "hf"
+  | "openrouter"
+  | "thoth";
 
 type OpenRouterReasoningCacheEntry = {
   updatedAt: number;
@@ -327,6 +332,10 @@ function toOptionalInferenceProvider(
     return "gemini";
   }
 
+  if (value === "gemini_nmt") {
+    return "gemini_nmt";
+  }
+
   if (value === "hf") {
     return "hf";
   }
@@ -347,6 +356,10 @@ function toRagInferenceProvider(
 ): "gemini" | "hf" | "openrouter" {
   if (value === "thoth") {
     return "openrouter";
+  }
+
+  if (value === "gemini_nmt") {
+    return "gemini";
   }
 
   return value;
@@ -551,6 +564,7 @@ export async function POST(req: Request) {
     );
     const bodyProvider = toOptionalInferenceProvider(payload.inferenceProvider);
     const inferenceProvider = bodyProvider ?? queryProvider ?? "thoth";
+    const shouldUseNmtSuggestion = inferenceProvider !== "gemini";
     const ragInferenceProvider = toRagInferenceProvider(inferenceProvider);
     const shenuteSessionId =
       typeof payload.id === "string" && payload.id.trim().length > 0
@@ -624,6 +638,7 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
 
           // Step 1.5: If LLM extracted a translation target and we don't have a suggestion yet, call NMT now
           if (
+            shouldUseNmtSuggestion &&
             !NMTSuggestion &&
             parsed.translationTarget?.text &&
             parsed.translationTarget.direction
@@ -806,6 +821,23 @@ Context relevant to the user's query:
 ${contextText || "No additional retrieval context was found."}
 `;
 
+    const geminiSystemPrompt = `You are "Shenute AI Learner", a student assistant specialized in the Coptic language (Sahidic/Bohairic dialects).
+You help users learn, translate, and understand Coptic with high precision.
+Use the provided retrieval context when it helps, but you may also use your own pretrained linguistic knowledge to answer accurately.
+Do not treat retrieval context as a hard constraint, and do not refuse an answer solely because a needed word is missing from retrieved chunks.
+
+The user is currently viewing this page on the website:
+- Path: ${pageContext.path ?? "unknown"}
+- Title: ${pageContext.title ?? "unknown"}
+- URL: ${pageContext.url ?? "unknown"}
+
+Visible text excerpt from the opened page:
+${pageContext.excerpt && pageContext.excerpt.length > 0 ? pageContext.excerpt : "No page excerpt provided."}
+
+Context relevant to the user's query:
+${contextText || "No additional retrieval context was found."}
+`;
+
     const thothSystemPrompt = `You are "Shenute AI Expert" not "THOTH AI", the teacher model for Coptic language mastery (Sahidic/Bohairic dialects).
 You deliver authoritative answers for Coptic vocabulary, grammar, translation, and etymology.
 You are the expert teacher that the Shenute AI Learner is distilled from.
@@ -823,10 +855,14 @@ Context relevant to the user's query:
 ${contextText || "No additional retrieval context was found."}
 `;
 
-    const systemPrompt =
-      inferenceProvider === "thoth" ? thothSystemPrompt : shenuteSystemPrompt;
+    let systemPrompt = shenuteSystemPrompt;
+    if (inferenceProvider === "thoth") {
+      systemPrompt = thothSystemPrompt;
+    } else if (inferenceProvider === "gemini") {
+      systemPrompt = geminiSystemPrompt;
+    }
 
-    if (inferenceProvider === "gemini") {
+    if (inferenceProvider === "gemini" || inferenceProvider === "gemini_nmt") {
       const result = streamText({
         model: getGeminiModel(),
         system: systemPrompt,

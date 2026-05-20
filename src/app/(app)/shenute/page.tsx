@@ -53,7 +53,7 @@ import { getContributorsPath, getLocalizedHomePath } from "@/lib/locale";
 import { createClient } from "@/lib/supabase/client";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
 
-type ShenuteProvider = "gemini" | "hf" | "openrouter" | "thoth";
+type ShenuteProvider = "gemini" | "gemini_nmt" | "hf" | "openrouter" | "thoth";
 
 type TextMessagePart = {
   text: string;
@@ -172,7 +172,10 @@ const SHENUTE_COPY = {
     sessionUnsavedBadge: "Unsaved",
     providerGemini: "Fast answer",
     providerGeminiDescription:
-      "Quicker help for direct grammar or vocabulary questions.",
+      "Use Gemini's own pretrained knowledge with retrieval as optional support.",
+    providerGeminiNmt: "Fast answer (RAG + NMT)",
+    providerGeminiNmtDescription:
+      "Gemini with strict retrieved-context grounding plus NMT translation hints.",
     providerHf: "Experimental",
     providerHfDescription: "A lighter experimental pass for comparison.",
     providerOpenRouter: "Reasoned answer",
@@ -290,7 +293,10 @@ const SHENUTE_COPY = {
     sessionUnsavedBadge: "Niet opgeslagen",
     providerGemini: "Snel antwoord",
     providerGeminiDescription:
-      "Snellere hulp bij directe grammatica- of woordenschatvragen.",
+      "Gebruik Gemini's eigen voorkennis met opgehaalde context als optionele steun.",
+    providerGeminiNmt: "Snel antwoord (RAG + NMT)",
+    providerGeminiNmtDescription:
+      "Gemini met strikte contextverankering en NMT-vertaalsuggesties.",
     providerHf: "Experimenteel",
     providerHfDescription: "Een lichtere experimentele vergelijking.",
     providerOpenRouter: "Uitgewerkt antwoord",
@@ -603,6 +609,10 @@ function getProviderLabel(provider: ShenuteProvider, copy: ShenuteCopy) {
     return copy.providerGemini;
   }
 
+  if (provider === "gemini_nmt") {
+    return copy.providerGeminiNmt;
+  }
+
   if (provider === "hf") {
     return copy.providerHf;
   }
@@ -758,6 +768,12 @@ export default function ShenuteAI() {
         value: "gemini" as const,
       },
       {
+        description: copy.providerGeminiNmtDescription,
+        icon: Zap,
+        label: copy.providerGeminiNmt,
+        value: "gemini_nmt" as const,
+      },
+      {
         description: copy.providerOpenRouterDescription,
         icon: Brain,
         label: copy.providerOpenRouter,
@@ -773,6 +789,8 @@ export default function ShenuteAI() {
     [
       copy.providerGemini,
       copy.providerGeminiDescription,
+      copy.providerGeminiNmt,
+      copy.providerGeminiNmtDescription,
       copy.providerHf,
       copy.providerHfDescription,
       copy.providerOpenRouter,

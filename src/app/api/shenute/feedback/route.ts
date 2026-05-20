@@ -35,6 +35,10 @@ function toProvider(value: unknown): ShenuteFeedbackEmbeddingProvider {
     return "gemini";
   }
 
+  if (value === "gemini_nmt") {
+    return "gemini";
+  }
+
   if (value === "hf") {
     return "hf";
   }
