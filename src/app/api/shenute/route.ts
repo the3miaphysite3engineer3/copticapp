@@ -564,7 +564,7 @@ export async function POST(req: Request) {
     );
     const bodyProvider = toOptionalInferenceProvider(payload.inferenceProvider);
     const inferenceProvider = bodyProvider ?? queryProvider ?? "thoth";
-    const nmtEnabledForRequest = inferenceProvider !== "gemini";
+    const shouldUseNmtSuggestion = inferenceProvider !== "gemini";
     const ragInferenceProvider = toRagInferenceProvider(inferenceProvider);
     const shenuteSessionId =
       typeof payload.id === "string" && payload.id.trim().length > 0
@@ -638,7 +638,7 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
 
           // Step 1.5: If LLM extracted a translation target and we don't have a suggestion yet, call NMT now
           if (
-            nmtEnabledForRequest &&
+            shouldUseNmtSuggestion &&
             !NMTSuggestion &&
             parsed.translationTarget?.text &&
             parsed.translationTarget.direction
