@@ -7,6 +7,8 @@ import type {
   DialectFormVariants,
   DictionaryClientEntry,
   DictionaryInflectedFormDetails,
+  DictionarySenseGrammarGender,
+  DictionarySenseGrammarNumber,
 } from "@/features/dictionary/types";
 
 type EntryDisplayCandidate = Pick<
@@ -25,6 +27,16 @@ type DialectVariantRow = {
   state: DialectVariantState;
 };
 export type GenderedHeadingMarker = "f" | "m" | "pl";
+type InflectedFormRole = "absolute" | "nominal" | "pronominal";
+type InflectedFormCollectionRole = InflectedFormRole | "default";
+type ImperativeRoleForms = Partial<Record<InflectedFormRole, string>>;
+export type ImperativeDisplayForm = {
+  form: string;
+  gender?: DictionarySenseGrammarGender;
+  number?: DictionarySenseGrammarNumber;
+  role: InflectedFormRole;
+  uncertain?: boolean;
+};
 type GenderedHeadingPart = {
   entryId?: number;
   marker: GenderedHeadingMarker;
@@ -37,6 +49,12 @@ function getGenderedPartKey(
   return `${part.marker}:${part.spelling}`;
 }
 
+export function hasImperativeDisplayFormMorphology(
+  form: Pick<ImperativeDisplayForm, "gender" | "number">,
+) {
+  return Boolean(form.gender || form.number);
+}
+
 const DIALECT_VARIANT_STATE_ORDER: readonly DialectVariantState[] = [
   "absolute",
   "nominal",
@@ -44,6 +62,13 @@ const DIALECT_VARIANT_STATE_ORDER: readonly DialectVariantState[] = [
   "stative",
   "constructParticiples",
 ] as const;
+const INFLECTED_FORM_ROLE_ORDER: readonly InflectedFormRole[] = [
+  "absolute",
+  "nominal",
+  "pronominal",
+] as const;
+const INFLECTED_FORM_COLLECTION_ROLE_ORDER: readonly InflectedFormCollectionRole[] =
+  [...INFLECTED_FORM_ROLE_ORDER, "default"] as const;
 
 function addUniqueForm(forms: string[], form: string) {
   const normalizedForm = form.trim();
@@ -55,6 +80,48 @@ function addUniqueForm(forms: string[], form: string) {
 
 function getInflectedFormText(form: string | DictionaryInflectedFormDetails) {
   return typeof form === "string" ? form : form.form;
+}
+
+function toImperativeDisplayForm(
+  form: string | DictionaryInflectedFormDetails,
+  role: InflectedFormRole,
+): ImperativeDisplayForm {
+  if (typeof form === "string") {
+    return { form, role };
+  }
+
+  return {
+    form: form.form,
+    role,
+    ...(form.gender ? { gender: form.gender } : {}),
+    ...(form.number ? { number: form.number } : {}),
+    ...(form.uncertain !== undefined ? { uncertain: form.uncertain } : {}),
+  };
+}
+
+function addUniqueImperativeDisplayForm(
+  forms: ImperativeDisplayForm[],
+  form: ImperativeDisplayForm,
+) {
+  const normalizedForm = form.form.trim();
+
+  if (!normalizedForm) {
+    return;
+  }
+
+  if (
+    forms.some(
+      (existingForm) =>
+        existingForm.form === normalizedForm &&
+        existingForm.gender === form.gender &&
+        existingForm.number === form.number &&
+        existingForm.role === form.role,
+    )
+  ) {
+    return;
+  }
+
+  forms.push({ ...form, form: normalizedForm });
 }
 
 function collectInflectionForms(
@@ -84,9 +151,158 @@ function collectInflectionForms(
       continue;
     }
 
-    for (const forms of Object.values(roleForms ?? {})) {
-      for (const form of forms ?? []) {
+    for (const role of INFLECTED_FORM_COLLECTION_ROLE_ORDER) {
+      for (const form of roleForms?.[role] ?? []) {
         addUniqueForm(collectedForms, getInflectedFormText(form));
+      }
+
+      for (const form of roleForms?.variants?.[role] ?? []) {
+        addUniqueForm(collectedForms, getInflectedFormText(form));
+      }
+    }
+  }
+
+  return collectedForms;
+}
+
+function collectInflectionRoleForms(
+  entry: EntryDisplayCandidate,
+  kind: keyof NonNullable<EntryDisplayCandidate["inflections"]>,
+  options: {
+    dialect?: DictionaryDialectCode;
+    includeUnscoped?: boolean;
+  } = {},
+) {
+  const collectedForms: Record<InflectedFormRole, string[]> = {
+    absolute: [],
+    nominal: [],
+    pronominal: [],
+  };
+  const dialectInflections = entry.inflections?.[kind];
+
+  if (!dialectInflections) {
+    return collectedForms;
+  }
+
+  for (const [inflectionDialect, roleForms] of Object.entries(
+    dialectInflections,
+  )) {
+    const isRequestedDialect =
+      !options.dialect || inflectionDialect === options.dialect;
+    const isUnscopedFallback =
+      options.includeUnscoped && inflectionDialect === "default";
+
+    if (!isRequestedDialect && !isUnscopedFallback) {
+      continue;
+    }
+
+    for (const role of INFLECTED_FORM_ROLE_ORDER) {
+      for (const form of roleForms?.[role] ?? []) {
+        addUniqueForm(collectedForms[role], getInflectedFormText(form));
+      }
+    }
+  }
+
+  return collectedForms;
+}
+
+function collectInflectionRoleDisplayForms(
+  entry: EntryDisplayCandidate,
+  kind: keyof NonNullable<EntryDisplayCandidate["inflections"]>,
+  options: {
+    dialect?: DictionaryDialectCode;
+    includeUnscoped?: boolean;
+  } = {},
+) {
+  const collectedForms: Record<InflectedFormRole, ImperativeDisplayForm[]> = {
+    absolute: [],
+    nominal: [],
+    pronominal: [],
+  };
+  const dialectInflections = entry.inflections?.[kind];
+
+  if (!dialectInflections) {
+    return collectedForms;
+  }
+
+  for (const [inflectionDialect, roleForms] of Object.entries(
+    dialectInflections,
+  )) {
+    const isRequestedDialect =
+      !options.dialect || inflectionDialect === options.dialect;
+    const isUnscopedFallback =
+      options.includeUnscoped && inflectionDialect === "default";
+
+    if (!isRequestedDialect && !isUnscopedFallback) {
+      continue;
+    }
+
+    for (const role of INFLECTED_FORM_ROLE_ORDER) {
+      for (const form of roleForms?.[role] ?? []) {
+        addUniqueImperativeDisplayForm(
+          collectedForms[role],
+          toImperativeDisplayForm(form, role),
+        );
+      }
+    }
+  }
+
+  return collectedForms;
+}
+
+function collectInflectionRoleVariantDisplayForms(
+  entry: EntryDisplayCandidate,
+  kind: keyof NonNullable<EntryDisplayCandidate["inflections"]>,
+  options: {
+    dialect?: DictionaryDialectCode;
+    includeUnscoped?: boolean;
+  } = {},
+) {
+  const collectedForms: Record<InflectedFormRole, ImperativeDisplayForm[]> = {
+    absolute: [],
+    nominal: [],
+    pronominal: [],
+  };
+  const dialectInflections = entry.inflections?.[kind];
+
+  if (!dialectInflections) {
+    return collectedForms;
+  }
+
+  for (const [inflectionDialect, roleForms] of Object.entries(
+    dialectInflections,
+  )) {
+    const isRequestedDialect =
+      !options.dialect || inflectionDialect === options.dialect;
+    const isUnscopedFallback =
+      options.includeUnscoped && inflectionDialect === "default";
+
+    if (!isRequestedDialect && !isUnscopedFallback) {
+      continue;
+    }
+
+    for (const role of INFLECTED_FORM_ROLE_ORDER) {
+      const primaryForms = (roleForms?.[role] ?? []).map((form) =>
+        toImperativeDisplayForm(form, role),
+      );
+      const hasMorphology = primaryForms.some(
+        hasImperativeDisplayFormMorphology,
+      );
+      const implicitVariantForms = hasMorphology
+        ? primaryForms.filter(
+            (form) => !hasImperativeDisplayFormMorphology(form),
+          )
+        : primaryForms.slice(1);
+
+      for (const form of implicitVariantForms) {
+        addUniqueImperativeDisplayForm(collectedForms[role], form);
+      }
+
+      for (const form of roleForms?.variants?.[role] ?? []) {
+        addUniqueImperativeDisplayForm(
+          collectedForms[role],
+          toImperativeDisplayForm(form, role),
+        );
       }
     }
   }
@@ -113,6 +329,12 @@ function formatBoundForms(nominal = "", pronominal = "") {
   }
 
   return `${nominal}/${pronominal}`;
+}
+
+function isImperativeRoleForms(
+  forms: readonly string[] | ImperativeRoleForms,
+): forms is ImperativeRoleForms {
+  return !Array.isArray(forms);
 }
 
 /**
@@ -254,11 +476,89 @@ export function getDialectImperativeForms(
   });
 }
 
+export function getDialectPrimaryImperativeForms(
+  entry: EntryDisplayCandidate,
+  dialect: DictionaryDialectCode,
+  options: { includeUnscoped?: boolean } = {},
+): ImperativeRoleForms {
+  const roleForms = collectInflectionRoleForms(entry, "imperative", {
+    dialect,
+    includeUnscoped: options.includeUnscoped,
+  });
+  const primaryForms: ImperativeRoleForms = {};
+
+  for (const role of INFLECTED_FORM_ROLE_ORDER) {
+    const primaryForm = roleForms[role][0];
+
+    if (primaryForm) {
+      primaryForms[role] = primaryForm;
+    }
+  }
+
+  return primaryForms;
+}
+
+export function getDialectPrimaryImperativeDisplayForms(
+  entry: EntryDisplayCandidate,
+  dialect: DictionaryDialectCode,
+  options: { includeUnscoped?: boolean } = {},
+) {
+  const roleForms = collectInflectionRoleDisplayForms(entry, "imperative", {
+    dialect,
+    includeUnscoped: options.includeUnscoped,
+  });
+
+  return INFLECTED_FORM_ROLE_ORDER.flatMap((role) => {
+    const forms = roleForms[role];
+
+    if (forms.length === 0) {
+      return [];
+    }
+
+    const hasMorphology = forms.some(hasImperativeDisplayFormMorphology);
+
+    return hasMorphology
+      ? forms.filter(hasImperativeDisplayFormMorphology)
+      : [forms[0]];
+  });
+}
+
+export function getDialectImperativeVariantForms(
+  entry: EntryDisplayCandidate,
+  dialect: DictionaryDialectCode,
+  options: { includeUnscoped?: boolean } = {},
+) {
+  const roleForms = collectInflectionRoleVariantDisplayForms(
+    entry,
+    "imperative",
+    {
+      dialect,
+      includeUnscoped: options.includeUnscoped,
+    },
+  );
+
+  return INFLECTED_FORM_ROLE_ORDER.flatMap((role) =>
+    roleForms[role].map((form) => form.form),
+  );
+}
+
 /**
  * Joins imperative forms using the same compact absolute + bound-form notation
  * used by dictionary entry headers when the imperative has a canonical triplet.
  */
-export function formatImperativeForms(forms: readonly string[]) {
+export function formatImperativeForms(
+  forms: readonly string[] | ImperativeRoleForms,
+) {
+  if (isImperativeRoleForms(forms)) {
+    return [
+      forms.absolute ?? "",
+      formatBoundForms(forms.nominal, forms.pronominal),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+  }
+
   const visibleForms = forms.filter(Boolean);
   const [absolute, nominal, pronominal] = visibleForms;
 

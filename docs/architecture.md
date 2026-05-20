@@ -132,7 +132,9 @@ The grammar source is typed and reviewed in source form, then exported into JSON
 
 The dictionary currently ships from a normalized checked-in dataset and is read by the public dictionary UI, analytics drill-downs, the dictionary search API, and sitemap/SEO helpers.
 
-The app-facing JSON should contain structured fields such as dialect forms, localized senses, Greek forms, hierarchical inflections, and root references. Raw/source-only text fields, attestations, and source notes should stay out of the runtime payload now that the data migration has been completed. The historical XML source can live in ignored local backups for reference, but it should not be tracked under `public/data` or imported by app code.
+The app-facing JSON should contain structured fields such as dialect forms, localized senses, Greek context, hierarchical inflections, and entry relations. Raw/source-only text fields, attestations, source notes, source dumps, and one-off migration artifacts should stay out of the runtime payload.
+
+For field-level dictionary conventions, use the [Dictionary JSON Guide](./dictionary-json.md).
 
 Dictionary part-of-speech codes, grammar abbreviations, and grammar-label tooltip behavior are centralized in `src/features/dictionary/grammarRegistry.ts` with matching tests. Prefer extending that registry over scattering one-off label parsing across UI, analytics, or structured-data helpers.
 

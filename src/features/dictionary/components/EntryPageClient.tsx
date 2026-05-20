@@ -1,10 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/components/LanguageProvider";
-import type {
-  DictionaryRootReference,
-  LexicalEntry,
-} from "@/features/dictionary/types";
+import type { DictionaryClientEntry } from "@/features/dictionary/types";
 import { RelatedGrammarLessonsPanel } from "@/features/grammar/components/RelatedGrammarLessonsPanel";
 import type { GrammarLessonReference } from "@/features/grammar/lib/grammarContentGraph";
 
@@ -12,7 +9,7 @@ import DictionaryEntryCard from "./DictionaryEntry";
 import { EntryActionBar } from "./EntryActionBar";
 
 type EntryPageClientProps = {
-  initialEntry: LexicalEntry & { rootEntry?: DictionaryRootReference };
+  initialEntry: DictionaryClientEntry;
   relatedGrammarLessons: readonly GrammarLessonReference[];
 };
 

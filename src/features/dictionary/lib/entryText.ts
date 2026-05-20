@@ -1,5 +1,8 @@
 import {
+  type DictionaryComplementizerGovernment,
+  type DictionaryConstructionGovernment,
   type DictionaryDialectCode,
+  type DictionaryPrepGovernment,
   DICTIONARY_SENSE_CODES,
   getPartOfSpeechLabel,
 } from "@/features/dictionary/config";
@@ -29,13 +32,18 @@ type EntryMeaningSource = Pick<
 type SenseDisplayOptions = {
   dialectForms?: DialectForms;
   hasImperativeForms?: boolean;
+  viewDialect?: DictionaryDialectCode;
 };
 
 type LocalizedDictionarySense = {
   code: string;
+  complementizerGovernment?: DictionaryComplementizerGovernment[];
+  constructionGovernment?: DictionaryConstructionGovernment[];
+  dialects?: DictionaryDialectCode[];
   genderedRows?: LocalizedDictionaryGenderedMeaning[];
   meanings: string[];
   notes: string[];
+  prepGovernment?: DictionaryPrepGovernment[];
 };
 
 type LocalizedDictionaryDialectMeaning = {
@@ -257,6 +265,25 @@ export function getLocalizedSenseGroups(
 
     const meanings = getLocalizedTextValues(sense.meanings, locale);
     const notes = getLocalizedTextValues(sense.notes, locale);
+    const complementizerGovernment =
+      sense.grammar.complementizerGovernment ?? [];
+    const constructionGovernment = sense.grammar.constructionGovernment ?? [];
+    const prepGovMap = sense.grammar.prepGovernment;
+    let prepGovernment: DictionaryPrepGovernment[] = [];
+    if (prepGovMap) {
+      if (options.viewDialect && options.viewDialect in prepGovMap) {
+        prepGovernment = prepGovMap[options.viewDialect] ?? [];
+      } else {
+        const availableDialects = Object.keys(
+          prepGovMap,
+        ) as DictionaryDialectCode[];
+        if (availableDialects.includes("S")) {
+          prepGovernment = prepGovMap["S"] ?? [];
+        } else if (availableDialects.length > 0) {
+          prepGovernment = prepGovMap[availableDialects[0]] ?? [];
+        }
+      }
+    }
     const genderedRows =
       sense.grammar.pos === "N" && !attachedGenderedMeanings
         ? genderedMeanings
@@ -269,9 +296,19 @@ export function getLocalizedSenseGroups(
     return [
       {
         code,
+        ...(complementizerGovernment.length > 0
+          ? { complementizerGovernment }
+          : {}),
+        ...(constructionGovernment.length > 0
+          ? { constructionGovernment }
+          : {}),
+        ...(sense.dialects && sense.dialects.length > 0
+          ? { dialects: sense.dialects }
+          : {}),
         ...(genderedRows.length > 0 ? { genderedRows } : {}),
         meanings,
         notes: notes.filter(isDisplayableSenseNote),
+        ...(prepGovernment.length > 0 ? { prepGovernment } : {}),
       },
     ];
   });

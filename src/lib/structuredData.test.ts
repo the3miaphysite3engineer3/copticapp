@@ -24,7 +24,7 @@ const lordEntry: LexicalEntry = {
   },
   senses: [{ grammar: { pos: "N" }, meanings: { en: ["lord"] } }],
   etym: "Gr",
-  greek: ["κυριοσ"],
+  greekContext: { sources: ["κυριοσ"] },
 };
 
 describe("structured dictionary data", () => {

@@ -83,6 +83,7 @@ const STRUCTURED_DATA_COPY = {
     definedTerm: {
       partOfSpeech: "Part of speech",
       gender: "Gender",
+      greekSources: "Greek sources",
       greekEquivalents: "Greek equivalents",
     },
   },
@@ -116,6 +117,7 @@ const STRUCTURED_DATA_COPY = {
     definedTerm: {
       partOfSpeech: "Woordsoort",
       gender: "Geslacht",
+      greekSources: "Griekse bronnen",
       greekEquivalents: "Griekse equivalenten",
     },
   },
@@ -466,6 +468,56 @@ function collectDialectAlternateNames(forms: DialectForms) {
   ].filter((form): form is string => Boolean(form));
 }
 
+function createPropertyValue(name: string, value: string): JsonLd {
+  return {
+    "@type": "PropertyValue",
+    name,
+    value,
+  };
+}
+
+function createDefinedTermAdditionalProperties(
+  entry: LexicalEntry,
+  locale: Language,
+  copy: ReturnType<typeof getStructuredDataCopy>,
+  greekSources: readonly string[],
+  greekEquivalents: readonly string[],
+) {
+  const properties: JsonLd[] = [
+    createPropertyValue(
+      copy.definedTerm.partOfSpeech,
+      getPartOfSpeechLabel(getPrimaryEntryPartOfSpeech(entry), (key) =>
+        getTranslation(locale, key),
+      ),
+    ),
+  ];
+  const gender = getEntryNounGender(entry);
+
+  if (gender) {
+    properties.push(createPropertyValue(copy.definedTerm.gender, gender));
+  }
+
+  if (greekSources.length > 0) {
+    properties.push(
+      createPropertyValue(
+        copy.definedTerm.greekSources,
+        greekSources.join("; "),
+      ),
+    );
+  }
+
+  if (greekEquivalents.length > 0) {
+    properties.push(
+      createPropertyValue(
+        copy.definedTerm.greekEquivalents,
+        greekEquivalents.join("; "),
+      ),
+    );
+  }
+
+  return properties;
+}
+
 export function createDefinedTermStructuredData(
   entry: LexicalEntry,
   locale: Language = DEFAULT_LANGUAGE,
@@ -477,7 +529,8 @@ export function createDefinedTermStructuredData(
   const headword = options.name ?? toPlainText(entry.headword);
   const entryPath = getEntryPath(String(entry.id), locale);
   const copy = getStructuredDataCopy(locale);
-  const greekEquivalents = entry.greek ?? [];
+  const greekSources = entry.greekContext?.sources ?? [];
+  const greekEquivalents = entry.greekContext?.equivalents ?? [];
   const alternateNames = Array.from(
     new Set(
       Object.values(entry.dialects)
@@ -486,29 +539,13 @@ export function createDefinedTermStructuredData(
         .filter(Boolean),
     ),
   );
-  const additionalProperty = [
-    {
-      "@type": "PropertyValue",
-      name: copy.definedTerm.partOfSpeech,
-      value: getPartOfSpeechLabel(getPrimaryEntryPartOfSpeech(entry), (key) =>
-        getTranslation(locale, key),
-      ),
-    },
-    getEntryNounGender(entry)
-      ? {
-          "@type": "PropertyValue",
-          name: copy.definedTerm.gender,
-          value: getEntryNounGender(entry),
-        }
-      : null,
-    greekEquivalents.length > 0
-      ? {
-          "@type": "PropertyValue",
-          name: copy.definedTerm.greekEquivalents,
-          value: greekEquivalents.join("; "),
-        }
-      : null,
-  ].filter(Boolean);
+  const additionalProperty = createDefinedTermAdditionalProperties(
+    entry,
+    locale,
+    copy,
+    greekSources,
+    greekEquivalents,
+  );
 
   return {
     "@context": "https://schema.org",

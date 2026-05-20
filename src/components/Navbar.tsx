@@ -105,12 +105,12 @@ export function Navbar() {
             href={getLocalizedHomePath(language)}
             className="group flex min-w-0 items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 sm:gap-3"
           >
-            <div className="relative h-12 w-12 shrink-0 lg:h-[52px] lg:w-[52px]">
+            <div className="relative h-[52px] w-[52px] shrink-0 lg:h-14 lg:w-14">
               <Image
                 src="/logo/Coptic_Compass_Primary.svg"
                 alt={`${brandLabel} logo`}
                 fill
-                sizes="(max-width: 1024px) 48px, 52px"
+                sizes="(max-width: 1024px) 52px, 56px"
                 loading="eager"
                 className="object-contain dark:hidden"
               />
@@ -118,7 +118,7 @@ export function Navbar() {
                 src="/logo/Coptic_Compass_Secondary.svg"
                 alt={`${brandLabel} logo`}
                 fill
-                sizes="(max-width: 1024px) 48px, 52px"
+                sizes="(max-width: 1024px) 52px, 56px"
                 loading="eager"
                 className="hidden object-contain dark:block"
               />

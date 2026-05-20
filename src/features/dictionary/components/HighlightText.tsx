@@ -63,22 +63,41 @@ function normalizeMeaningDisplayPunctuation(value: string) {
 }
 
 function FormSymbolTooltip({
+  className,
   label,
   symbol,
 }: {
+  className?: string;
   label: string;
   symbol: FormSymbol;
 }) {
-  const symbolContent =
-    symbol === "†" ? (
-      <sup className="align-super text-[0.65em] leading-none text-current">
+  return (
+    <MicroTooltip label={label}>
+      {renderFormSymbol(symbol, className)}
+    </MicroTooltip>
+  );
+}
+
+function getFormSymbolClassName(symbol: FormSymbol) {
+  return symbol === "-" || symbol === "=" || symbol === "†"
+    ? antinoou.className
+    : undefined;
+}
+
+function renderFormSymbol(symbol: FormSymbol, className?: string) {
+  if (symbol === "†") {
+    return (
+      <sup
+        className={`align-super text-[0.65em] leading-none text-current ${
+          className ?? ""
+        }`.trim()}
+      >
         †
       </sup>
-    ) : (
-      symbol
     );
+  }
 
-  return <MicroTooltip label={label}>{symbolContent}</MicroTooltip>;
+  return className ? <span className={className}>{symbol}</span> : symbol;
 }
 
 function normalizeGrammarAbbreviationKey(value: string) {
@@ -102,15 +121,16 @@ function renderWithSuperscript(
     if (FORM_SYMBOL_PATTERN.test(part)) {
       const symbol = part as FormSymbol;
       const label = symbolTooltips?.[symbol];
-      let symbolContent: ReactNode = symbol;
+      const symbolClassName = getFormSymbolClassName(symbol);
+      let symbolContent: ReactNode = renderFormSymbol(symbol, symbolClassName);
 
       if (label) {
-        symbolContent = <FormSymbolTooltip label={label} symbol={symbol} />;
-      } else if (symbol === "†") {
         symbolContent = (
-          <sup className="align-super text-[0.65em] leading-none text-current">
-            †
-          </sup>
+          <FormSymbolTooltip
+            className={symbolClassName}
+            label={label}
+            symbol={symbol}
+          />
         );
       }
 

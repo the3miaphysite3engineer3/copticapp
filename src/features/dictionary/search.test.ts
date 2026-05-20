@@ -24,7 +24,7 @@ const lordEntry: DictionaryClientEntry = {
     },
   },
   senses: [{ grammar: { pos: "N" }, meanings: { en: ["lord"] } }],
-  greek: ["κυριοσ"],
+  greekContext: { equivalents: ["κυριοσ"] },
 };
 
 const fatherEntry: DictionaryClientEntry = {
@@ -42,7 +42,6 @@ const fatherEntry: DictionaryClientEntry = {
   senses: [
     { grammar: { gender: "M", pos: "N" }, meanings: { en: ["father"] } },
   ],
-  greek: [],
 };
 
 const elderEntry: DictionaryClientEntry = {
@@ -58,7 +57,6 @@ const elderEntry: DictionaryClientEntry = {
     },
   },
   senses: [{ grammar: { pos: "N" }, meanings: { en: ["elder"] } }],
-  greek: [],
 };
 
 const prepositionEntry: DictionaryClientEntry = {
@@ -74,7 +72,6 @@ const prepositionEntry: DictionaryClientEntry = {
     },
   },
   senses: [{ grammar: { pos: "PREP" }, meanings: { en: ["with, by"] } }],
-  greek: [],
 };
 
 const runEntry: DictionaryClientEntry = {
@@ -90,7 +87,6 @@ const runEntry: DictionaryClientEntry = {
     },
   },
   senses: [{ grammar: { pos: "V" }, meanings: { en: ["run"] } }],
-  greek: [],
 };
 
 const takeEntry: DictionaryClientEntry = {
@@ -110,17 +106,21 @@ const takeEntry: DictionaryClientEntry = {
     },
   },
   senses: [{ grammar: { pos: "V" }, meanings: { en: ["take"] } }],
-  greek: [],
 };
 
 const guideEntry: DictionaryClientEntry = {
   id: 11146,
-  root_id: takeEntry.id,
-  rootEntry: {
-    dialects: takeEntry.dialects,
-    headword: takeEntry.headword,
-    id: takeEntry.id,
-  },
+  relations: [
+    {
+      targetId: takeEntry.id,
+      targetEntry: {
+        dialects: takeEntry.dialects,
+        headword: takeEntry.headword,
+        id: takeEntry.id,
+      },
+      type: "COMPOUND_WITH",
+    },
+  ],
   headword: "ϭⲁⲩⲙⲱⲓⲧ",
   etym: "Egy",
   dialects: {
@@ -153,7 +153,6 @@ const accentedParticipleEntry: DictionaryClientEntry = {
     },
   },
   senses: [{ grammar: { pos: "V" }, meanings: { en: ["take"] } }],
-  greek: [],
 };
 
 describe("dictionary search", () => {
@@ -417,7 +416,7 @@ describe("dictionary search", () => {
         },
       },
       senses: [{ grammar: { pos: "N" }, meanings: { en: ["treasure"] } }],
-      greek: ["θησαυροσ"],
+      greekContext: { equivalents: ["θησαυροσ"] },
       inflections: {
         plural: {
           A: {
@@ -461,7 +460,6 @@ describe("dictionary search", () => {
       etym: "Egy",
       dialects: {},
       senses: [{ grammar: { pos: "N" }, meanings: { en: ["many, much"] } }],
-      greek: [],
       inflections: {
         feminine: {
           B: {
@@ -505,7 +503,6 @@ describe("dictionary search", () => {
       etym: "Egy",
       dialects: {},
       senses: [{ grammar: { pos: "N" }, meanings: { en: ["many, much"] } }],
-      greek: [],
       inflections: {
         plural: {
           S: {
@@ -543,7 +540,6 @@ describe("dictionary search", () => {
           meanings: { en: ["servant, slave"] },
         },
       ],
-      greek: [],
       inflections: {
         feminine: {
           B: {
@@ -586,7 +582,7 @@ describe("dictionary search", () => {
         },
       },
       senses: [{ grammar: { pos: "V" }, meanings: { en: ["give"] } }],
-      greek: ["διδοναι"],
+      greekContext: { equivalents: ["διδοναι"] },
       inflections: {
         imperative: {
           B: {

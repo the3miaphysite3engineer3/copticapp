@@ -18,7 +18,7 @@
 
 ## Features
 
-- **Searchable Dictionary:** 6,400+ normalized checked-in entries with Coptic, English, and Greek lookup. Includes dialect forms, canonical entry pages, and a built-in virtual keyboard.
+- **Searchable Dictionary:** 6,500+ normalized checked-in entries with Coptic, English, Dutch, and Greek-context lookup. Includes dialect forms, lexical relations, canonical entry pages, and a built-in virtual keyboard.
 - **Interactive Grammar Lessons:** Reading and study modes with exercises, footnotes, and concept glossaries linked directly to dictionary sources.
 - **Shenute AI Assistant:** OCR-assisted image prompts backed by pgvector RAG, integrating THOTH AI, OpenRouter, Gemini, and Hugging Face.
 - **Public APIs:** Read-only grammar and dictionary JSON endpoints plus OpenAPI documentation for developers and educators.
@@ -123,10 +123,11 @@ npm run test:e2e
 
 ## Documentation
 
-For deep dives into the technical architecture, environment setup, API surfaces, or localization guidelines, see the `docs/` directory:
+For deep dives into the technical architecture, environment setup, API surfaces, or localization guidelines, start with the [Docs Overview](docs/README.md):
 
 - [Architecture & Workflows](docs/architecture.md)
 - [Coptic Compass Brand Book](docs/coptic-compass-brand-guide.md)
+- [Dictionary JSON Guide](docs/dictionary-json.md)
 - [Environment & Deployment Setup](docs/environment-setup.md)
 - [API, AI, and Data Workflows](docs/api-and-workflows.md)
 - [AI & RAG Distillation Pipeline](docs/distillation.md)

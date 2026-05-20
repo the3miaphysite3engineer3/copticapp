@@ -18,7 +18,6 @@ const dictionary: DictionaryClientEntry[] = [
       },
     },
     etym: "Egy",
-    greek: [],
     headword: "ϭⲱⲓⲥ",
     id: 17,
     senses: [{ grammar: { pos: "N" }, meanings: { en: ["lord"] } }],
@@ -33,7 +32,6 @@ const dictionary: DictionaryClientEntry[] = [
       },
     },
     etym: "Gr",
-    greek: [],
     headword: "ⲉⲓⲱⲧ",
     id: 18,
     senses: [
@@ -53,7 +51,6 @@ const dictionary: DictionaryClientEntry[] = [
       },
     },
     etym: "Egy",
-    greek: [],
     headword: "ⲃⲱⲕ",
     id: 19,
     senses: [{ grammar: { pos: "V" }, meanings: { en: ["run"] } }],

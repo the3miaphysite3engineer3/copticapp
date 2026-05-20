@@ -1,5 +1,9 @@
 import {
+  DICTIONARY_COMPLEMENTIZER_GOVERNMENT_FORMS,
+  DICTIONARY_CONSTRUCTION_GOVERNMENT_FORMS,
   DICTIONARY_DIALECT_CODES,
+  DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT,
+  DICTIONARY_PREP_GOVERNMENT_FORMS,
   DICTIONARY_SENSE_CODES,
   PARTS_OF_SPEECH,
 } from "../config.ts";
@@ -20,24 +24,14 @@ const allowedTopLevelEntryFields = new Set([
   "dialects",
   "etym",
   "genderedMeanings",
-  "greek",
+  "greekContext",
   "headword",
   "id",
   "inflections",
-  "root_id",
+  "relations",
   "senses",
 ]);
-const deprecatedTopLevelEntryFields = new Set([
-  "dutch_meanings",
-  "english_meanings",
-  "gender",
-  "meaningGroups",
-  "parentEntryId",
-  "pluralForms",
-  "pos",
-  "relationType",
-]);
-const allowedEtymologies = new Set(["Egy", "Gr", "Unknown"]);
+const allowedEtymologies = new Set(["Egy", "Gr", "Lat", "Sem", "Unknown"]);
 const allowedDialectCodes = new Set<string>(DICTIONARY_DIALECT_CODES);
 const allowedDialectFormFields = new Set([
   "absolute",
@@ -57,6 +51,8 @@ const allowedDialectVariantFields = new Set([
 const allowedSenseGrammarKeys = new Set([
   "affix",
   "caseRole",
+  "complementizerGovernment",
+  "constructionGovernment",
   "derivation",
   "form",
   "gender",
@@ -64,11 +60,25 @@ const allowedSenseGrammarKeys = new Set([
   "number",
   "polarity",
   "pos",
+  "prepGovernment",
   "tags",
   "valency",
   "voice",
 ]);
 const allowedSenseGrammarPartOfSpeech = new Set([...PARTS_OF_SPEECH, "PRON"]);
+const allowedComplementizerGovernmentForms = new Set<string>(
+  DICTIONARY_COMPLEMENTIZER_GOVERNMENT_FORMS,
+);
+const allowedConstructionGovernmentForms = new Set<string>(
+  DICTIONARY_CONSTRUCTION_GOVERNMENT_FORMS,
+);
+const allowedPrepGovernmentForms = new Set<string>(
+  DICTIONARY_PREP_GOVERNMENT_FORMS,
+);
+const allowedPrepGovernmentFormsForDialect = {
+  S: new Set<string>(DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT.S),
+  B: new Set<string>(DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT.B),
+};
 const allowedSenseGrammarTags = new Set<string>(DICTIONARY_SENSE_CODES);
 const senseGrammarEnumFields = {
   affix: ["PFX", "SFX"],
@@ -84,6 +94,13 @@ const senseGrammarEnumFields = {
 } as const;
 const localizedArrayFields = new Set(["en", "nl"]);
 const allowedGenderedMeaningMarkers = new Set(["f", "m", "pl"]);
+const allowedGreekContextFields = new Set(["equivalents", "sources"]);
+const allowedRelationTypes = new Set([
+  "CAUS_OF",
+  "COMPOUND_WITH",
+  "DERIVED_FROM",
+  "SEE_ALSO",
+]);
 const allowedInflectionKinds = new Set([
   "dual",
   "feminine",
@@ -194,6 +211,208 @@ function validateOptionalLocalizedStringArrays(
 ) {
   if (value !== undefined) {
     validateLocalizedStringArrays(issues, value, path);
+  }
+}
+
+function validateGreekContext(
+  issues: DictionaryValidationIssue[],
+  value: unknown,
+  path: string,
+) {
+  if (!isPlainRecord(value)) {
+    addIssue(issues, path, "expected a Greek context object", value);
+    return;
+  }
+
+  const fields = Object.keys(value);
+
+  if (fields.length === 0) {
+    addIssue(issues, path, "expected at least one Greek context field", value);
+  }
+
+  for (const field of fields) {
+    if (!allowedGreekContextFields.has(field)) {
+      addIssue(issues, `${path}.${field}`, "unexpected Greek context field");
+      continue;
+    }
+
+    validateNonEmptyStringArray(issues, value[field], `${path}.${field}`);
+  }
+}
+
+function validateGovernmentForms(
+  issues: DictionaryValidationIssue[],
+  allowedForms: ReadonlySet<string>,
+  fieldName: string,
+  label: string,
+  value: unknown,
+  path: string,
+) {
+  if (!Array.isArray(value) || value.length === 0) {
+    addIssue(issues, path, `expected a non-empty ${fieldName} array`, value);
+    return;
+  }
+
+  const seen = new Set<string>();
+
+  for (const [index, item] of value.entries()) {
+    const itemPath = `${path}[${index}]`;
+
+    if (typeof item !== "string" || !allowedForms.has(item)) {
+      addIssue(issues, itemPath, `expected a supported ${label} form`, item);
+      continue;
+    }
+
+    if (seen.has(item)) {
+      addIssue(issues, itemPath, `${label} forms must be unique`, item);
+      continue;
+    }
+
+    seen.add(item);
+  }
+}
+
+function validateComplementizerGovernment(
+  issues: DictionaryValidationIssue[],
+  value: unknown,
+  path: string,
+) {
+  validateGovernmentForms(
+    issues,
+    allowedComplementizerGovernmentForms,
+    "complementizerGovernment",
+    "complementizer government",
+    value,
+    path,
+  );
+}
+
+function validateConstructionGovernment(
+  issues: DictionaryValidationIssue[],
+  value: unknown,
+  path: string,
+) {
+  validateGovernmentForms(
+    issues,
+    allowedConstructionGovernmentForms,
+    "constructionGovernment",
+    "construction government",
+    value,
+    path,
+  );
+}
+
+function validatePrepGovernment(
+  issues: DictionaryValidationIssue[],
+  value: unknown,
+  path: string,
+) {
+  if (!isPlainRecord(value)) {
+    addIssue(
+      issues,
+      path,
+      "expected a dialect-keyed prepositional government object",
+      value,
+    );
+    return;
+  }
+
+  for (const [dialect, prepList] of Object.entries(value)) {
+    const dialectPath = `${path}.${dialect}`;
+    if (!allowedDialectCodes.has(dialect)) {
+      addIssue(
+        issues,
+        dialectPath,
+        "expected a supported dialect code",
+        dialect,
+      );
+      continue;
+    }
+    if (dialect !== "S" && dialect !== "B") {
+      addIssue(
+        issues,
+        dialectPath,
+        "prepositional government is only supported for S and B dialects currently",
+        dialect,
+      );
+      continue;
+    }
+
+    if (!Array.isArray(prepList) || prepList.length === 0) {
+      addIssue(
+        issues,
+        dialectPath,
+        "expected a non-empty prepositional government array",
+        prepList,
+      );
+      continue;
+    }
+
+    const seen = new Set<string>();
+    for (const [index, prep] of prepList.entries()) {
+      const itemPath = `${dialectPath}[${index}]`;
+      if (typeof prep !== "string" || !allowedPrepGovernmentForms.has(prep)) {
+        addIssue(
+          issues,
+          itemPath,
+          "expected a supported prepositional government form",
+          prep,
+        );
+        continue;
+      }
+
+      const dialectAllowedPreps =
+        allowedPrepGovernmentFormsForDialect[dialect as "S" | "B"];
+      if (!dialectAllowedPreps.has(prep)) {
+        addIssue(
+          issues,
+          itemPath,
+          `preposition "${prep}" is not standard for dialect ${dialect}`,
+          prep,
+        );
+        continue;
+      }
+
+      if (seen.has(prep)) {
+        addIssue(
+          issues,
+          itemPath,
+          "prepositional government forms must be unique",
+          prep,
+        );
+        continue;
+      }
+      seen.add(prep);
+    }
+  }
+}
+
+function validateDialectCodeArray(
+  issues: DictionaryValidationIssue[],
+  value: unknown,
+  path: string,
+) {
+  if (!Array.isArray(value) || value.length === 0) {
+    addIssue(issues, path, "expected a non-empty dialect array", value);
+    return;
+  }
+
+  const seen = new Set<string>();
+
+  for (const [index, dialect] of value.entries()) {
+    const itemPath = `${path}[${index}]`;
+
+    if (typeof dialect !== "string" || !allowedDialectCodes.has(dialect)) {
+      addIssue(issues, itemPath, "expected a supported dialect code", dialect);
+      continue;
+    }
+
+    if (seen.has(dialect)) {
+      addIssue(issues, itemPath, "dialect codes must be unique", dialect);
+      continue;
+    }
+
+    seen.add(dialect);
   }
 }
 
@@ -320,6 +539,29 @@ function validateSenseGrammar(
       continue;
     }
 
+    if (field === "prepGovernment") {
+      validatePrepGovernment(issues, fieldValue, `${path}.prepGovernment`);
+      continue;
+    }
+
+    if (field === "complementizerGovernment") {
+      validateComplementizerGovernment(
+        issues,
+        fieldValue,
+        `${path}.complementizerGovernment`,
+      );
+      continue;
+    }
+
+    if (field === "constructionGovernment") {
+      validateConstructionGovernment(
+        issues,
+        fieldValue,
+        `${path}.constructionGovernment`,
+      );
+      continue;
+    }
+
     if (
       field in senseGrammarEnumFields &&
       !senseGrammarEnumFields[
@@ -344,6 +586,9 @@ function validateSenseGrammar(
       value.mood !== undefined ||
       value.voice !== undefined ||
       value.derivation !== undefined ||
+      value.complementizerGovernment !== undefined ||
+      value.constructionGovernment !== undefined ||
+      value.prepGovernment !== undefined ||
       value.form === "PC" ||
       value.form === "STA") &&
     value.pos !== "V"
@@ -368,9 +613,13 @@ function validateSense(
   }
 
   for (const field of Object.keys(value)) {
-    if (!["grammar", "meanings", "notes"].includes(field)) {
+    if (!["dialects", "grammar", "meanings", "notes"].includes(field)) {
       addIssue(issues, `${path}.${field}`, "unexpected sense field");
     }
+  }
+
+  if (value.dialects !== undefined) {
+    validateDialectCodeArray(issues, value.dialects, `${path}.dialects`);
   }
 
   validateSenseGrammar(issues, value.grammar, `${path}.grammar`);
@@ -400,20 +649,7 @@ function validateDialectMeaning(
 
   validateNonEmptyString(issues, value.sourceLabel, `${path}.sourceLabel`);
 
-  if (!Array.isArray(value.dialects) || value.dialects.length === 0) {
-    addIssue(issues, `${path}.dialects`, "expected a non-empty dialect array");
-  } else {
-    for (const [index, dialect] of value.dialects.entries()) {
-      if (typeof dialect !== "string" || !allowedDialectCodes.has(dialect)) {
-        addIssue(
-          issues,
-          `${path}.dialects[${index}]`,
-          "expected a supported dialect code",
-          dialect,
-        );
-      }
-    }
-  }
+  validateDialectCodeArray(issues, value.dialects, `${path}.dialects`);
 
   validateOptionalLocalizedStringArrays(
     issues,
@@ -490,6 +726,97 @@ function validateGenderedMeaning(
   }
 }
 
+function validateRelations(
+  issues: DictionaryValidationIssue[],
+  value: unknown,
+  path: string,
+  relationTargetIdRefs: Array<{ path: string; value: number }>,
+  sourceEntryId?: number,
+) {
+  if (!Array.isArray(value) || value.length === 0) {
+    addIssue(issues, path, "expected a non-empty relations array", value);
+    return;
+  }
+
+  const seenRelationEdges = new Set<string>();
+
+  for (const [index, relation] of value.entries()) {
+    const relationPath = `${path}[${index}]`;
+
+    if (!isPlainRecord(relation)) {
+      addIssue(issues, relationPath, "expected a relation object", relation);
+      continue;
+    }
+
+    for (const field of Object.keys(relation)) {
+      if (!["notes", "targetId", "type"].includes(field)) {
+        addIssue(
+          issues,
+          `${relationPath}.${field}`,
+          "unexpected relation field",
+        );
+      }
+    }
+
+    const hasSupportedRelationType =
+      typeof relation.type === "string" &&
+      allowedRelationTypes.has(relation.type);
+
+    if (!hasSupportedRelationType) {
+      addIssue(
+        issues,
+        `${relationPath}.type`,
+        "expected a supported relation type",
+        relation.type,
+      );
+    }
+
+    if (!isInteger(relation.targetId)) {
+      addIssue(
+        issues,
+        `${relationPath}.targetId`,
+        "expected an integer entry id",
+        relation.targetId,
+      );
+    } else {
+      relationTargetIdRefs.push({
+        path: `${relationPath}.targetId`,
+        value: relation.targetId,
+      });
+
+      if (sourceEntryId === relation.targetId) {
+        addIssue(
+          issues,
+          `${relationPath}.targetId`,
+          "relation targetId must not reference the same entry",
+          relation.targetId,
+        );
+      }
+
+      if (hasSupportedRelationType) {
+        const edgeKey = `${relation.type}:${relation.targetId}`;
+
+        if (seenRelationEdges.has(edgeKey)) {
+          addIssue(
+            issues,
+            `${relationPath}.targetId`,
+            "duplicate relation edge",
+            relation.targetId,
+          );
+        } else {
+          seenRelationEdges.add(edgeKey);
+        }
+      }
+    }
+
+    validateOptionalLocalizedStringArrays(
+      issues,
+      relation.notes,
+      `${relationPath}.notes`,
+    );
+  }
+}
+
 function validateInflectedFormValue(
   issues: DictionaryValidationIssue[],
   value: unknown,
@@ -512,12 +839,28 @@ function validateInflectedFormValue(
   }
 
   for (const field of Object.keys(value)) {
-    if (!["entryId", "form", "notes", "uncertain"].includes(field)) {
+    if (
+      !["entryId", "form", "gender", "notes", "number", "uncertain"].includes(
+        field,
+      )
+    ) {
       addIssue(issues, `${path}.${field}`, "unexpected inflected form field");
     }
   }
 
   validateNonEmptyString(issues, value.form, `${path}.form`);
+
+  if (
+    value.gender !== undefined &&
+    !senseGrammarEnumFields.gender.includes(value.gender as never)
+  ) {
+    addIssue(
+      issues,
+      `${path}.gender`,
+      "expected a supported grammar value",
+      value.gender,
+    );
+  }
 
   if (value.entryId !== undefined) {
     if (!isInteger(value.entryId)) {
@@ -531,6 +874,18 @@ function validateInflectedFormValue(
     validateNonEmptyStringArray(issues, value.notes, `${path}.notes`);
   }
 
+  if (
+    value.number !== undefined &&
+    !senseGrammarEnumFields.number.includes(value.number as never)
+  ) {
+    addIssue(
+      issues,
+      `${path}.number`,
+      "expected a supported grammar value",
+      value.number,
+    );
+  }
+
   if (value.uncertain !== undefined && typeof value.uncertain !== "boolean") {
     addIssue(
       issues,
@@ -538,6 +893,22 @@ function validateInflectedFormValue(
       "expected a boolean",
       value.uncertain,
     );
+  }
+}
+
+function validateInflectedFormArray(
+  issues: DictionaryValidationIssue[],
+  forms: unknown,
+  path: string,
+  entryIdRefs: Array<{ path: string; value: number }>,
+) {
+  if (!Array.isArray(forms) || forms.length === 0) {
+    addIssue(issues, path, "expected a non-empty inflected form array", forms);
+    return;
+  }
+
+  for (const [index, form] of forms.entries()) {
+    validateInflectedFormValue(issues, form, `${path}[${index}]`, entryIdRefs);
   }
 }
 
@@ -584,6 +955,38 @@ function validateInflections(
       }
 
       for (const [role, forms] of Object.entries(roles)) {
+        if (role === "variants") {
+          if (!isPlainRecord(forms)) {
+            addIssue(
+              issues,
+              `${path}.${kind}.${dialect}.variants`,
+              "expected an inflection variants object",
+              forms,
+            );
+            continue;
+          }
+
+          for (const [variantRole, variantForms] of Object.entries(forms)) {
+            if (!allowedInflectionRoles.has(variantRole)) {
+              addIssue(
+                issues,
+                `${path}.${kind}.${dialect}.variants.${variantRole}`,
+                "unexpected inflection variant role",
+              );
+              continue;
+            }
+
+            validateInflectedFormArray(
+              issues,
+              variantForms,
+              `${path}.${kind}.${dialect}.variants.${variantRole}`,
+              entryIdRefs,
+            );
+          }
+
+          continue;
+        }
+
         if (!allowedInflectionRoles.has(role)) {
           addIssue(
             issues,
@@ -593,24 +996,12 @@ function validateInflections(
           continue;
         }
 
-        if (!Array.isArray(forms) || forms.length === 0) {
-          addIssue(
-            issues,
-            `${path}.${kind}.${dialect}.${role}`,
-            "expected a non-empty inflected form array",
-            forms,
-          );
-          continue;
-        }
-
-        for (const [index, form] of forms.entries()) {
-          validateInflectedFormValue(
-            issues,
-            form,
-            `${path}.${kind}.${dialect}.${role}[${index}]`,
-            entryIdRefs,
-          );
-        }
+        validateInflectedFormArray(
+          issues,
+          forms,
+          `${path}.${kind}.${dialect}.${role}`,
+          entryIdRefs,
+        );
       }
     }
   }
@@ -620,8 +1011,8 @@ function validateEntry(
   issues: DictionaryValidationIssue[],
   value: unknown,
   path: string,
-  rootIdRefs: Array<{ path: string; value: number }>,
   entryIdRefs: Array<{ path: string; value: number }>,
+  relationTargetIdRefs: Array<{ path: string; value: number }>,
 ) {
   if (!isPlainRecord(value)) {
     addIssue(issues, path, "expected a dictionary entry object", value);
@@ -629,15 +1020,6 @@ function validateEntry(
   }
 
   for (const field of Object.keys(value)) {
-    if (deprecatedTopLevelEntryFields.has(field)) {
-      addIssue(
-        issues,
-        `${path}.${field}`,
-        "deprecated entry field is not allowed",
-      );
-      continue;
-    }
-
     if (!allowedTopLevelEntryFields.has(field)) {
       addIssue(issues, `${path}.${field}`, "unexpected entry field");
     }
@@ -648,19 +1030,6 @@ function validateEntry(
   }
 
   validateNonEmptyString(issues, value.headword, `${path}.headword`);
-
-  if (value.root_id !== undefined) {
-    if (!isInteger(value.root_id)) {
-      addIssue(
-        issues,
-        `${path}.root_id`,
-        "expected an integer root entry id",
-        value.root_id,
-      );
-    } else {
-      rootIdRefs.push({ path: `${path}.root_id`, value: value.root_id });
-    }
-  }
 
   if (!isPlainRecord(value.dialects)) {
     addIssue(
@@ -710,8 +1079,8 @@ function validateEntry(
     );
   }
 
-  if (value.greek !== undefined) {
-    validateNonEmptyStringArray(issues, value.greek, `${path}.greek`);
+  if (value.greekContext !== undefined) {
+    validateGreekContext(issues, value.greekContext, `${path}.greekContext`);
   }
 
   if (value.dialectMeanings !== undefined) {
@@ -758,14 +1127,24 @@ function validateEntry(
       entryIdRefs,
     );
   }
+
+  if (value.relations !== undefined) {
+    validateRelations(
+      issues,
+      value.relations,
+      `${path}.relations`,
+      relationTargetIdRefs,
+      isInteger(value.id) ? value.id : undefined,
+    );
+  }
 }
 
 export function validateDictionaryEntries(
   payload: unknown,
 ): DictionaryValidationResult {
   const issues: DictionaryValidationIssue[] = [];
-  const rootIdRefs: Array<{ path: string; value: number }> = [];
   const entryIdRefs: Array<{ path: string; value: number }> = [];
+  const relationTargetIdRefs: Array<{ path: string; value: number }> = [];
 
   if (!Array.isArray(payload)) {
     addIssue(
@@ -788,13 +1167,13 @@ export function validateDictionaryEntries(
       entryIds.add(entry.id);
     }
 
-    validateEntry(issues, entry, `$[${index}]`, rootIdRefs, entryIdRefs);
-  }
-
-  for (const ref of rootIdRefs) {
-    if (!entryIds.has(ref.value)) {
-      addIssue(issues, ref.path, "root_id must reference an existing entry id");
-    }
+    validateEntry(
+      issues,
+      entry,
+      `$[${index}]`,
+      entryIdRefs,
+      relationTargetIdRefs,
+    );
   }
 
   for (const ref of entryIdRefs) {
@@ -803,6 +1182,16 @@ export function validateDictionaryEntries(
         issues,
         ref.path,
         "inflected form entryId must reference an existing entry id",
+      );
+    }
+  }
+
+  for (const ref of relationTargetIdRefs) {
+    if (!entryIds.has(ref.value)) {
+      addIssue(
+        issues,
+        ref.path,
+        "relation targetId must reference an existing entry id",
       );
     }
   }

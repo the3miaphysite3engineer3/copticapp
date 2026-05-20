@@ -2,6 +2,14 @@
 
 This document outlines the technical details for Coptic Compass's AI capabilities, OCR ingestion, RAG, grammar data workflows, and the public API.
 
+## Contents
+
+- [AI, OCR, and RAG](#ai-ocr-and-rag)
+- [Data Workflows](#data-workflows)
+- [Public APIs](#public-apis)
+- [Communications and Public Docs](#communications-and-public-docs)
+- [Troubleshooting](#troubleshooting)
+
 ## AI, OCR, and RAG
 
 The repository includes a production-integrated AI workflow called Shenute AI, plus a server-side OCR proxy and admin-facing RAG ingestion tools.
@@ -37,7 +45,7 @@ Knowledge Base:
 - A Concise Dictionary of Middle Egyptian (1962) - Raymond Oliver Faulkner
 - Custom instruction prompts (500 plus lines)
 
-This list documents THOTH AI's external knowledge context. The Coptic Compass runtime dictionary is the normalized JSON dataset described below, not the historical XML source file.
+This list documents THOTH AI's external knowledge context. The Coptic Compass runtime dictionary is the normalized JSON dataset described below.
 
 ### OCR Proxy (`/api/ocr`)
 
@@ -105,7 +113,9 @@ The export writes to `public/data/grammar/v1` and also runs automatically before
 
 The public dictionary currently ships from the normalized checked-in dataset at `public/data/dictionary.json`.
 
-Runtime dictionary data should stay structured and app-facing: dialect forms, meanings, Greek equivalents, plural forms, entry relations, etymology, part of speech, and gender. Raw/source-only text fields, attestations, and source notes are intentionally not part of the runtime payload.
+Runtime dictionary data should stay structured and app-facing: dialect forms, localized senses, Greek context, hierarchical inflections, entry relations, etymology, part of speech, and gender. Raw/source-only text fields, attestations, source notes, source dumps, and one-off migration artifacts are intentionally not part of the runtime payload.
+
+For field-level dictionary editing rules, use the [Dictionary JSON Guide](./dictionary-json.md).
 
 Primary app surfaces:
 

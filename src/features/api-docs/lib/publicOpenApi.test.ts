@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
 
+import {
+  DICTIONARY_COMPLEMENTIZER_GOVERNMENT_FORMS,
+  DICTIONARY_CONSTRUCTION_GOVERNMENT_FORMS,
+  DICTIONARY_DIALECT_CODES,
+  DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT,
+} from "@/features/dictionary/config";
+
 import { getPublicOpenApiDocument } from "./publicOpenApi";
 
 describe("public OpenAPI document", () => {
@@ -74,37 +81,96 @@ describe("public OpenAPI document", () => {
         "dialects",
         "etym",
         "genderedMeanings",
-        "greek",
+        "greekContext",
         "headword",
         "id",
         "inflections",
-        "rootEntry",
-        "root_id",
+        "relations",
         "senses",
       ].sort(),
     );
     expect((dictionaryClientEntrySchema.required ?? []).sort()).toEqual(
       ["dialects", "etym", "headword", "id", "senses"].sort(),
     );
+    expect(
+      (
+        document.components.schemas.DictionaryRelation as {
+          properties: Record<string, unknown>;
+        }
+      ).properties,
+    ).toHaveProperty("targetEntry");
     expect(dictionaryClientEntrySchema.properties.etym?.enum).toEqual([
       "Egy",
       "Gr",
+      "Lat",
+      "Sem",
       "Unknown",
     ]);
     expect(
       (
         document.components.schemas.DictionarySense as {
+          properties: Record<string, { items?: { enum?: string[] } }>;
           required?: string[];
         }
       ).required ?? [],
     ).toContain("grammar");
     expect(
       (
+        document.components.schemas.DictionarySense as {
+          properties: Record<string, { items?: { enum?: string[] } }>;
+        }
+      ).properties.dialects.items?.enum,
+    ).toEqual([...DICTIONARY_DIALECT_CODES]);
+    expect(
+      (
         document.components.schemas.DictionarySenseGrammar as {
+          properties: Record<string, { items?: { enum?: string[] } }>;
           required?: string[];
         }
       ).required ?? [],
     ).toContain("pos");
+    expect(
+      (
+        document.components.schemas.DictionarySenseGrammar as {
+          properties: {
+            prepGovernment: {
+              properties: {
+                S: { items: { enum: string[] } };
+                B: { items: { enum: string[] } };
+              };
+            };
+          };
+        }
+      ).properties.prepGovernment.properties.S.items.enum,
+    ).toEqual([...DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT.S]);
+    expect(
+      (
+        document.components.schemas.DictionarySenseGrammar as {
+          properties: {
+            prepGovernment: {
+              properties: {
+                S: { items: { enum: string[] } };
+                B: { items: { enum: string[] } };
+              };
+            };
+          };
+        }
+      ).properties.prepGovernment.properties.B.items.enum,
+    ).toEqual([...DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT.B]);
+    expect(
+      (
+        document.components.schemas.DictionarySenseGrammar as {
+          properties: Record<string, { items?: { enum?: string[] } }>;
+        }
+      ).properties.complementizerGovernment.items?.enum,
+    ).toEqual([...DICTIONARY_COMPLEMENTIZER_GOVERNMENT_FORMS]);
+    expect(
+      (
+        document.components.schemas.DictionarySenseGrammar as {
+          properties: Record<string, { items?: { enum?: string[] } }>;
+        }
+      ).properties.constructionGovernment.items?.enum,
+    ).toEqual([...DICTIONARY_CONSTRUCTION_GOVERNMENT_FORMS]);
     expect(
       (
         document.components.schemas.DictionarySenses as {

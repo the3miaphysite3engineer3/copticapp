@@ -11,7 +11,10 @@ import {
   getAllPluralForms,
   formatPrincipalDialectForms,
   getDialectImperativeForms,
+  getDialectImperativeVariantForms,
   getDialectPluralForms,
+  getDialectPrimaryImperativeForms,
+  getDialectPrimaryImperativeDisplayForms,
   getDialectVariantRows,
   getGenderedDialectFormParts,
   getGenderedHeadingParts,
@@ -40,7 +43,6 @@ function createEntry(overrides: TestEntryOverrides): LexicalEntry {
     headword,
     dialects: {},
     etym: "Egy",
-    greek: [],
     ...rest,
     senses,
   };
@@ -260,13 +262,116 @@ describe("dictionary entry display helpers", () => {
       "ⲙⲁ-",
       "ⲙⲏⲓ=",
     ]);
+    expect(getDialectPrimaryImperativeForms(entry, "B")).toEqual({
+      absolute: "ⲙⲟⲓ",
+      nominal: "ⲙⲁ-",
+      pronominal: "ⲙⲏⲓ=",
+    });
     expect(formatImperativeForms(getDialectImperativeForms(entry, "B"))).toBe(
       "ⲙⲟⲓ ⲙⲁ-/ⲙⲏⲓ=",
     );
+    expect(
+      formatImperativeForms(getDialectPrimaryImperativeForms(entry, "B")),
+    ).toBe("ⲙⲟⲓ ⲙⲁ-/ⲙⲏⲓ=");
+    expect(getDialectImperativeVariantForms(entry, "B")).toEqual([]);
   });
 
   it("keeps non-canonical imperative lists comma-separated", () => {
     expect(formatImperativeForms(["ⲁⲣⲓ-", "ⲉⲣⲓ-"])).toBe("ⲁⲣⲓ-, ⲉⲣⲓ-");
+  });
+
+  it("keeps gendered imperative forms in the primary imperative display", () => {
+    const entry = createEntry({
+      id: 5,
+      headword: "ⲉⲓ",
+      dialects: {
+        B: {
+          absolute: "ⲓ̀",
+        },
+      },
+      inflections: {
+        imperative: {
+          B: {
+            absolute: [
+              { form: "ⲁⲙⲟⲩ", gender: "M", number: "SG" },
+              { form: "ⲁⲙⲏ", gender: "F", number: "SG" },
+              { form: "ⲁⲙⲱⲓⲛⲓ", number: "PL" },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(getDialectPrimaryImperativeForms(entry, "B")).toEqual({
+      absolute: "ⲁⲙⲟⲩ",
+    });
+    expect(getDialectPrimaryImperativeDisplayForms(entry, "B")).toEqual([
+      {
+        form: "ⲁⲙⲟⲩ",
+        gender: "M",
+        number: "SG",
+        role: "absolute",
+      },
+      {
+        form: "ⲁⲙⲏ",
+        gender: "F",
+        number: "SG",
+        role: "absolute",
+      },
+      {
+        form: "ⲁⲙⲱⲓⲛⲓ",
+        number: "PL",
+        role: "absolute",
+      },
+    ]);
+    expect(getDialectImperativeVariantForms(entry, "B")).toEqual([]);
+  });
+
+  it("returns secondary imperative forms for the variants section", () => {
+    const entry = createEntry({
+      id: 2,
+      headword: "ϯ",
+      dialects: {
+        B: {
+          absolute: "ϯ",
+          nominal: "ϯ-",
+          pronominal: "ⲧⲏⲓ=",
+          stative: "ⲧⲟⲓ†",
+        },
+      },
+      inflections: {
+        imperative: {
+          B: {
+            absolute: ["ⲙⲟⲓ"],
+            nominal: ["ⲙⲁ-"],
+            pronominal: ["ⲙⲏⲓ="],
+            variants: {
+              nominal: ["ⲙⲉ-"],
+              pronominal: ["ⲙⲏⲓⲧ=", "ⲙⲟⲓⲧ="],
+            },
+          },
+        },
+      },
+    });
+
+    expect(getDialectPrimaryImperativeForms(entry, "B")).toEqual({
+      absolute: "ⲙⲟⲓ",
+      nominal: "ⲙⲁ-",
+      pronominal: "ⲙⲏⲓ=",
+    });
+    expect(getDialectImperativeForms(entry, "B")).toEqual([
+      "ⲙⲟⲓ",
+      "ⲙⲁ-",
+      "ⲙⲉ-",
+      "ⲙⲏⲓ=",
+      "ⲙⲏⲓⲧ=",
+      "ⲙⲟⲓⲧ=",
+    ]);
+    expect(getDialectImperativeVariantForms(entry, "B")).toEqual([
+      "ⲙⲉ-",
+      "ⲙⲏⲓⲧ=",
+      "ⲙⲟⲓⲧ=",
+    ]);
   });
 
   it("uses absolute plus bound forms for principal spellings", () => {

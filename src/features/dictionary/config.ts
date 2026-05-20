@@ -67,7 +67,85 @@ export const DICTIONARY_SENSE_CODES = [
   "ABS",
 ] as const;
 
+export const DICTIONARY_PREP_GOVERNMENT_FORMS = [
+  // Sahidic
+  "ⲉ-/ⲉⲣⲟ=",
+  "ⲉϫⲛ-/ⲉϫⲱ=",
+  "ⲉⲧⲃⲉ-/ⲉⲧⲃⲏⲏⲧ=",
+  "ⲙⲛ-/ⲛⲙⲙⲁ=",
+  "ⲟⲩⲃⲉ-/ⲟⲩⲃⲏ=",
+  "ϩⲛ-/ⲛϩⲏⲧ=",
+  "ϩⲁ-/ϩⲁⲣⲟ=",
+  "ϩⲓ-/ϩⲓⲱⲱ=",
+  "ϩⲓϫⲛ-/ϩⲓϫⲱ=",
+  "ϩⲓⲧⲛ-/ϩⲓⲧⲟⲟⲧ=",
+  "ϣⲁ-/ϣⲁⲣⲟ=",
+  "ⲛ-/ⲛⲁ=",
+  "ⲛ-/ⲙⲙⲟ=",
+  // Bohairic
+  "ⲉϫⲉⲛ-/ⲉϫⲱ=",
+  "ⲉⲑⲃⲉ-/ⲉⲑⲃⲏⲧ=",
+  "ⲛⲉⲙ-/ⲛⲉⲙⲁ=",
+  "ⳳⲉⲛ-/ⲛⳳⲏⲧ=",
+  "ϩⲓ-/ϩⲓⲱⲧ=",
+  "ϩⲓϫⲉⲛ-/ϩⲓϫⲱ=",
+  "ϩⲓⲧⲉⲛ-/ϩⲓⲧⲟⲧ=",
+] as const;
+
+export const DICTIONARY_PREP_GOVERNMENT_FOR_DIALECT: Record<
+  "S" | "B",
+  readonly string[]
+> = {
+  S: [
+    "ⲉ-/ⲉⲣⲟ=",
+    "ⲉϫⲛ-/ⲉϫⲱ=",
+    "ⲉⲧⲃⲉ-/ⲉⲧⲃⲏⲏⲧ=",
+    "ⲙⲛ-/ⲛⲙⲙⲁ=",
+    "ⲟⲩⲃⲉ-/ⲟⲩⲃⲏ=",
+    "ϩⲛ-/ⲛϩⲏⲧ=",
+    "ϩⲁ-/ϩⲁⲣⲟ=",
+    "ϩⲓ-/ϩⲓⲱⲱ=",
+    "ϩⲓϫⲛ-/ϩⲓϫⲱ=",
+    "ϩⲓⲧⲛ-/ϩⲓⲧⲟⲟⲧ=",
+    "ϣⲁ-/ϣⲁⲣⲟ=",
+    "ⲛ-/ⲛⲁ=",
+    "ⲛ-/ⲙⲙⲟ=",
+  ],
+  B: [
+    "ⲉ-/ⲉⲣⲟ=",
+    "ⲉϫⲉⲛ-/ⲉϫⲱ=",
+    "ⲉⲑⲃⲉ-/ⲉⲑⲃⲏⲧ=",
+    "ⲛⲉⲙ-/ⲛⲉⲙⲁ=",
+    "ⲟⲩⲃⲉ-/ⲟⲩⲃⲏ=",
+    "ⳳⲉⲛ-/ⲛⳳⲏⲧ=",
+    "ϩⲁ-/ϩⲁⲣⲟ=",
+    "ϩⲓ-/ϩⲓⲱⲧ=",
+    "ϩⲓϫⲉⲛ-/ϩⲓϫⲱ=",
+    "ϩⲓⲧⲉⲛ-/ϩⲓⲧⲟⲧ=",
+    "ϣⲁ-/ϣⲁⲣⲟ=",
+    "ⲛ-/ⲛⲁ=",
+    "ⲛ-/ⲙⲙⲟ=",
+  ],
+};
+
+export const DICTIONARY_COMPLEMENTIZER_GOVERNMENT_FORMS = [
+  "ϫⲉ-",
+  "ϫⲉⲕⲁⲥ",
+] as const;
+
+export const DICTIONARY_CONSTRUCTION_GOVERNMENT_FORMS = [
+  "ⲛⲑⲉ ⲛ-",
+  "ⲙⲫⲣⲏϯ ⲛ-",
+  "ⲱⲥ",
+] as const;
+
 export type DictionaryDialectCode = (typeof DICTIONARY_DIALECT_CODES)[number];
+export type DictionaryComplementizerGovernment =
+  (typeof DICTIONARY_COMPLEMENTIZER_GOVERNMENT_FORMS)[number];
+export type DictionaryConstructionGovernment =
+  (typeof DICTIONARY_CONSTRUCTION_GOVERNMENT_FORMS)[number];
+export type DictionaryPrepGovernment =
+  (typeof DICTIONARY_PREP_GOVERNMENT_FORMS)[number];
 export type DictionarySenseCode = (typeof DICTIONARY_SENSE_CODES)[number];
 export type AnalyticsDialect = (typeof ANALYTICS_DIALECTS)[number];
 export type DialectFilter = AnalyticsDialect;

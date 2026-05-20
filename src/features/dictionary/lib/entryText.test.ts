@@ -21,7 +21,6 @@ const fallbackEntry: LexicalEntry = {
   },
   senses: [{ grammar: { pos: "N" } }],
   etym: "Egy",
-  greek: [],
 };
 
 describe("entry descriptions", () => {
@@ -133,6 +132,28 @@ describe("localized sense groups", () => {
     ]);
   });
 
+  it("carries whole-sense dialect restrictions through sense groups", () => {
+    expect(
+      getLocalizedSenseGroups({
+        ...groupedVerbEntry,
+        senses: [
+          {
+            dialects: ["B", "L"],
+            grammar: { form: "PC", pos: "V" },
+            meanings: { en: ["receiver"] },
+          },
+        ],
+      }),
+    ).toEqual([
+      {
+        code: "PC",
+        dialects: ["B", "L"],
+        meanings: ["receiver"],
+        notes: [],
+      },
+    ]);
+  });
+
   it("keeps descriptive notes in sense labels", () => {
     expect(
       getLocalizedSenseGroups({
@@ -150,6 +171,88 @@ describe("localized sense groups", () => {
         code: "INTR",
         meanings: ["be valid"],
         notes: ["B only"],
+      },
+    ]);
+  });
+
+  it("carries prepositional government through sense groups", () => {
+    expect(
+      getLocalizedSenseGroups(
+        {
+          ...groupedVerbEntry,
+          senses: [
+            {
+              grammar: {
+                pos: "V",
+                prepGovernment: {
+                  S: ["ⲉ-/ⲉⲣⲟ=", "ⲙⲛ-/ⲛⲙⲙⲁ="],
+                  B: ["ⲉ-/ⲉⲣⲟ=", "ⲛⲉⲙ-/ⲛⲉⲙⲁ="],
+                },
+                valency: "INTR",
+              },
+              meanings: { en: ["believe"] },
+            },
+          ],
+        },
+        "en",
+        { viewDialect: "B" },
+      ),
+    ).toEqual([
+      {
+        code: "INTR",
+        meanings: ["believe"],
+        notes: [],
+        prepGovernment: ["ⲉ-/ⲉⲣⲟ=", "ⲛⲉⲙ-/ⲛⲉⲙⲁ="],
+      },
+    ]);
+  });
+
+  it("carries complementizer government through sense groups", () => {
+    expect(
+      getLocalizedSenseGroups({
+        ...groupedVerbEntry,
+        senses: [
+          {
+            grammar: {
+              complementizerGovernment: ["ϫⲉ-", "ϫⲉⲕⲁⲥ"],
+              pos: "V",
+              valency: "TR",
+            },
+            meanings: { en: ["ask"] },
+          },
+        ],
+      }),
+    ).toEqual([
+      {
+        code: "TR",
+        complementizerGovernment: ["ϫⲉ-", "ϫⲉⲕⲁⲥ"],
+        meanings: ["ask"],
+        notes: [],
+      },
+    ]);
+  });
+
+  it("carries construction government through sense groups", () => {
+    expect(
+      getLocalizedSenseGroups({
+        ...groupedVerbEntry,
+        senses: [
+          {
+            grammar: {
+              constructionGovernment: ["ⲛⲑⲉ ⲛ-", "ⲙⲫⲣⲏϯ ⲛ-", "ⲱⲥ"],
+              pos: "V",
+              valency: "TR",
+            },
+            meanings: { en: ["reckon"] },
+          },
+        ],
+      }),
+    ).toEqual([
+      {
+        code: "TR",
+        constructionGovernment: ["ⲛⲑⲉ ⲛ-", "ⲙⲫⲣⲏϯ ⲛ-", "ⲱⲥ"],
+        meanings: ["reckon"],
+        notes: [],
       },
     ]);
   });
