@@ -108,6 +108,7 @@ function ProductCard({
   return (
     <Link
       href={href}
+      prefetch={false}
       className={cx(productCardClassName, theme.borderClassName)}
     >
       <IconTile icon={icon} tone={tone} />
@@ -252,6 +253,7 @@ export default function HomePageClient() {
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href={dictionaryHref}
+            prefetch={false}
             className={buttonClassName({ size: "lg", variant: "primary" })}
           >
             {t("home.hero.primaryCta")}
@@ -259,6 +261,7 @@ export default function HomePageClient() {
           </Link>
           <Link
             href={grammarHref}
+            prefetch={false}
             className={buttonClassName({ size: "lg", variant: "secondary" })}
           >
             {t("home.hero.secondaryCta")}
@@ -390,6 +393,7 @@ export default function HomePageClient() {
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Link
                 href={publicationsHref}
+                prefetch={false}
                 className={buttonClassName({
                   size: "md",
                   variant: "secondary",
@@ -399,6 +403,7 @@ export default function HomePageClient() {
               </Link>
               <Link
                 href={developersHref}
+                prefetch={false}
                 className={buttonClassName({
                   size: "md",
                   variant: "secondary",

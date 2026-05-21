@@ -31,29 +31,37 @@ export function Footer() {
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted/70 md:justify-start">
             <Link
               href={getPrivacyPath(language)}
+              prefetch={false}
               className="transition-colors hover:text-ink"
             >
               {t("footer.privacy")}
             </Link>
             <Link
               href={getTermsPath(language)}
+              prefetch={false}
               className="transition-colors hover:text-ink"
             >
               {t("footer.terms")}
             </Link>
             <Link
               href={getDevelopersPath(language)}
+              prefetch={false}
               className="transition-colors hover:text-ink"
             >
               {t("footer.developers")}
             </Link>
             <Link
               href={getContributorsPath(language)}
+              prefetch={false}
               className="transition-colors hover:text-ink"
             >
               {t("footer.contributors")}
             </Link>
-            <Link href="/api-docs" className="transition-colors hover:text-ink">
+            <Link
+              href="/api-docs"
+              prefetch={false}
+              className="transition-colors hover:text-ink"
+            >
               {t("footer.apiDocs")}
             </Link>
           </div>

@@ -83,6 +83,7 @@ export function NavbarAuthLink({
   return (
     <Link
       href={href}
+      prefetch={false}
       onClick={onNavigate}
       data-label={label}
       className={linkClassName}

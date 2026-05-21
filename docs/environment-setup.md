@@ -103,9 +103,10 @@ To enable signup alerts in a Supabase project:
 1. Set function secrets for `RESEND_API_KEY`, `OWNER_ALERT_EMAIL`, and `NOTIFICATION_FROM_EMAIL`.
 2. Deploy the function: `supabase functions deploy profile-signup-alert --project-ref <your-project-ref>`
 3. Create a database webhook on `public.profiles` for `INSERT` events.
-4. Choose `Supabase Edge Functions` as the webhook target, select `profile-signup-alert`, and add the auth header with service key.
+4. Choose `Supabase Edge Functions` as the webhook target, select `profile-signup-alert`, and configure the required auth header.
 
-The function now rejects unauthenticated requests in code as well, so the webhook must send `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>`.
+The function rejects unauthenticated requests in code as well, so the webhook
+must send the configured bearer auth header.
 
 ### Background Release Delivery
 
@@ -117,7 +118,8 @@ To enable background release sends in a Supabase project:
 2. Deploy the function: `supabase functions deploy process-content-release --project-ref <your-project-ref>`
 3. Make sure the latest release delivery migrations have been pushed so `content_releases` includes the queue metadata columns.
 
-The worker validates its bearer token in code, so any caller must send `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>`.
+The worker validates its bearer token in code, so callers must send the
+configured bearer auth header.
 
 ### Migration Rollout
 
@@ -180,3 +182,47 @@ Set these repository secrets in GitHub before enabling deployment:
 - `VERCEL_PROJECT_ID`
 
 If these secrets are missing, the deploy jobs are skipped and CI checks still run.
+
+## Cloudflare in Front of Vercel
+
+Cloudflare is the proxied CDN in front of the Vercel deployment for
+`copticcompass.com` and `www.copticcompass.com`. Keep SSL/TLS on `Full (strict)`
+while the Vercel certificate is healthy.
+
+### Cache Posture
+
+The production Cloudflare zone uses a conservative rule order:
+
+1. Bypass dynamic, authenticated, and write-oriented traffic.
+2. Cache static public assets.
+3. Cache anonymous public pages with a short edge TTL.
+4. Cache read-only public APIs while respecting origin cache headers.
+
+Do not cache authenticated traffic, administrative routes, AI/OCR routes, or
+write-oriented API routes.
+
+### App-Side Support
+
+- `next.config.ts` sends long-lived public cache headers for static public
+  assets.
+- `src/proxy.ts` excludes static asset requests from request-bound proxy work so
+  asset requests do not do session or nonce work.
+- High fan-out navigation links use `prefetch={false}` where prefetching would
+  create avoidable Vercel and Cloudflare traffic.
+
+### Verification
+
+Run each check twice. The first request may show `MISS`; the second should show
+`HIT` for cached public pages and APIs.
+
+```bash
+curl -I https://www.copticcompass.com/en
+curl -I https://www.copticcompass.com/api/openapi.json
+```
+
+Expected behavior:
+
+- Static assets and cached public pages/APIs should usually show
+  `cf-cache-status: HIT` on repeat requests.
+- Dynamic, authenticated, and write-oriented routes should show `BYPASS`,
+  `DYNAMIC`, or no cache HIT.

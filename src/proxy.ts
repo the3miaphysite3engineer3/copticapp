@@ -30,14 +30,14 @@ export async function proxy(request: NextRequest) {
 
 /**
  * Limits the proxy to requests that need request-bound work. Localized public
- * pages get a static CSP from next.config.ts, while localized private pages
- * still pass through the proxy for auth session refresh.
+ * pages and static public assets get static headers from next.config.ts, while
+ * localized private pages still pass through the proxy for auth session refresh.
  */
 export const config = {
   matcher: [
     {
       source:
-        "/((?!api|_next/static|_next/image|favicon.ico|apple-touch-icon.png|apple-touch-icon-precomposed.png|manifest.json|robots.txt|sitemap.xml|en(?:/|$)|nl(?:/|$)).*)",
+        "/((?!api|_next/static|_next/image|.*\\.(?:avif|bmp|css|csv|gif|ico|jpeg|jpg|js|json|map|pdf|png|svg|txt|webp|woff|woff2|xml)$|manifest.json|robots.txt|sitemap.xml|sitemaps(?:/|$)|en(?:/|$)|nl(?:/|$)).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

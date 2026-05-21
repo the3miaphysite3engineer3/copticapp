@@ -69,6 +69,7 @@ function LazyNavbarAuthLink(props: NavbarAuthLinkProps) {
   return (
     <Link
       href={props.loginHref}
+      prefetch={false}
       onClick={props.onNavigate}
       onFocus={loadAuthLink}
       onMouseEnter={loadAuthLink}
@@ -103,6 +104,7 @@ export function Navbar() {
         <div className="flex min-h-[4.75rem] items-center justify-between gap-4 py-3">
           <Link
             href={getLocalizedHomePath(language)}
+            prefetch={false}
             className="group flex min-w-0 items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 sm:gap-3"
           >
             <div className="relative h-[52px] w-[52px] shrink-0 lg:h-14 lg:w-14">
@@ -143,6 +145,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  prefetch={false}
                   data-label={link.label}
                   className={linkClassName}
                   aria-current={isActive ? "page" : undefined}
@@ -204,6 +207,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  prefetch={false}
                   onClick={() => setIsMobileMenuOpen(false)}
                   data-label={link.label}
                   className={linkClassName}

@@ -5,6 +5,13 @@ const securityHeaders = buildSecurityHeaders({
   includeContentSecurityPolicy: false,
 });
 const localizedStaticSecurityHeaders = buildSecurityHeaders();
+const publicAssetCacheHeaders = [
+  {
+    key: "Cache-Control",
+    value:
+      "public, max-age=86400, s-maxage=604800, stale-while-revalidate=2592000",
+  },
+];
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -23,6 +30,22 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: securityHeaders,
+      },
+      {
+        source: "/logo/:path*",
+        headers: publicAssetCacheHeaders,
+      },
+      {
+        source: "/publications/:path*",
+        headers: publicAssetCacheHeaders,
+      },
+      {
+        source: "/readme/:path*",
+        headers: publicAssetCacheHeaders,
+      },
+      {
+        source: "/data/:path*",
+        headers: publicAssetCacheHeaders,
       },
     ];
   },

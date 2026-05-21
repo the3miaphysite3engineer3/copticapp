@@ -101,6 +101,7 @@ export function GrammarLessonCard({
   return (
     <Link
       href={getGrammarLessonPath(lesson.slug, language)}
+      prefetch={false}
       className={cx(
         sharedClassName,
         "cursor-pointer border-line bg-surface/88 hover:-translate-y-0.5 hover:border-coptic/35 hover:bg-surface",

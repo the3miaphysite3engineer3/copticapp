@@ -196,6 +196,7 @@ function PublicationTile({
   return (
     <Link
       href={getPublicationPath(pub.id, language)}
+      prefetch={false}
       id={pub.id}
       className={`${baseClass} app-anchor-section scroll-mt-28 cursor-pointer`}
     >
