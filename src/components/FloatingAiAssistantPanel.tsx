@@ -43,7 +43,7 @@ import { cx } from "@/lib/classes";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
 import type { Language } from "@/types/i18n";
 
-type ShenuteProvider = "gemini" | "hf" | "openrouter" | "thoth";
+type ShenuteProvider = "gemini" | "gemini_nmt" | "hf" | "openrouter" | "thoth";
 
 type TextMessagePart = {
   text: string;
@@ -158,6 +158,7 @@ const floatingShenuteCopy = {
     promptResolveFailed: "Could not resolve prompt/response for this feedback.",
     provider: "Style",
     providerGemini: "Fast answer",
+    providerGeminiNmt: "Fast answer (RAG + NMT)",
     providerHf: "Experimental",
     providerOpenRouter: "Reasoned answer",
     providerThoth: "Best answer",
@@ -213,6 +214,7 @@ const floatingShenuteCopy = {
       "Prompt en antwoord konden niet aan deze feedback worden gekoppeld.",
     provider: "Stijl",
     providerGemini: "Snel antwoord",
+    providerGeminiNmt: "Snel antwoord (RAG + NMT)",
     providerHf: "Experimenteel",
     providerOpenRouter: "Uitgewerkt antwoord",
     providerThoth: "Beste antwoord",
@@ -313,6 +315,10 @@ function formatChatHistory(
 function toShenuteProvider(value: string): ShenuteProvider {
   if (value === "gemini") {
     return "gemini";
+  }
+
+  if (value === "gemini_nmt") {
+    return "gemini_nmt";
   }
 
   if (value === "hf") {
@@ -1179,6 +1185,7 @@ export function FloatingAiAssistantPanel({
               >
                 <option value="hf">{copy.providerHf}</option>
                 <option value="gemini">{copy.providerGemini}</option>
+                <option value="gemini_nmt">{copy.providerGeminiNmt}</option>
                 <option value="openrouter">{copy.providerOpenRouter}</option>
                 <option value="thoth">{copy.providerThoth}</option>
               </select>
