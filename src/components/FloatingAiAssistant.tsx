@@ -12,7 +12,7 @@ const FLOATING_ASSISTANT_CONTAINER_CLASS =
   "fixed bottom-[calc(env(safe-area-inset-bottom)+1rem)] right-4 z-50 transition-opacity duration-200 ease-out hover:opacity-100 focus-within:opacity-100 motion-reduce:transition-none sm:bottom-5 sm:right-5";
 
 const FLOATING_ASSISTANT_BUTTON_CLASS =
-  "inline-flex h-12 w-12 items-center justify-center gap-2 rounded-lg border border-transparent bg-ink text-paper shadow-panel transition-colors hover:bg-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/35 dark:border-accent/35 dark:bg-accent-soft dark:text-ink dark:hover:bg-elevated sm:h-auto sm:w-auto sm:px-5 sm:py-3 sm:text-sm sm:font-semibold";
+  "inline-flex h-12 w-12 items-center justify-center gap-2 rounded-lg border border-coptic/25 bg-surface/95 text-coptic shadow-panel backdrop-blur-md transition-colors hover:border-coptic/40 hover:bg-coptic-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coptic/30 dark:bg-surface/95 sm:h-auto sm:w-auto sm:px-5 sm:py-3 sm:text-sm sm:font-semibold";
 
 const LAUNCHER_SCROLLING_OPACITY = 0.52;
 const LAUNCHER_SCROLL_IDLE_DELAY_MS = 720;

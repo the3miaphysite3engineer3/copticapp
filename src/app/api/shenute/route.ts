@@ -511,6 +511,45 @@ function buildNMTContextDoc(suggestion: NMTTranslationSuggestion): ContextDoc {
   };
 }
 
+function hasCopticScript(text: string) {
+  return /[\u2c80-\u2cff]/i.test(text);
+}
+
+function shouldRequestNMTTranslation(options: {
+  direction?: unknown;
+  targetText?: unknown;
+  userText: string;
+}) {
+  if (
+    typeof options.targetText !== "string" ||
+    options.targetText.trim().length === 0
+  ) {
+    return false;
+  }
+
+  const normalizedUserText = options.userText.toLowerCase();
+  const direction =
+    typeof options.direction === "string" ? options.direction : "";
+
+  const asksForTranslation =
+    /\b(translate|translation|render|convert)\b/.test(normalizedUserText) ||
+    /\bhow\s+(?:do|would|can|should)\s+(?:i|we|you)\s+(?:say|write|render)\b/.test(
+      normalizedUserText,
+    ) ||
+    /\b(?:coptic|bohairic|sahidic|english)\s+(?:for|translation)\b/.test(
+      normalizedUserText,
+    ) ||
+    /\b(?:what(?:'s| is)\s+the\s+)?(?:coptic|bohairic|sahidic|english)\s+(?:word|phrase|equivalent)\s+for\b/.test(
+      normalizedUserText,
+    );
+
+  const asksForMeaning =
+    /\bwhat\s+(?:does|do|is)\b.+\bmean\b/.test(normalizedUserText) &&
+    (direction === "coptic-to-english" || hasCopticScript(options.userText));
+
+  return asksForTranslation || asksForMeaning;
+}
+
 export async function POST(req: Request) {
   try {
     const payloadSizeResponse = getShenutePayloadSizeResponse(req.headers);
@@ -594,13 +633,13 @@ Our Coptic Lexicon is in German, and our general dictionary is in English.
 1. Translate the user's query into German.
 2. Extract ALL meaningful keywords (nouns, verbs, adjectives, adverbs) to maximize dictionary lookup hits. Include at least 5-15 keywords if the prompt allows, in BOTH English AND German.
 3. Analyze the grammatical structure of the user's query (e.g., tenses, moods, cases, clauses) and list 1-3 core English grammatical concepts required to build or understand this sentence.
-4. If the prompt contains a request to translate something (even if implicit like "Jesus Christ is risen"), isolate the FULL sentence or the complete meaningful phrase. Do NOT truncate it to fragments (e.g., if the user says "Hail to the Apostles of our Lord", do NOT just isolate "Jesus Christ"). Focus on the largest contiguous segment the user likely wants rendered. The segment should be a single independent clause or the largest natural unit of meaning.
+4. Only populate "translationTarget" when the user's primary intent is translation, e.g. "translate...", "render... into Coptic", "how do I say/write...", "what is the Coptic for...", or "what does this Coptic phrase mean?". For grammar explanations, vocabulary discussion, parsing, etymology, lesson questions, or prompts that merely mention translatable words, set "translationTarget": null.
 Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
 {
   "germanTranslation": "...",
   "keywords": ["englishKw1", "germanKw1", "englishKw2", "germanKw2"],
   "grammaticalConcepts": ["past perfect", "definite article", "direct object"],
-  "translationTarget": {
+  "translationTarget": null | {
     "text": "the isolated FULL phrase or sentence to translate (do not truncate)",
     "direction": "english-to-coptic" | "coptic-to-english",
     "dialect": "Bohairic" | "Sahidic",
@@ -641,7 +680,12 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
             shouldUseNmtSuggestion &&
             !NMTSuggestion &&
             parsed.translationTarget?.text &&
-            parsed.translationTarget.direction
+            parsed.translationTarget.direction &&
+            shouldRequestNMTTranslation({
+              direction: parsed.translationTarget.direction,
+              targetText: parsed.translationTarget.text,
+              userText: latestMessageText,
+            })
           ) {
             console.warn(
               `[RAG DEBUG] LLM isolated translation target: "${parsed.translationTarget.text}" (${parsed.translationTarget.direction})`,
@@ -671,7 +715,12 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
           // Step 1.6: Record distillation example if we have an expert translation
           if (
             parsed.translationTarget?.text &&
-            parsed.translationTarget.expertTranslation
+            parsed.translationTarget.expertTranslation &&
+            shouldRequestNMTTranslation({
+              direction: parsed.translationTarget.direction,
+              targetText: parsed.translationTarget.text,
+              userText: latestMessageText,
+            })
           ) {
             isolatedTargetText = parsed.translationTarget.text;
             recordDistillationExample({

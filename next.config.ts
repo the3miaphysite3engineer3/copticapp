@@ -14,6 +14,7 @@ const publicAssetCacheHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   experimental: {
     globalNotFound: true,
   },

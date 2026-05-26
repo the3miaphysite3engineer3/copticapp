@@ -13,6 +13,7 @@ import {
   CornerDownRight,
   FlaskConical,
   ImagePlus,
+  LoaderCircle,
   MessageSquarePlus,
   MoreHorizontal,
   RotateCcw,
@@ -31,50 +32,62 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ButtonHTMLAttributes,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { processOCRImage } from "@/actions/ocrActions";
-import { AppPageIntro } from "@/components/AppPageIntro";
 import {
   AuthGateInlinePrompt,
   AuthGateNotice,
 } from "@/components/AuthGateNotice";
 import { Badge } from "@/components/Badge";
+import { BreadcrumbTrail } from "@/components/BreadcrumbTrail";
 import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { StatusNotice } from "@/components/StatusNotice";
 import { SurfacePanel } from "@/components/SurfacePanel";
 import { useSpeech } from "@/features/dictionary/hooks/useSpeech";
+import {
+  SHENUTE_HANDOFF_STORAGE_KEY,
+  type ShenuteHandoffPageContext,
+  type ShenuteHandoffPayload,
+} from "@/features/shenute/handoff";
+import {
+  copyTextToClipboard,
+  findPreviousUserMessage,
+  formatElapsedTime,
+  getMessageText,
+  getThinkingStatusMessage,
+  isTextMessagePart,
+  toShenuteProvider,
+  type ChatMessageLike,
+  type ShenuteFeedbackSignal,
+  type ShenuteProvider,
+  type ShenuteReactionSignal,
+} from "@/features/shenute/shared";
 import { cx } from "@/lib/classes";
 import { getContributorsPath, getLocalizedHomePath } from "@/lib/locale";
 import { createClient } from "@/lib/supabase/client";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
 
-type ShenuteProvider = "gemini" | "gemini_nmt" | "hf" | "openrouter" | "thoth";
-
-type TextMessagePart = {
-  text: string;
-  type: "text";
-};
-
-type ChatMessageLike = {
-  content?: unknown;
-  id: string;
-  parts?: unknown;
-  role: "assistant" | "system" | "user";
-};
+type MobileUtilitySheet = "actions" | "history" | null;
 
 type SavedChatSession = {
   id: string;
   title: string;
   updated_at: string | null;
 };
-
-type ShenuteFeedbackSignal = "admin_feedback" | "dislike" | "like";
-type ShenuteReactionSignal = Extract<ShenuteFeedbackSignal, "dislike" | "like">;
 
 type FeedbackStateByMessage = Record<
   string,
@@ -88,9 +101,16 @@ type MessageActionStateByMessage = Record<
   string,
   {
     message: string;
-    status: "error" | "success";
+    status: "error" | "pending" | "success";
   }
 >;
+
+const MESSAGE_INPUT_MIN_HEIGHT = 44;
+const MESSAGE_INPUT_MOBILE_MAX_HEIGHT = 128;
+const MESSAGE_INPUT_MAX_HEIGHT = 160;
+const UTILITY_CHROME_COLLAPSE_DELTA = 12;
+const UTILITY_CHROME_EXPAND_DELTA = 20;
+const UTILITY_CHROME_BOTTOM_THRESHOLD = 120;
 
 const SHENUTE_COPY = {
   en: {
@@ -113,19 +133,26 @@ const SHENUTE_COPY = {
     cameraFrameFailed: "Could not capture camera frame.",
     cameraImageFailed: "Could not capture image from camera.",
     cameraNotReady: "Camera is not ready.",
+    cameraPreview: "Camera preview",
     cameraNotSupported: "Camera is not supported on this device/browser.",
     cameraStillLoading: "Camera feed is not ready yet. Try again.",
     cameraSource: "camera",
     cancelResponse: "Stop response",
-    chatActions: "Chat actions",
+    closeMenu: "Close menu",
     closeAnswerStyleControls: "Close answer style controls",
     copiedResponse: "Copied.",
+    conversationActions: "Conversation actions",
+    conversationHistory: "Conversation history",
     copyResponse: "Copy",
     copyResponseFailed: "Could not copy response.",
+    copyResponseManual: "Copy manually.",
+    copyResponseManualHint:
+      "Clipboard access is blocked in this browser. Select the response text below and copy it manually.",
     creditsLinkDescription:
       "Credits, technical notes, and research acknowledgements now live on the Contributors page.",
     creditsLinkTitle: "Credits and technical notes",
     creditsShort: "Credits",
+    dangerZone: "Danger zone",
     dislike: "Not helpful",
     feedbackPromptMissing:
       "Could not resolve prompt/response for this feedback.",
@@ -135,6 +162,7 @@ const SHENUTE_COPY = {
     feedbackSaving: "Saving feedback...",
     feedbackSignIn: "Sign in to send feedback.",
     feedbackSignInInline: "Sign in to mark responses helpful.",
+    expandControls: "Show chat controls",
     imageAttached: "Image attached",
     imageOcrContext: "[Image OCR Context]",
     intro:
@@ -143,7 +171,10 @@ const SHENUTE_COPY = {
     like: "Helpful",
     noTextExtracted: "No text extracted from the selected image.",
     ocrFailed: "OCR failed for the selected image.",
+    pageContextBadge: "Page context",
     placeholder: "Ask about a Coptic word, grammar rule, or attached image...",
+    placeholderImage: "Ask about this image...",
+    placeholderShort: "Ask Shenute...",
     saveHistory: "Save now",
     saveHistorySaved: "Saved",
     savingHistory: "Saving...",
@@ -152,7 +183,6 @@ const SHENUTE_COPY = {
     autosaveHint: "Conversations save automatically to your account.",
     autosaveStatus: "Saved to your account.",
     unsavedChanges: "Unsaved changes. Saving automatically...",
-    historySessions: "Saved sessions",
     clearConversation: "Delete conversation",
     clearConversationConfirm:
       "Delete this Shenute conversation? Saved copies will be removed from your account.",
@@ -164,6 +194,12 @@ const SHENUTE_COPY = {
     newConversation: "Start new chat",
     newConversationStarted: "New chat started.",
     thinking: "Thinking",
+    thinkingComposing: "Composing answer",
+    thinkingElapsed: "Elapsed",
+    thinkingInitial: "Preparing answer",
+    thinkingLong: "Still working",
+    thinkingLongHint: "Larger Coptic questions can take a moment.",
+    thinkingSearching: "Checking sources",
     loadSession: "Load",
     currentSession: "Current",
     loadingSession: "Loading session...",
@@ -188,7 +224,12 @@ const SHENUTE_COPY = {
     regenerateResponse: "Regenerate",
     remove: "Remove",
     requestFailed: "AI request failed.",
+    responseActions: "Response actions",
+    responseFeedbackActions: "Feedback",
+    responseReviseActions: "Revise answer",
+    responseUseActions: "Use answer",
     runningOcr: "Running OCR...",
+    selectCopyText: "Select text",
     sendMessage: "Send message",
     selectedImageAlt: "Selected for OCR",
     submitAdminNote: "Send admin note",
@@ -231,20 +272,27 @@ const SHENUTE_COPY = {
     cameraImageFailed:
       "De afbeelding kon niet vanuit de camera worden vastgelegd.",
     cameraNotReady: "De camera is nog niet klaar.",
+    cameraPreview: "Cameravoorbeeld",
     cameraNotSupported:
       "De camera wordt niet ondersteund op dit apparaat of in deze browser.",
     cameraStillLoading: "De camerafeed is nog niet klaar. Probeer het opnieuw.",
     cameraSource: "camera",
     cancelResponse: "Antwoord stoppen",
-    chatActions: "Chatopties",
+    closeMenu: "Menu sluiten",
     closeAnswerStyleControls: "Antwoordstijl sluiten",
     copiedResponse: "Gekopieerd.",
+    conversationActions: "Gespreksacties",
+    conversationHistory: "Gespreksgeschiedenis",
     copyResponse: "Kopiëren",
     copyResponseFailed: "Kopiëren is mislukt.",
+    copyResponseManual: "Handmatig kopiëren.",
+    copyResponseManualHint:
+      "Klembordtoegang is geblokkeerd in deze browser. Selecteer de antwoordtekst hieronder en kopieer die handmatig.",
     creditsLinkDescription:
       "Credits, technische notities en onderzoeksvermeldingen staan nu op de bijdragerspagina.",
     creditsLinkTitle: "Credits en technische notities",
     creditsShort: "Credits",
+    dangerZone: "Risicozone",
     dislike: "Niet behulpzaam",
     feedbackPromptMissing:
       "De prompt en het antwoord voor deze feedback konden niet worden bepaald.",
@@ -254,6 +302,7 @@ const SHENUTE_COPY = {
     feedbackSaving: "Feedback opslaan...",
     feedbackSignIn: "Meld u aan om feedback te verzenden.",
     feedbackSignInInline: "Meld u aan om antwoorden als behulpzaam te markeren",
+    expandControls: "Chatbediening tonen",
     imageAttached: "Afbeelding toegevoegd",
     imageOcrContext: "[Image OCR Context]",
     intro:
@@ -263,8 +312,11 @@ const SHENUTE_COPY = {
     noTextExtracted:
       "Er is geen tekst uit de geselecteerde afbeelding gehaald.",
     ocrFailed: "OCR is mislukt voor de geselecteerde afbeelding.",
+    pageContextBadge: "Pagina-context",
     placeholder:
       "Vraag naar een Koptisch woord, een grammaticaregel of een toegevoegde afbeelding...",
+    placeholderImage: "Vraag naar deze afbeelding...",
+    placeholderShort: "Vraag Shenute...",
     saveHistory: "Nu opslaan",
     saveHistorySaved: "Opgeslagen",
     savingHistory: "Opslaan...",
@@ -273,7 +325,6 @@ const SHENUTE_COPY = {
     autosaveHint: "Gesprekken worden automatisch in uw account opgeslagen.",
     autosaveStatus: "Opgeslagen in uw account.",
     unsavedChanges: "Niet-opgeslagen wijzigingen. Automatisch opslaan...",
-    historySessions: "Opgeslagen sessies",
     clearConversation: "Gesprek verwijderen",
     clearConversationConfirm:
       "Dit Shenute-gesprek verwijderen? Opgeslagen kopieën worden uit uw account verwijderd.",
@@ -285,6 +336,12 @@ const SHENUTE_COPY = {
     newConversation: "Nieuwe chat starten",
     newConversationStarted: "Nieuwe chat gestart.",
     thinking: "Denkt na",
+    thinkingComposing: "Antwoord opstellen",
+    thinkingElapsed: "Verstreken",
+    thinkingInitial: "Antwoord voorbereiden",
+    thinkingLong: "Nog bezig",
+    thinkingLongHint: "Grotere Koptische vragen kunnen even duren.",
+    thinkingSearching: "Bronnen controleren",
     loadSession: "Laden",
     currentSession: "Huidig",
     loadingSession: "Sessieweergave laden...",
@@ -310,7 +367,12 @@ const SHENUTE_COPY = {
     regenerateResponse: "Opnieuw genereren",
     remove: "Verwijderen",
     requestFailed: "AI-verzoek mislukt.",
+    responseActions: "Antwoordacties",
+    responseFeedbackActions: "Feedback",
+    responseReviseActions: "Antwoord aanpassen",
+    responseUseActions: "Antwoord gebruiken",
     runningOcr: "OCR uitvoeren...",
+    selectCopyText: "Tekst selecteren",
     sendMessage: "Bericht verzenden",
     selectedImageAlt: "Geselecteerd voor OCR",
     submitAdminNote: "Beheerdersnotitie sturen",
@@ -337,38 +399,150 @@ const SHENUTE_COPY = {
 type ShenuteCopy = (typeof SHENUTE_COPY)[keyof typeof SHENUTE_COPY];
 type ShenuteLanguage = keyof typeof SHENUTE_COPY;
 
-const MESSAGE_ACTION_BUTTON_CLASS = "h-8 shrink-0 gap-1.5 px-2 text-xs";
+const SHENUTE_INLINE_ACTION_BUTTON_CLASS = "h-8 shrink-0 gap-1.5 px-2 text-xs";
+const SHENUTE_MENU_ACTION_BUTTON_CLASS = "h-9 justify-start gap-2 px-3 text-xs";
+const SHENUTE_SHEET_ACTION_BUTTON_CLASS =
+  "h-10 justify-start gap-2 px-3 text-xs";
+const SHENUTE_ICON_CLASS = {
+  action: "h-3.5 w-3.5",
+  close: "h-4 w-4",
+  meta: "h-3.5 w-3.5",
+  panel: "h-4 w-4",
+  primary: "h-5 w-5",
+} as const;
+const SHENUTE_CLOSE_BUTTON_CLASS = "h-8 w-8 shrink-0 px-0";
+const SHENUTE_SURFACE_HEADING_CLASS =
+  "text-xs font-semibold uppercase tracking-[0.18em] text-muted";
+const SHENUTE_ACTION_GROUP_LABEL_CLASS =
+  "text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted";
+const SHENUTE_DIALOG_BACKDROP_CLASS =
+  "fixed inset-0 cursor-default bg-ink/15 backdrop-blur-[1px]";
+const SHENUTE_MOBILE_SHEET_CLASS =
+  "fixed inset-x-0 bottom-0 max-h-[calc(100dvh-4rem)] overflow-y-auto rounded-t-xl border border-line bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-panel";
+const SHENUTE_ADAPTIVE_DIALOG_CLASS = cx(
+  SHENUTE_MOBILE_SHEET_CLASS,
+  "sm:left-1/2 sm:right-auto sm:top-[calc(var(--app-sticky-offset)_+_0.75rem)] sm:bottom-auto sm:max-h-[calc(100dvh_-_var(--app-sticky-offset)_-_1.5rem)] sm:-translate-x-1/2 sm:rounded-lg",
+);
+const SHENUTE_UTILITY_BUTTON_CLASS =
+  "h-8 w-8 shrink-0 rounded-lg border-line/70 bg-surface/75 px-0 text-muted shadow-none hover:translate-y-0 hover:border-coptic/30 hover:bg-elevated hover:text-ink focus-visible:ring-coptic/25 sm:h-9 sm:w-9";
+const SHENUTE_UTILITY_SUMMARY_CLASS = cx(
+  SHENUTE_UTILITY_BUTTON_CLASS,
+  "cursor-pointer list-none [&::-webkit-details-marker]:hidden group-open:border-coptic/45 group-open:bg-coptic-soft/70 group-open:text-coptic",
+);
+const SHENUTE_UTILITY_BADGE_CLASS =
+  "absolute right-0.5 top-0.5 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-coptic-soft px-1 text-[0.55rem] font-semibold leading-none text-coptic ring-1 ring-coptic/20";
+const SHENUTE_UTILITY_DETAILS_SELECTOR = "[data-shenute-utility-details]";
+const SHENUTE_RESPONSE_DETAILS_SELECTOR = "[data-shenute-response-actions]";
 
-function isTextMessagePart(part: unknown): part is TextMessagePart {
-  if (!part || typeof part !== "object") {
-    return false;
-  }
+type ShenuteActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  actionClassName?: string;
+  buttonVariant?: "primary" | "secondary";
+  fullWidth?: boolean;
+  icon?: ReactNode;
+};
 
-  const candidate = part as { text?: unknown; type?: unknown };
-  return candidate.type === "text" && typeof candidate.text === "string";
+function ShenuteSurfaceHeading({
+  children,
+  className,
+  id,
+}: {
+  children: ReactNode;
+  className?: string;
+  id?: string;
+}) {
+  return (
+    <p id={id} className={cx(SHENUTE_SURFACE_HEADING_CLASS, className)}>
+      {children}
+    </p>
+  );
 }
 
-function getMessageText(message: ChatMessageLike) {
-  if (typeof message.content === "string") {
-    return message.content.trim();
-  }
-
-  if (!Array.isArray(message.parts)) {
-    return "";
-  }
-
-  return message.parts
-    .filter(isTextMessagePart)
-    .map((part) => part.text)
-    .join("\n")
-    .trim();
+function ShenuteActionGroupLabel({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <p className={cx(SHENUTE_ACTION_GROUP_LABEL_CLASS, className)}>
+      {children}
+    </p>
+  );
 }
 
-function formatElapsedTime(totalSeconds: number) {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
+function ShenuteCloseButton({
+  className,
+  iconClassName,
+  label,
+  ...props
+}: Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children" | "type"> & {
+  iconClassName?: string;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      className={buttonClassName({
+        size: "sm",
+        variant: "ghost",
+        className: cx(SHENUTE_CLOSE_BUTTON_CLASS, className),
+      })}
+      {...props}
+    >
+      <XCircle className={cx(SHENUTE_ICON_CLASS.close, iconClassName)} />
+    </button>
+  );
+}
 
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+function ShenuteSurfaceHeader({
+  children,
+  className,
+  closeLabel,
+  onClose,
+  titleId,
+}: {
+  children: ReactNode;
+  className?: string;
+  closeLabel: string;
+  onClose: (event: MouseEvent<HTMLButtonElement>) => void;
+  titleId?: string;
+}) {
+  return (
+    <div className={cx("flex items-center justify-between gap-3", className)}>
+      <ShenuteSurfaceHeading id={titleId}>{children}</ShenuteSurfaceHeading>
+      <ShenuteCloseButton label={closeLabel} onClick={onClose} />
+    </div>
+  );
+}
+
+function ShenuteActionButton({
+  actionClassName = SHENUTE_MENU_ACTION_BUTTON_CLASS,
+  buttonVariant = "secondary",
+  children,
+  className,
+  fullWidth = true,
+  icon,
+  type = "button",
+  ...props
+}: ShenuteActionButtonProps) {
+  return (
+    <button
+      type={type}
+      className={buttonClassName({
+        fullWidth,
+        size: "sm",
+        variant: buttonVariant,
+        className: cx(actionClassName, className),
+      })}
+      {...props}
+    >
+      {icon}
+      {children}
+    </button>
+  );
 }
 
 function formatFileSize(bytes: number, language: ShenuteLanguage) {
@@ -457,6 +631,39 @@ function serializeChatMessage(message: ChatMessageLike): SavedChatMessage {
   };
 }
 
+function readShenuteHandoffPayload(): ShenuteHandoffPayload | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const rawPayload = window.sessionStorage.getItem(SHENUTE_HANDOFF_STORAGE_KEY);
+  if (!rawPayload) {
+    return null;
+  }
+
+  window.sessionStorage.removeItem(SHENUTE_HANDOFF_STORAGE_KEY);
+
+  try {
+    const payload = JSON.parse(rawPayload) as Partial<ShenuteHandoffPayload>;
+    if (!Array.isArray(payload.messages) || !payload.pageContext) {
+      return null;
+    }
+
+    return {
+      createdAt:
+        typeof payload.createdAt === "string"
+          ? payload.createdAt
+          : new Date().toISOString(),
+      inferenceProvider: toShenuteProvider(payload.inferenceProvider),
+      messages: payload.messages,
+      pageContext: payload.pageContext,
+      source: "floating",
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function saveChatHistoryOnline(
   messages: ChatMessageLike[],
   sessionId: string,
@@ -495,25 +702,6 @@ async function saveChatHistoryOnline(
   } catch {
     return { success: false };
   }
-}
-
-function findPreviousUserMessage(
-  messages: ChatMessageLike[],
-  startIndex: number,
-) {
-  for (let index = startIndex - 1; index >= 0; index -= 1) {
-    const message = messages[index];
-    if (message.role !== "user") {
-      continue;
-    }
-
-    const text = getMessageText(message);
-    if (text.length > 0) {
-      return message;
-    }
-  }
-
-  return null;
 }
 
 function getErrorStatusCode(error: unknown): number | undefined {
@@ -624,6 +812,41 @@ function getProviderLabel(provider: ShenuteProvider, copy: ShenuteCopy) {
   return copy.providerThoth;
 }
 
+function closeContainingDetails(element: HTMLElement | null) {
+  const details = element?.closest("details") as HTMLDetailsElement | null;
+  if (details) {
+    details.open = false;
+  }
+}
+
+function closeOpenUtilityDetails(except?: HTMLDetailsElement | null) {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document
+    .querySelectorAll<HTMLDetailsElement>(SHENUTE_UTILITY_DETAILS_SELECTOR)
+    .forEach((details) => {
+      if (details !== except) {
+        details.open = false;
+      }
+    });
+}
+
+function closeOpenResponseDetails(except?: HTMLDetailsElement | null) {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document
+    .querySelectorAll<HTMLDetailsElement>(SHENUTE_RESPONSE_DETAILS_SELECTOR)
+    .forEach((details) => {
+      if (details !== except) {
+        details.open = false;
+      }
+    });
+}
+
 export default function ShenuteAI() {
   const { language, t } = useLanguage();
   const copy = SHENUTE_COPY[language];
@@ -644,16 +867,25 @@ export default function ShenuteAI() {
   >(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [handoffPageContext, setHandoffPageContext] =
+    useState<ShenuteHandoffPageContext | null>(null);
   const [isAnswerStylePanelOpen, setIsAnswerStylePanelOpen] = useState(false);
+  const [mobileUtilitySheet, setMobileUtilitySheet] =
+    useState<MobileUtilitySheet>(null);
+  const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
+  const [copyFallbackText, setCopyFallbackText] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const attachmentMenuDetailsRef = useRef<HTMLDetailsElement | null>(null);
   const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const copyFallbackTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const captureCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const shenuteSessionIdRef = useRef(crypto.randomUUID());
+  const lastTranscriptScrollTopRef = useRef(0);
 
   const { isAuthenticated, isReady, user } = useOptionalAuthGate();
   const [selectedReactionByMessage, setSelectedReactionByMessage] = useState<
@@ -708,6 +940,9 @@ export default function ShenuteAI() {
   );
   const [thinkingElapsedSeconds, setThinkingElapsedSeconds] = useState(0);
   const [isTranscriptAtBottom, setIsTranscriptAtBottom] = useState(true);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [isUtilityChromeCollapsed, setIsUtilityChromeCollapsed] =
+    useState(false);
   const isLoading = status !== "ready";
   const isShenuteAccessBlocked = isReady && !isAuthenticated;
   const typedMessages = useMemo(
@@ -726,8 +961,12 @@ export default function ShenuteAI() {
   const selectedImageSizeLabel = selectedImage
     ? formatFileSize(selectedImage.size, language)
     : null;
-  const isAttachmentMenuDisabled =
-    isLoading || ocrPending || isShenuteAccessBlocked;
+  const hasPromptContent =
+    inputValue.trim().length > 0 || Boolean(selectedImage);
+  const isComposerDisabled = isLoading || ocrPending || isShenuteAccessBlocked;
+  const canSubmitPrompt = hasPromptContent && !isComposerDisabled;
+  const isAttachmentMenuDisabled = isComposerDisabled;
+  const isComposerBusy = isLoading || ocrPending;
   const canStartNewConversation =
     Boolean(activeSessionId) ||
     typedMessages.length > 0 ||
@@ -803,6 +1042,33 @@ export default function ShenuteAI() {
     providerOptions.find((option) => option.value === inferenceProvider) ??
     providerOptions[0]!;
   const sessionCountLabel = `${sessions.length} ${copy.sessionCount}`;
+  const thinkingStatusMessage = getThinkingStatusMessage(
+    thinkingElapsedSeconds,
+    copy,
+  );
+  const thinkingElapsedLabel = formatElapsedTime(thinkingElapsedSeconds);
+  let composerPlaceholder: string = copy.placeholderShort;
+  if (selectedImage) {
+    composerPlaceholder = copy.placeholderImage;
+  }
+
+  let composerStateLabel: string | null = null;
+  if (ocrPending) {
+    composerStateLabel = copy.runningOcr;
+  }
+
+  let composerStateMeta: string | null = null;
+  if (ocrPending && selectedImage) {
+    composerStateMeta = selectedImage.name || copy.imageAttached;
+  }
+
+  let composerSubmitLabel: string = copy.sendMessage;
+  if (isLoading) {
+    composerSubmitLabel = copy.cancelResponse;
+  } else if (ocrPending) {
+    composerSubmitLabel = copy.runningOcr;
+  }
+
   let saveButtonLabel: string = copy.saveHistorySaved;
   if (isHistorySaving) {
     saveButtonLabel = copy.savingHistory;
@@ -820,32 +1086,83 @@ export default function ShenuteAI() {
   } else if (hasUnsavedConversationChanges) {
     historyStatusMessage = copy.unsavedChanges;
   }
+  const handoffContextLabel = handoffPageContext
+    ? handoffPageContext.title.replace(/\s+\|\s+Coptic Compass$/, "").trim() ||
+      handoffPageContext.path
+    : null;
   let historyStatusDotClassName = "bg-muted/40";
-  if (isHistorySaving || hasUnsavedConversationChanges) {
+  if (isLoading) {
+    historyStatusDotClassName = "bg-coptic animate-pulse";
+  } else if (isHistorySaving || hasUnsavedConversationChanges) {
     historyStatusDotClassName = "bg-warning";
   } else if (typedMessages.length > 0) {
     historyStatusDotClassName = "bg-coptic";
   }
+  const shouldKeepUtilityChromeExpanded =
+    !isMobileViewport ||
+    typedMessages.length === 0 ||
+    isAnswerStylePanelOpen ||
+    isHistorySaving ||
+    Boolean(sessionStatus) ||
+    Boolean(historyActionStatus) ||
+    isShenuteAccessBlocked ||
+    Boolean(shenuteAccessError) ||
+    Boolean(error) ||
+    Boolean(ocrError) ||
+    Boolean(cameraError) ||
+    cameraOpen ||
+    ocrPending;
 
   const updateTranscriptScrollState = useCallback(() => {
     const transcript = transcriptScrollRef.current;
     if (!transcript) {
+      lastTranscriptScrollTopRef.current = 0;
       setIsTranscriptAtBottom(true);
+      setIsUtilityChromeCollapsed(false);
       return;
     }
 
     const distanceFromBottom =
       transcript.scrollHeight - transcript.scrollTop - transcript.clientHeight;
     const nextIsAtBottom = distanceFromBottom < 96;
+    const scrollDelta =
+      transcript.scrollTop - lastTranscriptScrollTopRef.current;
+    lastTranscriptScrollTopRef.current = transcript.scrollTop;
+
     setIsTranscriptAtBottom((current) =>
       current === nextIsAtBottom ? current : nextIsAtBottom,
     );
-  }, []);
+
+    if (
+      nextIsAtBottom ||
+      shouldKeepUtilityChromeExpanded ||
+      document.querySelector("details[open]")
+    ) {
+      setIsUtilityChromeCollapsed(false);
+      return;
+    }
+
+    if (
+      scrollDelta < -UTILITY_CHROME_COLLAPSE_DELTA &&
+      distanceFromBottom > UTILITY_CHROME_BOTTOM_THRESHOLD
+    ) {
+      setIsUtilityChromeCollapsed(true);
+      return;
+    }
+
+    if (scrollDelta > UTILITY_CHROME_EXPAND_DELTA) {
+      setIsUtilityChromeCollapsed(false);
+    }
+  }, [shouldKeepUtilityChromeExpanded]);
 
   const scrollTranscriptToBottom = useCallback(
     (behavior: ScrollBehavior = "smooth") => {
       const transcript = transcriptScrollRef.current;
       if (transcript) {
+        lastTranscriptScrollTopRef.current = Math.max(
+          0,
+          transcript.scrollHeight - transcript.clientHeight,
+        );
         transcript.scrollTo({
           top: transcript.scrollHeight,
           behavior,
@@ -858,9 +1175,50 @@ export default function ShenuteAI() {
       }
 
       setIsTranscriptAtBottom(true);
+      setIsUtilityChromeCollapsed(false);
     },
     [],
   );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+    const updateViewportState = () => {
+      const isMobile = mediaQuery.matches;
+      setIsMobileViewport(isMobile);
+
+      if (!isMobile) {
+        setIsUtilityChromeCollapsed(false);
+      }
+    };
+
+    updateViewportState();
+    mediaQuery.addEventListener("change", updateViewportState);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateViewportState);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (shouldKeepUtilityChromeExpanded) {
+      setIsUtilityChromeCollapsed(false);
+    }
+  }, [shouldKeepUtilityChromeExpanded]);
+
+  useEffect(() => {
+    if (typedMessages.length === 0 || isLoading) {
+      setIsUtilityChromeCollapsed(false);
+    }
+  }, [isLoading, typedMessages.length]);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      const transcript = transcriptScrollRef.current;
+      lastTranscriptScrollTopRef.current = transcript?.scrollTop ?? 0;
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [hasRestoredHistory, isMobileViewport, typedMessages.length]);
 
   useEffect(() => {
     if (typedMessages.length === messages.length) {
@@ -903,10 +1261,78 @@ export default function ShenuteAI() {
   }, [isAnswerStylePanelOpen]);
 
   useEffect(() => {
+    if (!mobileUtilitySheet) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileUtilitySheet(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileUtilitySheet]);
+
+  useEffect(() => {
+    if (!copyFallbackText) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      copyFallbackTextareaRef.current?.focus();
+      copyFallbackTextareaRef.current?.select();
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [copyFallbackText]);
+
+  useEffect(() => {
+    if (!copyFallbackText) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setCopyFallbackText(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [copyFallbackText]);
+
+  useEffect(() => {
     if (isShenuteAccessBlocked) {
       setIsAnswerStylePanelOpen(false);
     }
   }, [isShenuteAccessBlocked]);
+
+  useEffect(() => {
+    if (!isMobileViewport) {
+      setMobileUtilitySheet(null);
+    }
+  }, [isMobileViewport]);
+
+  useEffect(() => {
+    if (!isAttachmentMenuOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const details = attachmentMenuDetailsRef.current;
+      if (!details || details.contains(event.target as Node)) {
+        return;
+      }
+
+      details.open = false;
+      setIsAttachmentMenuOpen(false);
+    };
+
+    window.addEventListener("pointerdown", handlePointerDown);
+    return () => window.removeEventListener("pointerdown", handlePointerDown);
+  }, [isAttachmentMenuOpen]);
 
   useEffect(() => {
     const textarea = messageInputRef.current;
@@ -914,9 +1340,20 @@ export default function ShenuteAI() {
       return;
     }
 
+    if (inputValue.length === 0) {
+      textarea.style.height = `${MESSAGE_INPUT_MIN_HEIGHT}px`;
+      return;
+    }
+
     textarea.style.height = "auto";
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
-  }, [inputValue]);
+    const maxInputHeight = isMobileViewport
+      ? MESSAGE_INPUT_MOBILE_MAX_HEIGHT
+      : MESSAGE_INPUT_MAX_HEIGHT;
+    textarea.style.height = `${Math.min(
+      Math.max(textarea.scrollHeight, MESSAGE_INPUT_MIN_HEIGHT),
+      maxInputHeight,
+    )}px`;
+  }, [inputValue, isMobileViewport]);
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id) {
@@ -985,6 +1422,23 @@ export default function ShenuteAI() {
       return;
     }
 
+    const handoffPayload = readShenuteHandoffPayload();
+    if (handoffPayload) {
+      const handoffMessages = normalizeChatMessages(handoffPayload.messages);
+      setInferenceProvider(handoffPayload.inferenceProvider);
+      setHandoffPageContext(handoffPayload.pageContext);
+      setMessages(handoffMessages as UIMessage[]);
+      lastSavedMessageSignatureRef.current = getChatMessagesSignature([]);
+      setActiveSessionId(null);
+      shenuteSessionIdRef.current = crypto.randomUUID();
+      setIsTranscriptAtBottom(true);
+      setHasRestoredHistory(true);
+      window.requestAnimationFrame(() => {
+        scrollTranscriptToBottom("auto");
+      });
+      return;
+    }
+
     const restoreHistory = async () => {
       try {
         const response = await fetch("/api/shenute/history");
@@ -1012,6 +1466,7 @@ export default function ShenuteAI() {
 
           if (Array.isArray(payload.messages)) {
             const restoredMessages = normalizeChatMessages(payload.messages);
+            setHandoffPageContext(null);
             lastSavedMessageSignatureRef.current =
               getChatMessagesSignature(restoredMessages);
             setMessages(restoredMessages as UIMessage[]);
@@ -1132,6 +1587,7 @@ export default function ShenuteAI() {
       return { success: false };
     }
 
+    setIsUtilityChromeCollapsed(false);
     setSessionLoadingId(sessionId);
     setSessionStatus(copy.loadingSession);
 
@@ -1164,6 +1620,7 @@ export default function ShenuteAI() {
       lastSavedMessageSignatureRef.current =
         getChatMessagesSignature(loadedMessages);
       setMessages(loadedMessages as UIMessage[]);
+      setHandoffPageContext(null);
       setActiveSessionId(payload.sessionId);
       shenuteSessionIdRef.current = payload.sessionId;
       setIsTranscriptAtBottom(true);
@@ -1223,6 +1680,7 @@ export default function ShenuteAI() {
     setAutosaveStatus(null);
     setSessionStatus(null);
     setSessionLoadingId(null);
+    setHandoffPageContext(null);
     setIsTranscriptAtBottom(true);
   }
 
@@ -1231,6 +1689,7 @@ export default function ShenuteAI() {
       return;
     }
 
+    setIsUtilityChromeCollapsed(false);
     if (
       typedMessages.length > 0 &&
       isAuthenticated &&
@@ -1446,7 +1905,7 @@ export default function ShenuteAI() {
 
     setShenuteAccessError(null);
 
-    if ((!inputValue.trim() && !selectedImage) || isLoading || ocrPending) {
+    if (!hasPromptContent || isComposerDisabled) {
       return;
     }
 
@@ -1492,11 +1951,17 @@ export default function ShenuteAI() {
     }
 
     setIsTranscriptAtBottom(true);
+    setIsUtilityChromeCollapsed(false);
+    setMobileUtilitySheet(null);
+    setIsAnswerStylePanelOpen(false);
+    closeOpenUtilityDetails();
+    closeOpenResponseDetails();
     sendMessage(
       { text: composedPrompt },
       {
         body: {
           inferenceProvider,
+          pageContext: handoffPageContext ?? undefined,
         },
       },
     );
@@ -1525,7 +1990,7 @@ export default function ShenuteAI() {
   function setTemporaryMessageActionState(
     messageId: string,
     message: string,
-    status: "error" | "success",
+    status: "error" | "pending" | "success",
   ) {
     setMessageActionStateByMessage((current) => ({
       ...current,
@@ -1551,17 +2016,23 @@ export default function ShenuteAI() {
     }
 
     try {
-      await navigator.clipboard.writeText(text);
+      const didCopy = await copyTextToClipboard(text);
+      if (!didCopy) {
+        throw new Error("Clipboard write failed.");
+      }
+
+      setCopyFallbackText(null);
       setTemporaryMessageActionState(
         message.id,
         copy.copiedResponse,
         "success",
       );
     } catch {
+      setCopyFallbackText(text);
       setTemporaryMessageActionState(
         message.id,
-        copy.copyResponseFailed,
-        "error",
+        copy.copyResponseManual,
+        "pending",
       );
     }
   }
@@ -1572,10 +2043,12 @@ export default function ShenuteAI() {
     }
 
     setIsTranscriptAtBottom(true);
+    setIsUtilityChromeCollapsed(false);
     void regenerate({
       messageId: message.id,
       body: {
         inferenceProvider,
+        pageContext: handoffPageContext ?? undefined,
       },
     });
     window.requestAnimationFrame(() => {
@@ -1589,11 +2062,13 @@ export default function ShenuteAI() {
     }
 
     setIsTranscriptAtBottom(true);
+    setIsUtilityChromeCollapsed(false);
     sendMessage(
       { text: copy.continuePrompt },
       {
         body: {
           inferenceProvider,
+          pageContext: handoffPageContext ?? undefined,
         },
       },
     );
@@ -1602,7 +2077,20 @@ export default function ShenuteAI() {
     });
   }
 
+  function handleStopResponseFromComposer() {
+    stopChatResponse();
+    setIsUtilityChromeCollapsed(false);
+    setMobileUtilitySheet(null);
+    setIsAnswerStylePanelOpen(false);
+    closeOpenUtilityDetails();
+    closeOpenResponseDetails();
+    window.requestAnimationFrame(() => {
+      messageInputRef.current?.focus({ preventScroll: true });
+    });
+  }
+
   function handleStarterPrompt(prompt: string) {
+    setIsUtilityChromeCollapsed(false);
     setInputValue(prompt);
     if (shenuteAccessError) {
       setShenuteAccessError(null);
@@ -1613,8 +2101,57 @@ export default function ShenuteAI() {
   }
 
   function scrollToLatestMessage() {
+    setIsUtilityChromeCollapsed(false);
     scrollTranscriptToBottom("smooth");
     messageInputRef.current?.focus({ preventScroll: true });
+  }
+
+  function handleMessageInputFocus() {
+    setIsUtilityChromeCollapsed(false);
+    if (typedMessages.length === 0) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      scrollTranscriptToBottom("smooth");
+    }, 160);
+  }
+
+  function handleUtilityDetailsToggle(
+    event: React.SyntheticEvent<HTMLDetailsElement>,
+  ) {
+    if (event.currentTarget.open) {
+      setIsUtilityChromeCollapsed(false);
+      setMobileUtilitySheet(null);
+      setIsAnswerStylePanelOpen(false);
+      closeOpenUtilityDetails(event.currentTarget);
+    }
+  }
+
+  function handleResponseDetailsToggle(
+    event: React.SyntheticEvent<HTMLDetailsElement>,
+  ) {
+    if (event.currentTarget.open) {
+      setIsUtilityChromeCollapsed(false);
+      setMobileUtilitySheet(null);
+      setIsAnswerStylePanelOpen(false);
+      closeOpenUtilityDetails();
+      closeOpenResponseDetails(event.currentTarget);
+    }
+  }
+
+  function handleComposerDetailsToggle(
+    event: React.SyntheticEvent<HTMLDetailsElement>,
+  ) {
+    setIsAttachmentMenuOpen(event.currentTarget.open);
+
+    if (event.currentTarget.open) {
+      setIsUtilityChromeCollapsed(false);
+      setMobileUtilitySheet(null);
+      setIsAnswerStylePanelOpen(false);
+      closeOpenUtilityDetails();
+      closeOpenResponseDetails();
+    }
   }
 
   async function submitFeedbackSignal(options: {
@@ -1670,6 +2207,7 @@ export default function ShenuteAI() {
           shenuteSessionId: shenuteSessionIdRef.current,
           feedbackText: options.feedbackText,
           inferenceProvider,
+          pageContext: handoffPageContext ?? undefined,
           prompt,
           signal: options.signal,
           userMessageId: options.promptMessage?.id,
@@ -1773,26 +2311,181 @@ export default function ShenuteAI() {
     }));
   }
 
+  function closeUtilitySurface(element: HTMLElement | null) {
+    closeContainingDetails(element);
+    setMobileUtilitySheet(null);
+  }
+
+  function renderSavedSessionsContent({
+    onClose,
+    showMobileHeader = true,
+  }: {
+    onClose?: () => void;
+    showMobileHeader?: boolean;
+  } = {}) {
+    return (
+      <>
+        {showMobileHeader ? (
+          <ShenuteSurfaceHeader
+            closeLabel={copy.closeMenu}
+            className="mb-3 sm:hidden"
+            onClose={(event) => {
+              closeUtilitySurface(event.currentTarget);
+              onClose?.();
+            }}
+          >
+            {copy.conversationHistory}
+          </ShenuteSurfaceHeader>
+        ) : null}
+        <div aria-label={copy.conversationHistory} className="grid gap-2">
+          {sessions.map((session) => {
+            const isActive = session.id === activeSessionId;
+            const formattedSessionDate = formatSessionTimestamp(
+              session.updated_at,
+              language,
+              copy.sessionDateMissing,
+            );
+
+            return (
+              <button
+                key={session.id}
+                type="button"
+                onClick={(event) => {
+                  closeUtilitySurface(event.currentTarget);
+                  onClose?.();
+                  void loadShenuteSession(session.id);
+                }}
+                disabled={isActive}
+                className={cx(
+                  "flex w-full flex-col gap-1 rounded-lg border px-3 py-2.5 text-left text-sm transition",
+                  isActive
+                    ? "border-coptic/55 bg-coptic-soft text-ink"
+                    : "border-line bg-surface text-ink hover:border-accent/35 hover:bg-elevated",
+                )}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate font-semibold">
+                    {session.title || copy.conversationHistory}
+                  </span>
+                  <span
+                    className={cx(
+                      "shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold",
+                      isActive
+                        ? "bg-surface/80 text-coptic"
+                        : "bg-elevated text-muted",
+                    )}
+                  >
+                    {isActive ? copy.currentSession : copy.loadSession}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                  <Clock3 className={SHENUTE_ICON_CLASS.meta} />
+                  <span>{formattedSessionDate}</span>
+                  {isActive && hasUnsavedConversationChanges ? (
+                    <span className="rounded-full bg-accent-soft px-2 py-0.5 font-semibold text-accent-strong dark:text-accent">
+                      {copy.sessionUnsavedBadge}
+                    </span>
+                  ) : null}
+                </div>
+                {sessionLoadingId === session.id ? (
+                  <p className="text-xs text-muted">{copy.loadingSession}</p>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      </>
+    );
+  }
+
+  function renderConversationActionsContent(onClose?: () => void) {
+    return (
+      <>
+        <ShenuteActionButton
+          onClick={(event) => {
+            closeUtilitySurface(event.currentTarget);
+            onClose?.();
+            handleSaveHistory();
+          }}
+          disabled={
+            typedMessages.length === 0 ||
+            isLoading ||
+            isHistorySaving ||
+            !hasUnsavedConversationChanges
+          }
+          icon={<Save className={SHENUTE_ICON_CLASS.action} />}
+        >
+          {saveButtonLabel}
+        </ShenuteActionButton>
+        <Link
+          href={`${getContributorsPath(language)}#shenute-ai-credits`}
+          onClick={(event) => {
+            closeUtilitySurface(event.currentTarget);
+            onClose?.();
+          }}
+          className={buttonClassName({
+            fullWidth: true,
+            className: cx("mt-2", SHENUTE_MENU_ACTION_BUTTON_CLASS),
+            size: "sm",
+            variant: "secondary",
+          })}
+        >
+          <BookOpenCheck className={SHENUTE_ICON_CLASS.action} />
+          {copy.creditsShort}
+          <ArrowRight className={cx("ml-auto", SHENUTE_ICON_CLASS.action)} />
+        </Link>
+        <div className="my-2 border-t border-line pt-2">
+          <ShenuteActionGroupLabel className="mb-2">
+            {copy.dangerZone}
+          </ShenuteActionGroupLabel>
+          <ShenuteActionButton
+            onClick={(event) => {
+              closeUtilitySurface(event.currentTarget);
+              onClose?.();
+              void clearCurrentConversation();
+            }}
+            disabled={
+              isLoading ||
+              isHistorySaving ||
+              (!activeSessionId && typedMessages.length === 0)
+            }
+            className="border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-900/60 dark:text-rose-300 dark:hover:bg-rose-950/30"
+            icon={<Trash2 className={SHENUTE_ICON_CLASS.action} />}
+          >
+            {copy.clearConversation}
+          </ShenuteActionButton>
+        </div>
+      </>
+    );
+  }
+
   return (
     <PageShell
-      className="app-page-shell"
-      contentClassName="app-page-content space-y-3"
+      className="app-page-shell min-h-[calc(100dvh-4.75rem)] px-3 pb-3 pt-3 md:min-h-screen md:px-10 md:pb-20 md:pt-10"
+      contentClassName="app-page-content space-y-3 pt-3 md:pt-8"
       width="standard"
       accents={[
         pageShellAccents.heroCopticBand,
         pageShellAccents.topRightGoldWashInset,
       ]}
     >
-      <AppPageIntro
-        breadcrumbs={[
-          { label: t("nav.home"), href: getLocalizedHomePath(language) },
-          { label: t("nav.shenute") },
-        ]}
-        description={copy.intro}
-        spacing="compact"
-        title={copy.title}
-        tone="coptic"
-      />
+      <header className="mb-2 space-y-2 md:mb-6 md:space-y-5">
+        <BreadcrumbTrail
+          className="hidden sm:block"
+          items={[
+            { label: t("nav.home"), href: getLocalizedHomePath(language) },
+            { label: t("nav.shenute") },
+          ]}
+        />
+        <div className="min-w-0">
+          <h1 className="truncate pb-1 text-2xl font-extrabold tracking-tight text-coptic md:pb-2 md:text-4xl">
+            {copy.title}
+          </h1>
+          <p className="hidden max-w-3xl text-base font-medium text-muted md:block md:text-lg">
+            {copy.intro}
+          </p>
+        </div>
+      </header>
 
       <SurfacePanel
         rounded="3xl"
@@ -1821,233 +2514,270 @@ export default function ShenuteAI() {
 
         <div
           className={cx(
-            "flex h-[calc(100dvh-18rem)] min-h-[24rem] flex-col transition-all duration-300 md:h-[calc(100dvh-16rem)] md:min-h-[28rem] lg:h-[calc(100dvh-17rem)] lg:min-h-[24rem]",
+            "flex h-[calc(100dvh-9rem)] min-h-[24rem] flex-col transition-all duration-300 sm:h-[calc(100dvh-10rem)] md:h-[calc(100dvh-20rem)] md:min-h-[26rem] lg:h-[calc(100dvh-21rem)] lg:min-h-[24rem]",
             isShenuteAccessBlocked &&
               "pointer-events-none select-none blur-[6px] opacity-70",
           )}
         >
-          {sessions.length > 0 ? (
-            <details className="border-b border-line bg-surface/70 px-4 py-2 md:px-5">
-              <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 text-sm [&::-webkit-details-marker]:hidden">
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-elevated text-muted">
-                    <Clock3 className="h-3.5 w-3.5" />
+          <div
+            className={cx(
+              "transition-all duration-200",
+              isUtilityChromeCollapsed && "hidden sm:block",
+            )}
+          >
+            <div className="flex items-center justify-between gap-2 border-b border-line/80 bg-surface/65 px-3 py-1.5 text-xs text-muted backdrop-blur-md sm:px-4 sm:py-2 sm:text-sm md:px-5">
+              <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                <span
+                  aria-hidden="true"
+                  className={cx(
+                    "h-2 w-2 shrink-0 rounded-full",
+                    historyStatusDotClassName,
+                  )}
+                />
+                <p className="min-w-0 flex-1 truncate text-xs sm:hidden">
+                  {historyStatusMessage} ·{" "}
+                  {handoffContextLabel
+                    ? `${copy.pageContextBadge}: ${handoffContextLabel}`
+                    : selectedProviderOption.label}
+                </p>
+                <p className="hidden min-w-0 flex-1 truncate sm:block">
+                  {historyStatusMessage}
+                </p>
+                <span className="hidden max-w-full items-center rounded-full bg-elevated px-2 py-0.5 text-xs font-semibold text-muted sm:inline-flex">
+                  <span className="truncate">
+                    {copy.aiMode}: {selectedProviderOption.label}
                   </span>
-                  <p className="truncate text-sm font-semibold text-ink">
-                    {copy.historySessions}
-                  </p>
-                </div>
-                <div className="flex min-w-0 items-center gap-2">
-                  {sessionStatus ? (
-                    <span className="hidden truncate text-xs text-muted sm:inline">
-                      {sessionStatus}
+                </span>
+                {handoffContextLabel ? (
+                  <span
+                    className="hidden max-w-[14rem] items-center rounded-full bg-coptic-soft px-2 py-0.5 text-xs font-semibold text-coptic sm:inline-flex"
+                    title={handoffPageContext?.url || handoffPageContext?.path}
+                  >
+                    <span className="truncate">
+                      {copy.pageContextBadge}: {handoffContextLabel}
                     </span>
-                  ) : null}
-                  <span className="inline-flex h-7 shrink-0 items-center rounded-full bg-elevated px-3 text-xs font-semibold uppercase tracking-wide text-muted">
-                    {sessionCountLabel}
                   </span>
-                </div>
-              </summary>
-              <div className="mt-2 rounded-lg border border-line bg-surface/85 p-3 shadow-soft">
-                <div
-                  aria-label={copy.historySessions}
-                  className="flex snap-x gap-2 overflow-x-auto pb-2 [scrollbar-gutter:stable] [-webkit-overflow-scrolling:touch]"
-                >
-                  {sessions.map((session) => {
-                    const isActive = session.id === activeSessionId;
-                    const formattedSessionDate = formatSessionTimestamp(
-                      session.updated_at,
-                      language,
-                      copy.sessionDateMissing,
-                    );
-
-                    return (
-                      <button
-                        key={session.id}
-                        type="button"
-                        onClick={() => void loadShenuteSession(session.id)}
-                        disabled={isActive}
-                        className={cx(
-                          "flex w-64 shrink-0 snap-start flex-col gap-1 rounded-lg border px-3 py-2.5 text-left text-sm transition sm:w-72",
-                          isActive
-                            ? "border-coptic/55 bg-coptic-soft text-ink"
-                            : "border-line bg-surface text-ink hover:border-accent/35 hover:bg-elevated",
-                        )}
+                ) : null}
+              </div>
+              <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+                {sessions.length > 0 ? (
+                  <>
+                    <button
+                      type="button"
+                      aria-controls="shenute-mobile-utility-sheet"
+                      aria-expanded={mobileUtilitySheet === "history"}
+                      aria-haspopup="dialog"
+                      aria-label={`${copy.conversationHistory}: ${sessionCountLabel}`}
+                      title={copy.conversationHistory}
+                      onClick={() => {
+                        closeOpenUtilityDetails();
+                        setIsUtilityChromeCollapsed(false);
+                        setIsAnswerStylePanelOpen(false);
+                        setMobileUtilitySheet((current) =>
+                          current === "history" ? null : "history",
+                        );
+                      }}
+                      className={buttonClassName({
+                        size: "sm",
+                        variant: "secondary",
+                        className: cx(
+                          SHENUTE_UTILITY_BUTTON_CLASS,
+                          "relative sm:hidden",
+                          mobileUtilitySheet === "history" &&
+                            "border-coptic/45 bg-coptic-soft/70 text-coptic",
+                        ),
+                      })}
+                    >
+                      <Clock3 className={SHENUTE_ICON_CLASS.action} />
+                      <span className={SHENUTE_UTILITY_BADGE_CLASS}>
+                        {sessions.length}
+                      </span>
+                    </button>
+                    <details
+                      data-shenute-utility-details
+                      className="group relative hidden shrink-0 sm:block"
+                      onToggle={handleUtilityDetailsToggle}
+                    >
+                      <summary
+                        aria-label={`${copy.conversationHistory}: ${sessionCountLabel}`}
+                        title={copy.conversationHistory}
+                        className={buttonClassName({
+                          size: "sm",
+                          variant: "secondary",
+                          className: cx(
+                            SHENUTE_UTILITY_SUMMARY_CLASS,
+                            "relative",
+                          ),
+                        })}
                       >
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="min-w-0 truncate font-semibold">
-                            {session.title || copy.historySessions}
-                          </span>
-                          <span
-                            className={cx(
-                              "shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold",
-                              isActive
-                                ? "bg-surface/80 text-coptic"
-                                : "bg-elevated text-muted",
-                            )}
-                          >
-                            {isActive ? copy.currentSession : copy.loadSession}
+                        <Clock3 className={SHENUTE_ICON_CLASS.action} />
+                        <span className={SHENUTE_UTILITY_BADGE_CLASS}>
+                          {sessions.length}
+                        </span>
+                      </summary>
+                      <div className="absolute right-0 top-full z-50 mt-2 hidden w-[min(28rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-3 shadow-panel group-open:block">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <ShenuteSurfaceHeading>
+                            {copy.conversationHistory}
+                          </ShenuteSurfaceHeading>
+                          <span className="shrink-0 rounded-full bg-elevated px-2 py-0.5 text-xs font-semibold text-muted">
+                            {sessionCountLabel}
                           </span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-                          <Clock3 className="h-3 w-3" />
-                          <span>{formattedSessionDate}</span>
-                          {isActive && hasUnsavedConversationChanges ? (
-                            <span className="rounded-full bg-accent-soft px-2 py-0.5 font-semibold text-accent-strong dark:text-accent">
-                              {copy.sessionUnsavedBadge}
-                            </span>
-                          ) : null}
-                        </div>
-                        {sessionLoadingId === session.id ? (
-                          <p className="text-xs text-muted">
-                            {copy.loadingSession}
+                        {sessionStatus ? (
+                          <p className="mb-2 truncate text-xs text-muted">
+                            {sessionStatus}
                           </p>
                         ) : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </details>
-          ) : null}
-          <div className="grid gap-2 border-b border-line bg-surface/75 px-4 py-2 text-sm text-muted md:px-5 sm:flex sm:items-center sm:justify-between">
-            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-              <span
-                aria-hidden="true"
-                className={cx(
-                  "h-2 w-2 shrink-0 rounded-full",
-                  historyStatusDotClassName,
-                )}
-              />
-              <p className="min-w-0 truncate text-xs sm:text-sm">
-                {historyStatusMessage}
-              </p>
-              <span className="inline-flex max-w-full items-center rounded-full bg-elevated px-2 py-0.5 text-xs font-semibold text-muted">
-                <span className="truncate">
-                  {copy.aiMode}: {selectedProviderOption.label}
-                </span>
-              </span>
-            </div>
-            <div className="flex max-w-full flex-wrap items-center gap-2">
-              {typedMessages.length > 0 && !isTranscriptAtBottom ? (
+                        <div className="max-h-[min(24rem,calc(100dvh-14rem))] overflow-y-auto pr-1">
+                          {renderSavedSessionsContent({
+                            showMobileHeader: false,
+                          })}
+                        </div>
+                      </div>
+                    </details>
+                  </>
+                ) : null}
+                {typedMessages.length > 0 && !isTranscriptAtBottom ? (
+                  <button
+                    type="button"
+                    aria-label={copy.jumpToLatest}
+                    title={copy.jumpToLatest}
+                    onClick={scrollToLatestMessage}
+                    className={buttonClassName({
+                      size: "sm",
+                      variant: "secondary",
+                      className: SHENUTE_UTILITY_BUTTON_CLASS,
+                    })}
+                  >
+                    <ArrowDownToLine className={SHENUTE_ICON_CLASS.action} />
+                  </button>
+                ) : null}
                 <button
                   type="button"
-                  aria-label={copy.jumpToLatest}
-                  title={copy.jumpToLatest}
-                  onClick={scrollToLatestMessage}
+                  aria-controls="shenute-answer-style-panel"
+                  aria-expanded={isAnswerStylePanelOpen}
+                  aria-haspopup="dialog"
+                  aria-label={copy.answerStyleControls}
+                  title={copy.answerStyleControls}
+                  onClick={() => {
+                    closeOpenUtilityDetails();
+                    setIsUtilityChromeCollapsed(false);
+                    setMobileUtilitySheet(null);
+                    setIsAnswerStylePanelOpen((current) => !current);
+                  }}
                   className={buttonClassName({
                     size: "sm",
                     variant: "secondary",
-                    className: "h-9 w-9 shrink-0 px-0 shadow-sm",
+                    className: cx(
+                      SHENUTE_UTILITY_BUTTON_CLASS,
+                      isAnswerStylePanelOpen &&
+                        "border-coptic/45 bg-coptic-soft/70 text-coptic",
+                    ),
                   })}
                 >
-                  <ArrowDownToLine className="h-3.5 w-3.5" />
+                  <SlidersHorizontal className={SHENUTE_ICON_CLASS.action} />
                 </button>
-              ) : null}
-              <button
-                type="button"
-                aria-controls="shenute-answer-style-panel"
-                aria-expanded={isAnswerStylePanelOpen}
-                aria-haspopup="dialog"
-                aria-label={copy.answerStyleControls}
-                title={copy.answerStyleControls}
-                onClick={() => setIsAnswerStylePanelOpen((current) => !current)}
-                className={buttonClassName({
-                  size: "sm",
-                  variant: "secondary",
-                  className: cx(
-                    "h-9 w-9 shrink-0 px-0",
-                    isAnswerStylePanelOpen && "border-coptic/45 text-coptic",
-                  ),
-                })}
-              >
-                <SlidersHorizontal className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                aria-label={copy.newConversation}
-                title={copy.newConversation}
-                onClick={() => void startNewConversation()}
-                disabled={
-                  isLoading || isHistorySaving || !canStartNewConversation
-                }
-                className={buttonClassName({
-                  size: "sm",
-                  variant: "secondary",
-                  className: "h-9 w-9 shrink-0 px-0",
-                })}
-              >
-                <MessageSquarePlus className="h-3.5 w-3.5" />
-              </button>
-              <details className="group relative shrink-0">
-                <summary
-                  aria-label={copy.chatActions}
-                  title={copy.chatActions}
+                <button
+                  type="button"
+                  aria-label={copy.newConversation}
+                  title={copy.newConversation}
+                  onClick={() => {
+                    closeOpenUtilityDetails();
+                    setMobileUtilitySheet(null);
+                    setIsAnswerStylePanelOpen(false);
+                    void startNewConversation();
+                  }}
+                  disabled={
+                    isLoading || isHistorySaving || !canStartNewConversation
+                  }
                   className={buttonClassName({
                     size: "sm",
                     variant: "secondary",
-                    className:
-                      "h-9 w-9 cursor-pointer list-none px-0 [&::-webkit-details-marker]:hidden",
+                    className: SHENUTE_UTILITY_BUTTON_CLASS,
                   })}
                 >
-                  <MoreHorizontal className="h-3.5 w-3.5" />
-                </summary>
-                <div className="absolute right-0 top-full z-30 mt-2 w-64 rounded-lg border border-line bg-surface p-2 shadow-panel">
-                  <button
-                    type="button"
-                    onClick={handleSaveHistory}
-                    disabled={
-                      typedMessages.length === 0 ||
-                      isLoading ||
-                      isHistorySaving ||
-                      !hasUnsavedConversationChanges
-                    }
+                  <MessageSquarePlus className={SHENUTE_ICON_CLASS.action} />
+                </button>
+                <button
+                  type="button"
+                  aria-controls="shenute-mobile-utility-sheet"
+                  aria-expanded={mobileUtilitySheet === "actions"}
+                  aria-haspopup="dialog"
+                  aria-label={copy.conversationActions}
+                  title={copy.conversationActions}
+                  onClick={() => {
+                    closeOpenUtilityDetails();
+                    setIsUtilityChromeCollapsed(false);
+                    setIsAnswerStylePanelOpen(false);
+                    setMobileUtilitySheet((current) =>
+                      current === "actions" ? null : "actions",
+                    );
+                  }}
+                  className={buttonClassName({
+                    size: "sm",
+                    variant: "secondary",
+                    className: cx(
+                      SHENUTE_UTILITY_BUTTON_CLASS,
+                      "sm:hidden",
+                      mobileUtilitySheet === "actions" &&
+                        "border-coptic/45 bg-coptic-soft/70 text-coptic",
+                    ),
+                  })}
+                >
+                  <MoreHorizontal className={SHENUTE_ICON_CLASS.action} />
+                </button>
+                <details
+                  data-shenute-utility-details
+                  className="group relative hidden shrink-0 sm:block"
+                  onToggle={handleUtilityDetailsToggle}
+                >
+                  <summary
+                    aria-label={copy.conversationActions}
+                    title={copy.conversationActions}
                     className={buttonClassName({
-                      fullWidth: true,
                       size: "sm",
                       variant: "secondary",
-                      className: "h-9 justify-start gap-2 px-3 text-xs",
+                      className: SHENUTE_UTILITY_SUMMARY_CLASS,
                     })}
                   >
-                    <Save className="h-3.5 w-3.5" />
-                    {saveButtonLabel}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void clearCurrentConversation()}
-                    disabled={
-                      isLoading ||
-                      isHistorySaving ||
-                      (!activeSessionId && typedMessages.length === 0)
-                    }
-                    className={buttonClassName({
-                      fullWidth: true,
-                      size: "sm",
-                      variant: "secondary",
-                      className:
-                        "mt-2 h-9 justify-start gap-2 border-rose-200 px-3 text-xs text-rose-700 hover:bg-rose-50 dark:border-rose-900/60 dark:text-rose-300 dark:hover:bg-rose-950/30",
-                    })}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    {copy.clearConversation}
-                  </button>
-                  <Link
-                    href={`${getContributorsPath(language)}#shenute-ai-credits`}
-                    className={buttonClassName({
-                      fullWidth: true,
-                      className: "mt-2 h-9 justify-start gap-2 px-3 text-xs",
-                      size: "sm",
-                      variant: "secondary",
-                    })}
-                  >
-                    <BookOpenCheck className="h-3.5 w-3.5" />
-                    {copy.creditsShort}
-                    <ArrowRight className="ml-auto h-3.5 w-3.5" />
-                  </Link>
-                </div>
-              </details>
+                    <MoreHorizontal className={SHENUTE_ICON_CLASS.action} />
+                  </summary>
+                  <div className="absolute right-0 top-full z-50 mt-2 hidden w-64 rounded-lg border border-line bg-surface p-2 shadow-panel group-open:block">
+                    {renderConversationActionsContent()}
+                  </div>
+                </details>
+              </div>
             </div>
           </div>
+          <button
+            type="button"
+            aria-label={copy.expandControls}
+            title={copy.expandControls}
+            onClick={() => setIsUtilityChromeCollapsed(false)}
+            className={cx(
+              "min-h-10 items-center gap-2 border-b border-line bg-surface/80 px-3 py-1.5 text-left text-xs text-muted shadow-sm transition hover:bg-elevated sm:hidden",
+              isUtilityChromeCollapsed ? "flex" : "hidden",
+            )}
+          >
+            <span
+              aria-hidden="true"
+              className={cx(
+                "h-2 w-2 shrink-0 rounded-full",
+                historyStatusDotClassName,
+              )}
+            />
+            <span className="min-w-0 flex-1 truncate">
+              <span className="font-semibold text-ink">{copy.title}</span>
+              <span aria-hidden="true"> · </span>
+              {selectedProviderOption.label}
+              <span aria-hidden="true"> · </span>
+              {historyStatusMessage}
+            </span>
+            <MoreHorizontal
+              className={cx(SHENUTE_ICON_CLASS.panel, "shrink-0")}
+            />
+          </button>
           {typedMessages.length === 0 ? (
             <div className="min-h-0 flex-1 overflow-y-auto border-b border-line bg-elevated/55 p-4 md:p-5">
               <div className="mx-auto flex w-full max-w-5xl flex-col gap-3">
@@ -2055,7 +2785,7 @@ export default function ShenuteAI() {
                   <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-coptic-soft text-2xl text-coptic shadow-sm">
                     <span className="font-coptic leading-none">Ϣ</span>
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <h2 className="truncate text-base font-semibold leading-6 text-ink md:text-lg">
                       {copy.welcomeTitle}
                     </h2>
@@ -2065,10 +2795,10 @@ export default function ShenuteAI() {
                   </div>
                 </div>
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+                  <ShenuteActionGroupLabel className="mb-2">
                     {copy.starterPromptsTitle}
-                  </p>
-                  <div className="flex snap-x gap-2 overflow-x-auto pb-1 [scrollbar-gutter:stable] [-webkit-overflow-scrolling:touch] md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
+                  </ShenuteActionGroupLabel>
+                  <div className="grid gap-2 md:grid-cols-3">
                     {starterPrompts.map((starterPrompt) => {
                       const Icon = starterPrompt.icon;
 
@@ -2080,10 +2810,10 @@ export default function ShenuteAI() {
                             handleStarterPrompt(starterPrompt.prompt);
                           }}
                           disabled={isLoading || isShenuteAccessBlocked}
-                          className="group flex min-h-14 w-72 shrink-0 snap-start items-start gap-3 rounded-lg border border-line bg-surface/85 px-3 py-3 text-left text-sm font-medium leading-5 text-ink shadow-sm transition hover:border-coptic/35 hover:bg-coptic-soft/45 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
+                          className="group flex min-h-12 w-full items-start gap-3 rounded-lg border border-line bg-surface/85 px-3 py-2.5 text-left text-sm font-medium leading-5 text-ink shadow-sm transition hover:border-coptic/35 hover:bg-coptic-soft/45 disabled:cursor-not-allowed disabled:opacity-60 md:min-h-14 md:py-3"
                         >
                           <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-elevated text-muted transition group-hover:bg-coptic-soft group-hover:text-coptic">
-                            <Icon className="h-3.5 w-3.5" />
+                            <Icon className={SHENUTE_ICON_CLASS.action} />
                           </span>
                           <span className="min-w-0">
                             {starterPrompt.prompt}
@@ -2100,7 +2830,7 @@ export default function ShenuteAI() {
               ref={transcriptScrollRef}
               aria-live="polite"
               onScroll={updateTranscriptScrollState}
-              className="min-h-0 flex-1 overscroll-contain scroll-pb-6 space-y-5 overflow-y-auto border-b border-line bg-elevated/55 p-4 md:p-6"
+              className="min-h-0 flex-1 overscroll-contain scroll-pb-20 space-y-4 overflow-y-auto border-b border-line bg-elevated/55 p-3 sm:space-y-5 sm:p-4 md:p-6"
             >
               {typedMessages.map((m, index) => {
                 const assistantMessage = m as ChatMessageLike;
@@ -2115,6 +2845,206 @@ export default function ShenuteAI() {
                 const isFeedbackPending = feedbackState?.status === "pending";
                 const isLatestAssistantMessage =
                   m.role === "assistant" && index === typedMessages.length - 1;
+                const handleResponseCopy = (element?: HTMLElement | null) => {
+                  closeContainingDetails(element ?? null);
+                  void handleCopyMessage(assistantMessage);
+                };
+                const handleResponseSpeak = (element?: HTMLElement | null) => {
+                  closeContainingDetails(element ?? null);
+                  if (isSpeaking) {
+                    stopSpeech();
+                    return;
+                  }
+
+                  const text = getMessageText(m);
+                  if (text) {
+                    void speakMixed(text);
+                  }
+                };
+                const handleResponseRegenerate = (
+                  element?: HTMLElement | null,
+                ) => {
+                  closeContainingDetails(element ?? null);
+                  handleRegenerateMessage(assistantMessage);
+                };
+                const handleResponseContinue = (
+                  element?: HTMLElement | null,
+                ) => {
+                  closeContainingDetails(element ?? null);
+                  handleContinueConversation();
+                };
+                const handleResponseReaction = (
+                  signal: ShenuteReactionSignal,
+                  element?: HTMLElement | null,
+                ) => {
+                  closeContainingDetails(element ?? null);
+                  void handleReaction(signal, assistantMessage, promptMessage);
+                };
+                const renderResponseActionGroups = ({
+                  actionClassName,
+                  closeOnSelect = false,
+                  groupClassName = "space-y-2",
+                  layoutClassName = "space-y-3",
+                  sectionClassName = "space-y-2",
+                }: {
+                  actionClassName: string;
+                  closeOnSelect?: boolean;
+                  groupClassName?: string;
+                  layoutClassName?: string;
+                  sectionClassName?: string;
+                }) => {
+                  const maybeClose = (element: HTMLElement) =>
+                    closeOnSelect ? element : null;
+
+                  return (
+                    <div className={layoutClassName}>
+                      <section className={sectionClassName}>
+                        <ShenuteActionGroupLabel>
+                          {copy.responseUseActions}
+                        </ShenuteActionGroupLabel>
+                        <div className={groupClassName}>
+                          <ShenuteActionButton
+                            actionClassName={actionClassName}
+                            fullWidth={closeOnSelect}
+                            onClick={(event) =>
+                              handleResponseCopy(
+                                maybeClose(event.currentTarget),
+                              )
+                            }
+                            icon={
+                              <Copy className={SHENUTE_ICON_CLASS.action} />
+                            }
+                          >
+                            {copy.copyResponse}
+                          </ShenuteActionButton>
+                          <ShenuteActionButton
+                            actionClassName={actionClassName}
+                            fullWidth={closeOnSelect}
+                            onClick={(event) =>
+                              handleResponseSpeak(
+                                maybeClose(event.currentTarget),
+                              )
+                            }
+                            disabled={isPremiumLoading}
+                            className={cx(
+                              isSpeaking && "border-coptic/55 text-coptic",
+                            )}
+                            icon={
+                              isSpeaking ? (
+                                <Square
+                                  className={cx(
+                                    SHENUTE_ICON_CLASS.action,
+                                    "fill-current",
+                                  )}
+                                />
+                              ) : (
+                                <Volume2
+                                  className={SHENUTE_ICON_CLASS.action}
+                                />
+                              )
+                            }
+                          >
+                            {isSpeaking ? copy.stop : copy.play}
+                          </ShenuteActionButton>
+                        </div>
+                      </section>
+                      {isLatestAssistantMessage ? (
+                        <section className={sectionClassName}>
+                          <ShenuteActionGroupLabel>
+                            {copy.responseReviseActions}
+                          </ShenuteActionGroupLabel>
+                          <div className={groupClassName}>
+                            <ShenuteActionButton
+                              actionClassName={actionClassName}
+                              fullWidth={closeOnSelect}
+                              onClick={(event) =>
+                                handleResponseRegenerate(
+                                  maybeClose(event.currentTarget),
+                                )
+                              }
+                              disabled={isLoading}
+                              icon={
+                                <RotateCcw
+                                  className={SHENUTE_ICON_CLASS.action}
+                                />
+                              }
+                            >
+                              {copy.regenerateResponse}
+                            </ShenuteActionButton>
+                            <ShenuteActionButton
+                              actionClassName={actionClassName}
+                              fullWidth={closeOnSelect}
+                              onClick={(event) =>
+                                handleResponseContinue(
+                                  maybeClose(event.currentTarget),
+                                )
+                              }
+                              disabled={isLoading || isShenuteAccessBlocked}
+                              icon={
+                                <CornerDownRight
+                                  className={SHENUTE_ICON_CLASS.action}
+                                />
+                              }
+                            >
+                              {copy.continueResponse}
+                            </ShenuteActionButton>
+                          </div>
+                        </section>
+                      ) : null}
+                      <section className={sectionClassName}>
+                        <ShenuteActionGroupLabel>
+                          {copy.responseFeedbackActions}
+                        </ShenuteActionGroupLabel>
+                        <div className={groupClassName}>
+                          <ShenuteActionButton
+                            actionClassName={actionClassName}
+                            fullWidth={closeOnSelect}
+                            onClick={(event) =>
+                              handleResponseReaction(
+                                "like",
+                                maybeClose(event.currentTarget),
+                              )
+                            }
+                            disabled={!isAuthenticated || isFeedbackPending}
+                            aria-pressed={selectedReaction === "like"}
+                            className={getReactionButtonClassName(
+                              selectedReaction === "like",
+                              "positive",
+                            )}
+                            icon={
+                              <ThumbsUp className={SHENUTE_ICON_CLASS.action} />
+                            }
+                          >
+                            {copy.like}
+                          </ShenuteActionButton>
+                          <ShenuteActionButton
+                            actionClassName={actionClassName}
+                            fullWidth={closeOnSelect}
+                            onClick={(event) =>
+                              handleResponseReaction(
+                                "dislike",
+                                maybeClose(event.currentTarget),
+                              )
+                            }
+                            disabled={!isAuthenticated || isFeedbackPending}
+                            aria-pressed={selectedReaction === "dislike"}
+                            className={getReactionButtonClassName(
+                              selectedReaction === "dislike",
+                              "negative",
+                            )}
+                            icon={
+                              <ThumbsDown
+                                className={SHENUTE_ICON_CLASS.action}
+                              />
+                            }
+                          >
+                            {copy.dislike}
+                          </ShenuteActionButton>
+                        </div>
+                      </section>
+                    </div>
+                  );
+                };
 
                 return (
                   <div
@@ -2132,7 +3062,7 @@ export default function ShenuteAI() {
                       )}
                     >
                       {m.role === "user" ? (
-                        <UserRound className="h-4 w-4" />
+                        <UserRound className={SHENUTE_ICON_CLASS.panel} />
                       ) : (
                         <span className="font-coptic text-base leading-none">
                           Ϣ
@@ -2195,7 +3125,7 @@ export default function ShenuteAI() {
                                       target="_blank"
                                       rel="noreferrer"
                                       className={cx(
-                                        "underline underline-offset-4",
+                                        "break-words underline underline-offset-4",
                                         m.role === "user"
                                           ? "decoration-paper/60 hover:decoration-paper dark:decoration-ink/60 dark:hover:decoration-ink"
                                           : "decoration-line hover:decoration-coptic",
@@ -2216,7 +3146,7 @@ export default function ShenuteAI() {
                                   code: ({ className, children, ...props }) => (
                                     <code
                                       className={cx(
-                                        "rounded px-1 py-0.5 text-[0.95em]",
+                                        "break-words rounded px-1 py-0.5 text-[0.95em]",
                                         m.role === "user"
                                           ? "bg-paper/15 text-paper dark:bg-ink/10 dark:text-ink"
                                           : "bg-elevated text-ink",
@@ -2237,7 +3167,36 @@ export default function ShenuteAI() {
                                     />
                                   ),
                                   p: ({ ...props }) => (
-                                    <p {...props} className="mb-3 last:mb-0" />
+                                    <p
+                                      {...props}
+                                      className="mb-3 break-words last:mb-0"
+                                    />
+                                  ),
+                                  pre: ({ ...props }) => (
+                                    <pre
+                                      {...props}
+                                      className="my-3 max-w-full overflow-x-auto rounded-lg border border-line bg-elevated p-3 text-sm leading-6"
+                                    />
+                                  ),
+                                  table: ({ ...props }) => (
+                                    <div className="my-3 max-w-full overflow-x-auto rounded-lg border border-line">
+                                      <table
+                                        {...props}
+                                        className="w-full min-w-max border-collapse text-left text-sm"
+                                      />
+                                    </div>
+                                  ),
+                                  td: ({ ...props }) => (
+                                    <td
+                                      {...props}
+                                      className="border-t border-line px-3 py-2 align-top"
+                                    />
+                                  ),
+                                  th: ({ ...props }) => (
+                                    <th
+                                      {...props}
+                                      className="bg-elevated px-3 py-2 align-top font-semibold text-ink"
+                                    />
                                   ),
                                   ul: ({ ...props }) => (
                                     <ul
@@ -2254,139 +3213,68 @@ export default function ShenuteAI() {
                         })()}
                         {m.role === "assistant" ? (
                           <div className="mt-3 space-y-2 border-t border-line pt-3 text-xs">
-                            <div className="flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto pb-1 [scrollbar-gutter:stable] [-webkit-overflow-scrolling:touch] sm:flex-wrap sm:overflow-visible sm:pb-0">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  void handleCopyMessage(assistantMessage);
-                                }}
-                                className={buttonClassName({
-                                  size: "sm",
-                                  variant: "secondary",
-                                  className: MESSAGE_ACTION_BUTTON_CLASS,
-                                })}
-                              >
-                                <Copy className="h-3.5 w-3.5" />
-                                {copy.copyResponse}
-                              </button>
-                              {isLatestAssistantMessage ? (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      handleRegenerateMessage(assistantMessage);
-                                    }}
-                                    disabled={isLoading}
-                                    className={buttonClassName({
-                                      size: "sm",
-                                      variant: "secondary",
-                                      className: MESSAGE_ACTION_BUTTON_CLASS,
-                                    })}
-                                  >
-                                    <RotateCcw className="h-3.5 w-3.5" />
-                                    {copy.regenerateResponse}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={handleContinueConversation}
-                                    disabled={
-                                      isLoading || isShenuteAccessBlocked
-                                    }
-                                    className={buttonClassName({
-                                      size: "sm",
-                                      variant: "secondary",
-                                      className: MESSAGE_ACTION_BUTTON_CLASS,
-                                    })}
-                                  >
-                                    <CornerDownRight className="h-3.5 w-3.5" />
-                                    {copy.continueResponse}
-                                  </button>
-                                </>
-                              ) : null}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (isSpeaking) {
-                                    stopSpeech();
-                                  } else {
-                                    const text = getMessageText(m);
-                                    if (text) {
-                                      void speakMixed(text);
-                                    }
-                                  }
-                                }}
-                                disabled={isPremiumLoading}
+                            <details
+                              data-shenute-response-actions
+                              className="group relative sm:hidden"
+                              onToggle={handleResponseDetailsToggle}
+                            >
+                              <summary
+                                aria-label={copy.responseActions}
+                                title={copy.responseActions}
                                 className={buttonClassName({
                                   size: "sm",
                                   variant: "secondary",
                                   className: cx(
-                                    MESSAGE_ACTION_BUTTON_CLASS,
-                                    isSpeaking &&
-                                      "border-coptic/55 text-coptic",
+                                    SHENUTE_MENU_ACTION_BUTTON_CLASS,
+                                    "cursor-pointer list-none [&::-webkit-details-marker]:hidden",
                                   ),
                                 })}
                               >
-                                {isSpeaking ? (
-                                  <Square className="h-3.5 w-3.5 fill-current" />
-                                ) : (
-                                  <Volume2 className="h-3.5 w-3.5" />
+                                <MoreHorizontal
+                                  className={SHENUTE_ICON_CLASS.action}
+                                />
+                                {copy.responseActions}
+                              </summary>
+                              <button
+                                type="button"
+                                aria-hidden="true"
+                                tabIndex={-1}
+                                className={cx(
+                                  SHENUTE_DIALOG_BACKDROP_CLASS,
+                                  "z-[60] hidden group-open:block",
                                 )}
-                                {isSpeaking ? copy.stop : copy.play}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  void handleReaction(
-                                    "like",
-                                    assistantMessage,
-                                    promptMessage,
-                                  );
-                                }}
-                                disabled={!isAuthenticated || isFeedbackPending}
-                                aria-pressed={selectedReaction === "like"}
-                                className={buttonClassName({
-                                  size: "sm",
-                                  variant: "secondary",
-                                  className: cx(
-                                    MESSAGE_ACTION_BUTTON_CLASS,
-                                    getReactionButtonClassName(
-                                      selectedReaction === "like",
-                                      "positive",
-                                    ),
-                                  ),
+                                onClick={(event) =>
+                                  closeContainingDetails(event.currentTarget)
+                                }
+                              />
+                              <div className="fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[70] hidden max-h-[min(32rem,calc(100dvh-2rem))] overflow-y-auto rounded-xl border border-line bg-surface p-3 shadow-panel group-open:block">
+                                <ShenuteSurfaceHeader
+                                  closeLabel={copy.closeMenu}
+                                  className="mb-2"
+                                  onClose={(event) =>
+                                    closeContainingDetails(event.currentTarget)
+                                  }
+                                >
+                                  {copy.responseActions}
+                                </ShenuteSurfaceHeader>
+                                {renderResponseActionGroups({
+                                  actionClassName:
+                                    SHENUTE_SHEET_ACTION_BUTTON_CLASS,
+                                  closeOnSelect: true,
+                                  sectionClassName:
+                                    "space-y-2 border-t border-line pt-3 first:border-t-0 first:pt-0",
                                 })}
-                              >
-                                <ThumbsUp className="h-3.5 w-3.5" />
-                                {copy.like}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  void handleReaction(
-                                    "dislike",
-                                    assistantMessage,
-                                    promptMessage,
-                                  );
-                                }}
-                                disabled={!isAuthenticated || isFeedbackPending}
-                                aria-pressed={selectedReaction === "dislike"}
-                                className={buttonClassName({
-                                  size: "sm",
-                                  variant: "secondary",
-                                  className: cx(
-                                    MESSAGE_ACTION_BUTTON_CLASS,
-                                    getReactionButtonClassName(
-                                      selectedReaction === "dislike",
-                                      "negative",
-                                    ),
-                                  ),
-                                })}
-                              >
-                                <ThumbsDown className="h-3.5 w-3.5" />
-                                {copy.dislike}
-                              </button>
-                            </div>
-
+                              </div>
+                            </details>
+                            {renderResponseActionGroups({
+                              actionClassName:
+                                SHENUTE_INLINE_ACTION_BUTTON_CLASS,
+                              groupClassName: "flex flex-wrap gap-2",
+                              layoutClassName:
+                                "hidden max-w-full flex-wrap items-start gap-x-5 gap-y-3 sm:flex",
+                              sectionClassName:
+                                "space-y-1.5 border-l border-line/80 pl-4 first:border-l-0 first:pl-0",
+                            })}
                             {messageActionState ? (
                               <p
                                 className={getFeedbackStatusClass(
@@ -2464,7 +3352,7 @@ export default function ShenuteAI() {
               })}
 
               {isLoading ? (
-                <div className="mr-auto flex w-full max-w-[52rem] gap-2 sm:gap-3">
+                <div className="mr-auto flex w-full max-w-full gap-2 sm:max-w-[52rem] sm:gap-3">
                   <div
                     className={cx(
                       "mt-6 hidden h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold shadow-sm sm:flex",
@@ -2475,35 +3363,48 @@ export default function ShenuteAI() {
                       Ϣ
                     </span>
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="mb-1 px-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">
                       {copy.assistantLabel}
                     </p>
-                    <div className="flex flex-wrap items-center gap-3 rounded-lg rounded-bl-sm border border-line bg-surface/95 px-4 py-3 shadow-soft ring-1 ring-line/60">
-                      <span className="text-sm font-semibold text-ink">
-                        {copy.thinking}{" "}
-                        {formatElapsedTime(thinkingElapsedSeconds)}
-                      </span>
-                      <span
-                        aria-hidden="true"
-                        className="flex items-center gap-1"
-                      >
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-coptic delay-100" />
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-coptic delay-200" />
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-coptic delay-300" />
-                      </span>
-                      <button
-                        type="button"
-                        onClick={stopChatResponse}
-                        className={buttonClassName({
-                          size: "sm",
-                          variant: "secondary",
-                          className: "h-8 gap-2 px-2 text-xs",
-                        })}
-                      >
-                        <XCircle className="h-3.5 w-3.5" />
-                        {copy.cancelResponse}
-                      </button>
+                    <div
+                      aria-live="polite"
+                      className="rounded-lg rounded-bl-sm border border-line bg-surface/95 px-3 py-2.5 shadow-soft ring-1 ring-line/60 sm:px-4 sm:py-3"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span
+                          aria-hidden="true"
+                          className="relative flex h-2.5 w-2.5 shrink-0"
+                        >
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-coptic/40" />
+                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-coptic" />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">
+                          {thinkingStatusMessage}
+                        </span>
+                        <span
+                          aria-label={`${copy.thinkingElapsed} ${thinkingElapsedLabel}`}
+                          className="inline-flex shrink-0 items-center gap-1 rounded-full bg-elevated px-2 py-0.5 text-xs font-semibold text-muted"
+                        >
+                          <Clock3 className={SHENUTE_ICON_CLASS.meta} />
+                          {thinkingElapsedLabel}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex min-w-0 items-center gap-2">
+                        <span
+                          aria-hidden="true"
+                          className="flex shrink-0 items-center gap-1"
+                        >
+                          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-coptic delay-100" />
+                          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-coptic delay-200" />
+                          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-coptic delay-300" />
+                        </span>
+                        <p className="min-w-0 flex-1 truncate text-xs text-muted">
+                          {thinkingElapsedSeconds >= 20
+                            ? copy.thinkingLongHint
+                            : selectedProviderOption.label}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2514,7 +3415,8 @@ export default function ShenuteAI() {
 
           <form
             onSubmit={handleFormSubmit}
-            className="sticky bottom-0 z-20 border-t border-line bg-surface/90 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-18px_30px_rgba(30,29,29,0.08)] backdrop-blur-xl dark:shadow-[0_-18px_30px_rgba(0,0,0,0.35)] md:p-4 md:pb-4"
+            aria-busy={isComposerBusy}
+            className="sticky bottom-0 z-20 border-t border-line bg-surface/90 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-18px_30px_rgba(30,29,29,0.08)] backdrop-blur-xl dark:shadow-[0_-18px_30px_rgba(0,0,0,0.35)] sm:p-3 sm:pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:p-4 md:pb-4"
           >
             {shenuteAccessError || error || ocrError || cameraError ? (
               <div className="mb-3 space-y-3">
@@ -2559,41 +3461,41 @@ export default function ShenuteAI() {
                 rounded="3xl"
                 variant="subtle"
                 shadow="soft"
-                className="mb-3 p-4"
+                className="fixed inset-x-3 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-40 max-h-[min(30rem,calc(100dvh-8rem))] overflow-y-auto p-3 sm:static sm:mb-3 sm:max-h-none sm:p-4"
               >
+                <ShenuteSurfaceHeader
+                  closeLabel={copy.cameraClose}
+                  className="mb-2"
+                  onClose={stopCamera}
+                >
+                  {copy.cameraPreview}
+                </ShenuteSurfaceHeader>
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  className="mb-3 w-full rounded-lg border border-line"
+                  className="mb-3 aspect-[4/3] max-h-[45dvh] w-full rounded-lg border border-line bg-ink object-contain sm:max-h-none"
                 />
                 <canvas ref={captureCanvasRef} className="hidden" />
-                <div className="mt-3 flex justify-end gap-2">
-                  <button
-                    type="button"
+                <div className="mt-3 grid gap-2 sm:flex sm:justify-end">
+                  <ShenuteActionButton
+                    actionClassName="h-10 justify-center gap-2 sm:h-9"
+                    buttonVariant="primary"
+                    fullWidth={false}
                     onClick={captureFromCamera}
-                    className={buttonClassName({
-                      size: "sm",
-                      variant: "primary",
-                      className: "gap-2",
-                    })}
+                    icon={<Camera className={SHENUTE_ICON_CLASS.action} />}
                   >
-                    <Camera className="h-3.5 w-3.5" />
                     {copy.cameraCapture}
-                  </button>
-                  <button
-                    type="button"
+                  </ShenuteActionButton>
+                  <ShenuteActionButton
+                    actionClassName="h-10 justify-center gap-2 sm:h-9"
+                    fullWidth={false}
                     onClick={stopCamera}
-                    className={buttonClassName({
-                      size: "sm",
-                      variant: "secondary",
-                      className: "gap-2",
-                    })}
+                    icon={<XCircle className={SHENUTE_ICON_CLASS.action} />}
                   >
-                    <XCircle className="h-3.5 w-3.5" />
                     {copy.cameraClose}
-                  </button>
+                  </ShenuteActionButton>
                 </div>
               </SurfacePanel>
             ) : null}
@@ -2602,17 +3504,22 @@ export default function ShenuteAI() {
               rounded="3xl"
               variant="subtle"
               shadow="soft"
-              className="p-2"
+              className={cx(
+                "p-1.5 transition focus-within:ring-2 focus-within:ring-coptic/25 sm:p-2",
+                isLoading && "ring-1 ring-coptic/25",
+                ocrPending && "ring-1 ring-accent/30",
+                isShenuteAccessBlocked && "opacity-80",
+              )}
             >
               {selectedImagePreviewUrl ? (
-                <div className="mb-2 flex items-center gap-3 rounded-lg border border-line bg-surface/85 p-2 shadow-sm">
+                <div className="mb-1.5 flex items-center gap-2 rounded-lg border border-line bg-surface/85 p-1.5 shadow-sm sm:mb-2 sm:gap-3 sm:p-2">
                   <Image
                     unoptimized
                     src={selectedImagePreviewUrl}
                     alt={copy.selectedImageAlt}
                     width={72}
                     height={72}
-                    className="h-14 w-14 shrink-0 rounded-lg border border-line bg-elevated object-contain"
+                    className="h-12 w-12 shrink-0 rounded-lg border border-line bg-elevated object-contain sm:h-14 sm:w-14"
                   />
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex flex-wrap items-center gap-2">
@@ -2651,12 +3558,16 @@ export default function ShenuteAI() {
                         "h-8 w-8 shrink-0 border-rose-200 px-0 text-rose-700 hover:bg-rose-50 dark:border-rose-900/60 dark:text-rose-300 dark:hover:bg-rose-950/30",
                     })}
                   >
-                    <XCircle className="h-3.5 w-3.5" />
+                    <XCircle className={SHENUTE_ICON_CLASS.action} />
                   </button>
                 </div>
               ) : null}
               <div className="flex items-end gap-2">
-                <details className="group relative shrink-0">
+                <details
+                  ref={attachmentMenuDetailsRef}
+                  className="group relative shrink-0"
+                  onToggle={handleComposerDetailsToggle}
+                >
                   <summary
                     aria-disabled={isAttachmentMenuDisabled}
                     aria-label={`${copy.addImage} / ${copy.useCamera}`}
@@ -2666,53 +3577,45 @@ export default function ShenuteAI() {
                         size: "sm",
                         variant: "secondary",
                         className:
-                          "h-12 w-12 cursor-pointer list-none rounded-lg px-0 [&::-webkit-details-marker]:hidden",
+                          "h-11 w-11 cursor-pointer list-none rounded-lg px-0 sm:h-12 sm:w-12 [&::-webkit-details-marker]:hidden",
                       }),
                       isAttachmentMenuDisabled &&
                         "pointer-events-none opacity-55",
                     )}
                   >
-                    <ImagePlus className="h-4 w-4" />
+                    <ImagePlus className={SHENUTE_ICON_CLASS.panel} />
                   </summary>
-                  <div className="absolute bottom-full left-0 z-30 mb-2 w-52 rounded-lg border border-line bg-surface p-2 shadow-panel">
-                    <button
-                      type="button"
+                  <div className="fixed inset-x-3 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-[70] hidden w-auto rounded-xl border border-line bg-surface p-3 shadow-panel group-open:block sm:absolute sm:inset-x-auto sm:bottom-full sm:left-0 sm:mb-2 sm:w-52 sm:rounded-lg sm:p-2">
+                    <ShenuteSurfaceHeader
+                      closeLabel={copy.closeMenu}
+                      className="mb-2 sm:hidden"
+                      onClose={(event) =>
+                        closeContainingDetails(event.currentTarget)
+                      }
+                    >
+                      {copy.addImage}
+                    </ShenuteSurfaceHeader>
+                    <ShenuteActionButton
                       onClick={(event) => {
-                        event.currentTarget
-                          .closest("details")
-                          ?.removeAttribute("open");
+                        closeContainingDetails(event.currentTarget);
                         fileInputRef.current?.click();
                       }}
                       disabled={isAttachmentMenuDisabled}
-                      className={buttonClassName({
-                        fullWidth: true,
-                        size: "sm",
-                        variant: "secondary",
-                        className: "h-9 justify-start gap-2 px-3 text-xs",
-                      })}
+                      icon={<ImagePlus className={SHENUTE_ICON_CLASS.action} />}
                     >
-                      <ImagePlus className="h-3.5 w-3.5" />
                       {copy.addImage}
-                    </button>
-                    <button
-                      type="button"
+                    </ShenuteActionButton>
+                    <ShenuteActionButton
                       onClick={(event) => {
-                        event.currentTarget
-                          .closest("details")
-                          ?.removeAttribute("open");
+                        closeContainingDetails(event.currentTarget);
                         void openCamera();
                       }}
                       disabled={isAttachmentMenuDisabled || cameraOpen}
-                      className={buttonClassName({
-                        fullWidth: true,
-                        size: "sm",
-                        variant: "secondary",
-                        className: "mt-2 h-9 justify-start gap-2 px-3 text-xs",
-                      })}
+                      className="mt-2"
+                      icon={<Camera className={SHENUTE_ICON_CLASS.action} />}
                     >
-                      <Camera className="h-3.5 w-3.5" />
                       {copy.useCamera}
-                    </button>
+                    </ShenuteActionButton>
                   </div>
                 </details>
                 <textarea
@@ -2721,7 +3624,8 @@ export default function ShenuteAI() {
                   name="shenute_message"
                   rows={1}
                   enterKeyHint="send"
-                  className="max-h-40 min-h-12 min-w-0 flex-1 resize-none overflow-y-auto rounded-lg border-0 bg-transparent px-4 py-3 font-coptic text-lg leading-7 text-ink outline-none ring-0 placeholder:text-muted/65 focus:outline-none focus:ring-0 md:text-xl"
+                  className="max-h-32 min-h-11 min-w-0 flex-1 resize-none overflow-y-auto rounded-lg border-0 bg-transparent px-2.5 py-2.5 font-coptic text-base leading-6 text-ink outline-none ring-0 placeholder:text-muted/65 focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:text-muted/75 sm:max-h-40 sm:min-h-12 sm:px-4 sm:py-3 sm:text-lg md:text-xl"
+                  aria-label={copy.placeholder}
                   value={inputValue}
                   onChange={(event) => {
                     setInputValue(event.target.value);
@@ -2729,54 +3633,195 @@ export default function ShenuteAI() {
                       setShenuteAccessError(null);
                     }
                   }}
+                  onFocus={handleMessageInputFocus}
                   onKeyDown={handlePromptKeyDown}
-                  placeholder={copy.placeholder}
-                  disabled={isLoading || ocrPending || isShenuteAccessBlocked}
+                  placeholder={composerPlaceholder}
+                  disabled={isComposerDisabled}
                 />
-                <button
-                  type="submit"
-                  aria-label={copy.sendMessage}
-                  disabled={
-                    (!inputValue.trim() && !selectedImage) ||
-                    isLoading ||
-                    ocrPending ||
-                    isShenuteAccessBlocked
-                  }
-                  className={buttonClassName({
-                    size: "sm",
-                    variant: "primary",
-                    className: "h-12 w-12 shrink-0 rounded-lg px-0",
-                  })}
-                >
-                  <SendHorizontal className="h-5 w-5" />
-                </button>
+                {isLoading ? (
+                  <button
+                    type="button"
+                    aria-label={copy.cancelResponse}
+                    title={copy.cancelResponse}
+                    onClick={handleStopResponseFromComposer}
+                    className={buttonClassName({
+                      size: "sm",
+                      variant: "secondary",
+                      className:
+                        "h-11 w-11 shrink-0 rounded-lg border-coptic/45 bg-coptic-soft px-0 text-coptic hover:bg-coptic-soft sm:h-12 sm:w-12",
+                    })}
+                  >
+                    <Square
+                      className={cx(SHENUTE_ICON_CLASS.primary, "fill-current")}
+                    />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    aria-label={composerSubmitLabel}
+                    title={composerSubmitLabel}
+                    disabled={!canSubmitPrompt}
+                    className={buttonClassName({
+                      size: "sm",
+                      variant: "primary",
+                      className:
+                        "h-11 w-11 shrink-0 rounded-lg px-0 sm:h-12 sm:w-12",
+                    })}
+                  >
+                    {ocrPending ? (
+                      <LoaderCircle
+                        className={cx(
+                          SHENUTE_ICON_CLASS.primary,
+                          "animate-spin",
+                        )}
+                      />
+                    ) : (
+                      <SendHorizontal className={SHENUTE_ICON_CLASS.primary} />
+                    )}
+                  </button>
+                )}
               </div>
+              {composerStateLabel ? (
+                <div
+                  aria-live="polite"
+                  className="mt-1.5 flex min-w-0 items-center gap-2 rounded-lg bg-surface/65 px-2.5 py-1.5 text-xs text-muted sm:mt-2 sm:px-3"
+                >
+                  <LoaderCircle
+                    aria-hidden="true"
+                    className={cx(
+                      SHENUTE_ICON_CLASS.meta,
+                      "shrink-0 animate-spin text-accent-strong dark:text-accent",
+                    )}
+                  />
+                  <span className="min-w-0 flex-1 truncate font-semibold text-ink">
+                    {composerStateLabel}
+                  </span>
+                  {composerStateMeta ? (
+                    <span className="min-w-0 shrink truncate text-muted">
+                      {composerStateMeta}
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
             </SurfacePanel>
           </form>
         </div>
       </SurfacePanel>
 
+      {copyFallbackText ? (
+        <>
+          <button
+            type="button"
+            aria-hidden="true"
+            tabIndex={-1}
+            className={cx(SHENUTE_DIALOG_BACKDROP_CLASS, "z-[80]")}
+            onClick={() => setCopyFallbackText(null)}
+          />
+          <div
+            role="dialog"
+            aria-labelledby="shenute-copy-fallback-title"
+            className={cx(
+              SHENUTE_ADAPTIVE_DIALOG_CLASS,
+              "z-[90] sm:w-[min(32rem,calc(100vw_-_2rem))] sm:p-4",
+            )}
+          >
+            <ShenuteSurfaceHeader
+              closeLabel={copy.closeMenu}
+              onClose={() => setCopyFallbackText(null)}
+              titleId="shenute-copy-fallback-title"
+            >
+              {copy.copyResponseManual}
+            </ShenuteSurfaceHeader>
+            <p className="mt-2 text-xs leading-5 text-muted">
+              {copy.copyResponseManualHint}
+            </p>
+            <textarea
+              ref={copyFallbackTextareaRef}
+              readOnly
+              value={copyFallbackText}
+              rows={8}
+              onFocus={(event) => event.currentTarget.select()}
+              className="mt-3 max-h-[45dvh] min-h-36 w-full resize-none rounded-lg border border-line bg-elevated px-3 py-2 font-coptic text-sm leading-6 text-ink shadow-inner outline-none focus:border-coptic/55 focus:ring-2 focus:ring-coptic/25"
+            />
+            <ShenuteActionButton
+              actionClassName="h-10 justify-center"
+              onClick={() => {
+                copyFallbackTextareaRef.current?.focus();
+                copyFallbackTextareaRef.current?.select();
+              }}
+              className="mt-3"
+            >
+              {copy.selectCopyText}
+            </ShenuteActionButton>
+          </div>
+        </>
+      ) : null}
+
+      {mobileUtilitySheet ? (
+        <>
+          <button
+            type="button"
+            aria-hidden="true"
+            tabIndex={-1}
+            className={cx(SHENUTE_DIALOG_BACKDROP_CLASS, "z-[60] sm:hidden")}
+            onClick={() => setMobileUtilitySheet(null)}
+          />
+          <div
+            id="shenute-mobile-utility-sheet"
+            role="dialog"
+            aria-labelledby="shenute-mobile-utility-title"
+            className={cx(SHENUTE_MOBILE_SHEET_CLASS, "z-[70] sm:hidden")}
+          >
+            <ShenuteSurfaceHeader
+              closeLabel={copy.closeMenu}
+              className="mb-3"
+              onClose={() => setMobileUtilitySheet(null)}
+              titleId="shenute-mobile-utility-title"
+            >
+              {mobileUtilitySheet === "history"
+                ? copy.conversationHistory
+                : copy.conversationActions}
+            </ShenuteSurfaceHeader>
+            {mobileUtilitySheet === "history"
+              ? renderSavedSessionsContent({
+                  onClose: () => setMobileUtilitySheet(null),
+                  showMobileHeader: false,
+                })
+              : renderConversationActionsContent(() =>
+                  setMobileUtilitySheet(null),
+                )}
+          </div>
+        </>
+      ) : null}
+
       {isAnswerStylePanelOpen ? (
         <>
           <button
             type="button"
-            aria-label={copy.closeAnswerStyleControls}
+            aria-hidden="true"
             tabIndex={-1}
-            className="fixed inset-0 z-[60] cursor-default bg-transparent"
+            className={cx(
+              SHENUTE_DIALOG_BACKDROP_CLASS,
+              "z-[60] sm:bg-transparent sm:backdrop-blur-0",
+            )}
             onClick={() => setIsAnswerStylePanelOpen(false)}
           />
           <div
             id="shenute-answer-style-panel"
             role="dialog"
             aria-labelledby="shenute-answer-style-label"
-            className="fixed left-1/2 top-[calc(var(--app-sticky-offset)_+_0.75rem)] z-[70] max-h-[calc(100dvh_-_var(--app-sticky-offset)_-_1.5rem)] w-[min(28rem,calc(100vw_-_2rem))] -translate-x-1/2 overflow-y-auto rounded-lg border border-line bg-surface p-3 shadow-panel"
+            className={cx(
+              SHENUTE_ADAPTIVE_DIALOG_CLASS,
+              "z-[70] sm:w-[min(28rem,calc(100vw_-_2rem))] sm:p-3",
+            )}
           >
-            <p
-              id="shenute-answer-style-label"
-              className="text-xs font-semibold uppercase tracking-[0.18em] text-muted"
+            <ShenuteSurfaceHeader
+              closeLabel={copy.closeAnswerStyleControls}
+              onClose={() => setIsAnswerStylePanelOpen(false)}
+              titleId="shenute-answer-style-label"
             >
               {copy.aiMode}
-            </p>
+            </ShenuteSurfaceHeader>
             <p className="mt-1 text-xs leading-5 text-muted">
               {copy.aiModeDescription}
             </p>
@@ -2797,6 +3842,7 @@ export default function ShenuteAI() {
                     aria-checked={isActive}
                     aria-label={`${option.label}. ${option.description}`}
                     onClick={() => {
+                      setIsUtilityChromeCollapsed(false);
                       setInferenceProvider(option.value);
                       setIsAnswerStylePanelOpen(false);
                     }}
@@ -2816,7 +3862,7 @@ export default function ShenuteAI() {
                           : "bg-elevated text-muted",
                       )}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className={SHENUTE_ICON_CLASS.panel} />
                     </span>
                     <span className="min-w-0 text-sm font-semibold leading-5">
                       {option.label}

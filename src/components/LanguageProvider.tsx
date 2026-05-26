@@ -74,6 +74,10 @@ export function LanguageProvider({
     persistLanguagePreference(initialLanguage);
   }, [initialLanguage, localeRouting]);
 
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
   const setLanguage = (lang: Language) => {
     if (lang === language) {
       return;
