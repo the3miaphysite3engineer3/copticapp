@@ -149,6 +149,14 @@ export function getDictionaryClientEntries(): DictionaryClientEntry[] {
 }
 
 /**
+ * Returns the cached full dictionary snapshot for server-only features that
+ * need entry detail fields beyond the reduced client-search payload.
+ */
+export function listDictionaryEntries(): LexicalEntry[] {
+  return getDictionary();
+}
+
+/**
  * Returns the cached ordered list of dictionary entry ids used by sitemap and
  * static-param generation without requiring callers to keep the full entry
  * objects in memory.

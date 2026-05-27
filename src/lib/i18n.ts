@@ -6,6 +6,7 @@ import { dictionaryMessages } from "@/lib/translations/dictionary";
 import { grammarMessages } from "@/lib/translations/grammar";
 import { homeMessages } from "@/lib/translations/home";
 import { loginMessages } from "@/lib/translations/login";
+import { practiceMessages } from "@/lib/translations/practice";
 import { publicationsMessages } from "@/lib/translations/publications";
 import { sharedMessages } from "@/lib/translations/shared";
 import type { Language } from "@/types/i18n";
@@ -17,6 +18,7 @@ const en = {
   ...homeMessages.en,
   ...publicationsMessages.en,
   ...dictionaryMessages.en,
+  ...practiceMessages.en,
   ...grammarMessages.en,
   ...contactMessages.en,
   ...loginMessages.en,
@@ -33,6 +35,7 @@ const nl = {
   ...homeMessages.nl,
   ...publicationsMessages.nl,
   ...dictionaryMessages.nl,
+  ...practiceMessages.nl,
   ...grammarMessages.nl,
   ...contactMessages.nl,
   ...loginMessages.nl,

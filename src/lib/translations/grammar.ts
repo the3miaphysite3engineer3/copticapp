@@ -11,6 +11,8 @@ export const grammarMessages = defineMessages({
     "grammar.lessonBadge": "Lesson",
     "grammar.openLesson": "Open lesson",
     "grammar.inPreparation": "In preparation",
+    "grammar.practiceGrammar": "Practice grammar",
+    "grammar.practiceLesson": "Practice this lesson",
     "grammar.back": "Back to Grammar",
     "grammar.lesson1.title": "Lesson 01",
     "grammar.lesson1.desc":
@@ -40,6 +42,8 @@ export const grammarMessages = defineMessages({
     "grammar.lessonBadge": "Les",
     "grammar.openLesson": "Open les",
     "grammar.inPreparation": "In voorbereiding",
+    "grammar.practiceGrammar": "Oefen grammatica",
+    "grammar.practiceLesson": "Oefen deze les",
     "grammar.back": "Terug naar grammatica",
     "grammar.lesson1.title": "Les 01",
     "grammar.lesson1.desc":

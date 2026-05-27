@@ -13,5 +13,5 @@ export type AppSupabaseClient = SupabaseClient<Database>;
  */
 export type QueryResult<T> = {
   data: T | null;
-  error: { message: string } | null;
+  error: { code?: string | null; message: string } | null;
 };

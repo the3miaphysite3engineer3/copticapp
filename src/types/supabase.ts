@@ -10,9 +10,141 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
+export type DatabasePracticeSourceType = "dictionary" | "grammar";
+export type DatabasePracticeTemplate = string;
+export type DatabasePracticeDisplayDialect =
+  | "A"
+  | "B"
+  | "F"
+  | "Fb"
+  | "L"
+  | "M"
+  | "O"
+  | "S"
+  | "Sa"
+  | "Sf"
+  | "Sl"
+  | null;
+
 export type Database = {
   public: {
     Tables: {
+      practice_items: {
+        Row: {
+          created_at: string;
+          display_dialect: DatabasePracticeDisplayDialect;
+          due_at: string;
+          id: string;
+          locale: "en" | "nl";
+          scheduler_card: Json;
+          source_id: string;
+          source_type: DatabasePracticeSourceType;
+          suspended_at: string | null;
+          template: DatabasePracticeTemplate;
+          updated_at: string;
+          user_id: string;
+          variant_key: string;
+        };
+        Insert: {
+          created_at?: string;
+          display_dialect?: DatabasePracticeDisplayDialect;
+          due_at: string;
+          id?: string;
+          locale: "en" | "nl";
+          scheduler_card: Json;
+          source_id: string;
+          source_type: DatabasePracticeSourceType;
+          suspended_at?: string | null;
+          template: DatabasePracticeTemplate;
+          updated_at?: string;
+          user_id: string;
+          variant_key: string;
+        };
+        Update: {
+          created_at?: string;
+          display_dialect?: DatabasePracticeDisplayDialect;
+          due_at?: string;
+          id?: string;
+          locale?: "en" | "nl";
+          scheduler_card?: Json;
+          source_id?: string;
+          source_type?: DatabasePracticeSourceType;
+          suspended_at?: string | null;
+          template?: DatabasePracticeTemplate;
+          updated_at?: string;
+          user_id?: string;
+          variant_key?: string;
+        };
+        Relationships: [
+          {
+            columns: ["user_id"];
+            foreignKeyName: "practice_items_user_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "profiles";
+          },
+        ];
+      };
+      practice_reviews: {
+        Row: {
+          id: string;
+          locale: "en" | "nl";
+          practice_item_id: string;
+          rating: "again" | "easy" | "good" | "hard";
+          reviewed_at: string;
+          scheduler_card: Json;
+          scheduler_log: Json;
+          source_id: string;
+          source_type: DatabasePracticeSourceType;
+          template: DatabasePracticeTemplate;
+          user_id: string;
+          variant_key: string;
+        };
+        Insert: {
+          id?: string;
+          locale: "en" | "nl";
+          practice_item_id: string;
+          rating: "again" | "easy" | "good" | "hard";
+          reviewed_at?: string;
+          scheduler_card: Json;
+          scheduler_log: Json;
+          source_id: string;
+          source_type: DatabasePracticeSourceType;
+          template: DatabasePracticeTemplate;
+          user_id: string;
+          variant_key: string;
+        };
+        Update: {
+          id?: string;
+          locale?: "en" | "nl";
+          practice_item_id?: string;
+          rating?: "again" | "easy" | "good" | "hard";
+          reviewed_at?: string;
+          scheduler_card?: Json;
+          scheduler_log?: Json;
+          source_id?: string;
+          source_type?: DatabasePracticeSourceType;
+          template?: DatabasePracticeTemplate;
+          user_id?: string;
+          variant_key?: string;
+        };
+        Relationships: [
+          {
+            columns: ["practice_item_id"];
+            foreignKeyName: "practice_reviews_practice_item_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "practice_items";
+          },
+          {
+            columns: ["user_id"];
+            foreignKeyName: "practice_reviews_user_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "profiles";
+          },
+        ];
+      };
       entry_favorites: {
         Row: {
           created_at: string;

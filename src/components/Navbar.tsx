@@ -1,17 +1,25 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { BarChart3, BookOpen, ChevronDown, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useState, type ComponentType } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentType,
+} from "react";
 
 import { controlButtonClassName } from "@/components/Button";
+import { DEFAULT_PRACTICE_DECK_ID } from "@/features/practice/lib/practiceDeckDefaults";
 import { cx } from "@/lib/classes";
 import {
-  getContactPath,
+  getAnalyticsPath,
   getDashboardPath,
   getDictionaryPath,
+  getPracticePath,
   getGrammarPath,
   getLocalizedHomePath,
   getPublicationsPath,
@@ -38,6 +46,22 @@ type NavbarAuthLinkProps = {
 };
 
 type NavbarAuthLinkComponent = ComponentType<NavbarAuthLinkProps>;
+
+type NavbarLink = {
+  href: string;
+  label: string;
+};
+
+type DictionaryToolLink = NavbarLink & {
+  description: string;
+  icon: typeof BookOpen;
+};
+
+function isActivePath(pathname: string, href: string) {
+  const hrefPathname = href.split("?")[0] ?? href;
+
+  return pathname === hrefPathname || pathname.startsWith(`${hrefPathname}/`);
+}
 
 function LazyNavbarAuthLink(props: NavbarAuthLinkProps) {
   const [AuthLink, setAuthLink] = useState<NavbarAuthLinkComponent | null>(
@@ -85,23 +109,107 @@ function LazyNavbarAuthLink(props: NavbarAuthLinkProps) {
 export function Navbar() {
   const pathname = usePathname() ?? "";
   const { language, t } = useLanguage();
+  const dictionaryMenuRef = useRef<HTMLDivElement>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDictionaryMenuOpen, setIsDictionaryMenuOpen] = useState(false);
+  const [isMobileDictionaryOpen, setIsMobileDictionaryOpen] = useState<
+    boolean | null
+  >(null);
   const dashboardHref = getDashboardPath(language);
   const loginHref = getLoginPath(dashboardHref);
   const brandLabel = t("home.title");
 
-  const links = [
+  const primaryLinks: NavbarLink[] = [
     { href: getPublicationsPath(language), label: t("nav.publications") },
-    { href: getDictionaryPath(language), label: t("nav.dictionary") },
     { href: getGrammarPath(language), label: t("nav.grammar") },
-    { href: getShenutePath(), label: t("nav.shenute") },
-    { href: getContactPath(language), label: t("nav.contact") },
   ];
+  const shenuteLink: NavbarLink = {
+    href: getShenutePath(),
+    label: t("nav.shenute"),
+  };
+  const practiceLink: NavbarLink = {
+    href: getPracticePath(language, DEFAULT_PRACTICE_DECK_ID),
+    label: t("nav.practice"),
+  };
+  const dictionaryToolLinks: DictionaryToolLink[] = [
+    {
+      description: t("nav.dictionarySearchDescription"),
+      href: getDictionaryPath(language),
+      icon: BookOpen,
+      label: t("nav.dictionarySearchShort"),
+    },
+    {
+      description: t("nav.analyticsDescription"),
+      href: getAnalyticsPath(language),
+      icon: BarChart3,
+      label: t("nav.analyticsShort"),
+    },
+  ];
+  const isDictionaryActive = dictionaryToolLinks.some((link) =>
+    isActivePath(pathname, link.href),
+  );
+  const isMobileDictionaryExpanded =
+    isMobileDictionaryOpen ?? isDictionaryActive;
+
+  function renderNavbarLink(
+    link: NavbarLink,
+    variant: NavbarLinkVariant,
+    onNavigate?: () => void,
+  ) {
+    const isActive = isActivePath(pathname, link.href);
+    const { labelClassName, linkClassName } = getNavbarLinkClasses({
+      isActive,
+      variant,
+    });
+
+    return (
+      <Link
+        key={link.href}
+        href={link.href}
+        prefetch={false}
+        onClick={onNavigate}
+        data-label={link.label}
+        className={linkClassName}
+        aria-current={isActive ? "page" : undefined}
+      >
+        <span className={labelClassName}>{link.label}</span>
+      </Link>
+    );
+  }
+
+  useEffect(() => {
+    if (!isDictionaryMenuOpen) {
+      return;
+    }
+
+    function closeOnOutsidePointer(event: PointerEvent) {
+      if (
+        dictionaryMenuRef.current &&
+        !dictionaryMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsDictionaryMenuOpen(false);
+      }
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsDictionaryMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isDictionaryMenuOpen]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-line bg-paper/86 shadow-sm backdrop-blur-md transition-colors duration-300">
       <div className="site-container">
-        <div className="flex min-h-[4.75rem] items-center justify-between gap-4 py-3">
+        <div className="grid min-h-[4.75rem] grid-cols-[auto_1fr_auto] items-center gap-3 py-3 xl:gap-4">
           <Link
             href={getLocalizedHomePath(language)}
             prefetch={false}
@@ -132,46 +240,115 @@ export function Navbar() {
 
           <nav
             aria-label="Primary"
-            className="hidden items-center gap-1 lg:flex"
+            className="hidden items-center justify-center gap-1 xl:flex"
           >
-            {links.map((link) => {
-              const isActive =
-                pathname === link.href || pathname.startsWith(`${link.href}/`);
-              const { labelClassName, linkClassName } = getNavbarLinkClasses({
-                isActive,
-                variant: "desktop",
-              });
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  prefetch={false}
-                  data-label={link.label}
-                  className={linkClassName}
-                  aria-current={isActive ? "page" : undefined}
+            {primaryLinks.map((link) => renderNavbarLink(link, "desktop"))}
+            <div
+              key="dictionary-menu"
+              ref={dictionaryMenuRef}
+              className="relative"
+            >
+              <button
+                type="button"
+                data-label={t("nav.dictionary")}
+                className={cx(
+                  "group inline-flex h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-4 text-center text-sm tracking-[0.02em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
+                  isDictionaryActive
+                    ? "bg-accent-soft text-accent-strong dark:bg-accent-soft/35 dark:text-accent"
+                    : "text-muted hover:bg-elevated hover:text-ink",
+                )}
+                aria-expanded={isDictionaryMenuOpen}
+                aria-haspopup="menu"
+                onClick={() => setIsDictionaryMenuOpen((isOpen) => !isOpen)}
+              >
+                <span
+                  className={
+                    isDictionaryActive
+                      ? "font-semibold"
+                      : "font-medium group-hover:font-semibold"
+                  }
                 >
-                  <span className={labelClassName}>{link.label}</span>
-                </Link>
-              );
-            })}
-            <LazyNavbarAuthLink
-              dashboardHref={dashboardHref}
-              dashboardLabel={t("nav.dashboard")}
-              loginHref={loginHref}
-              loginLabel={t("nav.login") || "Sign In"}
-              pathname={pathname}
-              variant="desktop"
-            />
+                  <span className="whitespace-nowrap">
+                    {t("nav.dictionary")}
+                  </span>
+                </span>
+                <ChevronDown
+                  className={cx(
+                    "h-4 w-4 transition-transform",
+                    isDictionaryMenuOpen && "rotate-180",
+                  )}
+                  aria-hidden="true"
+                />
+              </button>
+
+              {isDictionaryMenuOpen ? (
+                <div
+                  className="absolute left-1/2 top-full z-50 mt-2 w-80 -translate-x-1/2 rounded-lg border border-line bg-surface/96 p-2 shadow-soft backdrop-blur-md"
+                  role="menu"
+                  aria-label={t("nav.dictionaryMenu")}
+                >
+                  {dictionaryToolLinks.map((toolLink) => {
+                    const Icon = toolLink.icon;
+                    const isToolActive = isActivePath(pathname, toolLink.href);
+
+                    return (
+                      <Link
+                        key={toolLink.href}
+                        href={toolLink.href}
+                        prefetch={false}
+                        onClick={() => setIsDictionaryMenuOpen(false)}
+                        className={cx(
+                          "flex gap-3 rounded-lg px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
+                          isToolActive
+                            ? "bg-accent-soft text-accent-strong dark:bg-accent-soft/35 dark:text-accent"
+                            : "text-muted hover:bg-elevated hover:text-ink",
+                        )}
+                        role="menuitem"
+                        aria-current={isToolActive ? "page" : undefined}
+                      >
+                        <Icon
+                          className="mt-0.5 h-4 w-4 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold">
+                            {toolLink.label}
+                          </span>
+                          <span className="mt-1 block text-xs leading-5 text-muted">
+                            {toolLink.description}
+                          </span>
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+            {renderNavbarLink(practiceLink, "desktop")}
+            {renderNavbarLink(shenuteLink, "desktop")}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-end gap-2">
+            <nav
+              aria-label="Utility"
+              className="hidden items-center gap-1 xl:flex"
+            >
+              <LazyNavbarAuthLink
+                dashboardHref={dashboardHref}
+                dashboardLabel={t("nav.dashboard")}
+                loginHref={loginHref}
+                loginLabel={t("nav.login") || "Sign In"}
+                pathname={pathname}
+                variant="desktop"
+              />
+            </nav>
             <ThemeToggle />
             <LanguageToggle />
             <button
               type="button"
               className={controlButtonClassName({
                 className: cx(
-                  "lg:hidden",
+                  "xl:hidden",
                   isMobileMenuOpen &&
                     "border-accent/30 bg-accent-soft text-accent-strong dark:bg-accent-soft/35 dark:text-accent",
                 ),
@@ -194,29 +371,95 @@ export function Navbar() {
           <nav
             id="mobile-navigation"
             aria-label="Mobile"
-            className="mb-3 flex flex-col gap-1 rounded-lg border border-line bg-surface/88 p-2 shadow-soft backdrop-blur-md lg:hidden"
+            className="mb-3 flex flex-col gap-1 rounded-lg border border-line bg-surface/88 p-2 shadow-soft backdrop-blur-md xl:hidden"
           >
-            {links.map((link) => {
-              const isActive =
-                pathname === link.href || pathname.startsWith(`${link.href}/`);
-              const { labelClassName, linkClassName } = getNavbarLinkClasses({
-                isActive,
-                variant: "mobile",
-              });
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  prefetch={false}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  data-label={link.label}
-                  className={linkClassName}
-                  aria-current={isActive ? "page" : undefined}
+            {primaryLinks.map((link) =>
+              renderNavbarLink(link, "mobile", () =>
+                setIsMobileMenuOpen(false),
+              ),
+            )}
+            <div key="mobile-dictionary-tools" className="space-y-1">
+              <button
+                type="button"
+                data-label={t("nav.dictionary")}
+                className={cx(
+                  "group relative grid w-full place-items-center rounded-lg px-4 py-3 text-center text-sm tracking-[0.02em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
+                  isDictionaryActive
+                    ? "bg-accent-soft text-accent-strong dark:bg-accent-soft/35 dark:text-accent"
+                    : "text-muted hover:bg-elevated hover:text-ink",
+                )}
+                aria-controls="mobile-dictionary-tools"
+                aria-expanded={isMobileDictionaryExpanded}
+                onClick={() =>
+                  setIsMobileDictionaryOpen(!isMobileDictionaryExpanded)
+                }
+              >
+                <span
+                  className={cx(
+                    isDictionaryActive
+                      ? "font-semibold"
+                      : "font-medium group-hover:font-semibold",
+                  )}
                 >
-                  <span className={labelClassName}>{link.label}</span>
-                </Link>
-              );
-            })}
+                  {t("nav.dictionary")}
+                </span>
+                <ChevronDown
+                  className={cx(
+                    "pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 transition-transform",
+                    isMobileDictionaryExpanded && "rotate-180",
+                  )}
+                  aria-hidden="true"
+                />
+              </button>
+
+              {isMobileDictionaryExpanded ? (
+                <div
+                  id="mobile-dictionary-tools"
+                  className="rounded-lg bg-elevated/60 p-1"
+                  aria-label={t("nav.dictionaryMenu")}
+                >
+                  <div className="grid grid-cols-2 gap-1">
+                    {dictionaryToolLinks.map((toolLink) => {
+                      const Icon = toolLink.icon;
+                      const isToolActive = isActivePath(
+                        pathname,
+                        toolLink.href,
+                      );
+
+                      return (
+                        <Link
+                          key={toolLink.href}
+                          href={toolLink.href}
+                          prefetch={false}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={cx(
+                            "flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-md px-2 py-2 text-center text-xs font-semibold leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
+                            isToolActive
+                              ? "bg-accent-soft text-accent-strong dark:bg-accent-soft/35 dark:text-accent"
+                              : "text-muted hover:bg-elevated hover:text-ink",
+                          )}
+                          aria-current={isToolActive ? "page" : undefined}
+                        >
+                          <Icon
+                            className="h-4 w-4 shrink-0"
+                            aria-hidden="true"
+                          />
+                          <span className="max-w-full break-words">
+                            {toolLink.label}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+            {renderNavbarLink(practiceLink, "mobile", () =>
+              setIsMobileMenuOpen(false),
+            )}
+            {renderNavbarLink(shenuteLink, "mobile", () =>
+              setIsMobileMenuOpen(false),
+            )}
             <LazyNavbarAuthLink
               dashboardHref={dashboardHref}
               dashboardLabel={t("nav.dashboard")}

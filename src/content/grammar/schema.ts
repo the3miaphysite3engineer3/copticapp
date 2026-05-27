@@ -6,6 +6,7 @@ export type GrammarSectionId = string;
 export type GrammarConceptId = string;
 export type GrammarExampleId = string;
 export type GrammarExerciseId = string;
+export type GrammarFlashcardSeedId = string;
 export type GrammarFootnoteId = string;
 export type GrammarSourceId = string;
 
@@ -119,6 +120,38 @@ export type GrammarExerciseItem = {
   };
 };
 
+export type GrammarFlashcardTemplate =
+  | "grammar_concept_to_definition"
+  | "grammar_coptic_to_translation"
+  | "grammar_translation_to_coptic";
+
+export type GrammarFlashcardSideKind =
+  | "coptic"
+  | "grammar"
+  | "meaning"
+  | "text";
+
+export type GrammarFlashcardSeedDocument = {
+  id: GrammarFlashcardSeedId;
+  lessonId: GrammarLessonId;
+  lessonSlug: string;
+  sectionId?: GrammarSectionId;
+  template: GrammarFlashcardTemplate;
+  category: "concept" | "example" | "exercise";
+  front: Localized<string>;
+  back: Localized<string>;
+  frontKind: GrammarFlashcardSideKind;
+  backKind: GrammarFlashcardSideKind;
+  context: Localized<string>;
+  focus: Localized<string>;
+  hint?: Localized<string>;
+  conceptRefs: GrammarConceptId[];
+  exampleRef?: GrammarExampleId;
+  exerciseRef?: GrammarExerciseId;
+  sourceRefs: GrammarSourceId[];
+  tags: string[];
+};
+
 export type GrammarFootnoteDocument = {
   id: GrammarFootnoteId;
   lessonId: GrammarLessonId;
@@ -216,6 +249,7 @@ export type GrammarDatasetSnapshot = {
   concepts: GrammarConceptDocument[];
   examples: GrammarExampleDocument[];
   exercises: GrammarExerciseDocument[];
+  flashcardSeeds: GrammarFlashcardSeedDocument[];
   footnotes: GrammarFootnoteDocument[];
   sources: GrammarSourceDocument[];
 };
@@ -225,6 +259,7 @@ export type GrammarLessonBundle = {
   concepts: GrammarConceptDocument[];
   examples: GrammarExampleDocument[];
   exercises: GrammarExerciseDocument[];
+  flashcardSeeds: GrammarFlashcardSeedDocument[];
   footnotes: GrammarFootnoteDocument[];
   sources: GrammarSourceDocument[];
 };

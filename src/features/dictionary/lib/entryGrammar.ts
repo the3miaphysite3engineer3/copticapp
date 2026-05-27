@@ -5,6 +5,7 @@ import {
 } from "@/features/dictionary/config";
 import type {
   DictionarySenseGrammarPartOfSpeech,
+  DictionarySenseGrammarValency,
   DictionarySenses,
   LexicalGender,
 } from "@/features/dictionary/types";
@@ -93,4 +94,18 @@ export function getEntryNounGender(
   }
 
   return nounGroup?.grammar.gender ?? "";
+}
+
+export function getEntryVerbValencies(
+  entry: EntryGrammarSource,
+): DictionarySenseGrammarValency[] {
+  const values: DictionarySenseGrammarValency[] = [];
+
+  for (const group of entry.senses ?? []) {
+    if (group.grammar.pos === "V" && group.grammar.valency) {
+      addUnique(values, group.grammar.valency);
+    }
+  }
+
+  return values;
 }

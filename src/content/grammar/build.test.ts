@@ -12,6 +12,7 @@ describe("grammar static export files", () => {
       "grammar/v1/concepts.json",
       "grammar/v1/examples.json",
       "grammar/v1/exercises.json",
+      "grammar/v1/flashcards.json",
       "grammar/v1/footnotes.json",
       "grammar/v1/sources.json",
       "grammar/v1/lessons/lesson-1.json",

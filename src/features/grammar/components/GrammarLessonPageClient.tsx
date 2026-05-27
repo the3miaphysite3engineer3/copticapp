@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Layers3 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { flushSync } from "react-dom";
@@ -37,8 +37,13 @@ import {
 } from "@/features/grammar/lib/lessonWorkspaceState";
 import { useGrammarLessonLearnerState } from "@/features/grammar/lib/useGrammarLessonLearnerState";
 import { GrammarLessonDocumentRenderer } from "@/features/grammar/renderers/GrammarLessonDocumentRenderer";
+import { DEFAULT_GRAMMAR_PRACTICE_DECK_ID } from "@/features/practice/lib/practiceDeckDefaults";
 import { cx } from "@/lib/classes";
-import { getGrammarPath, getLocalizedHomePath } from "@/lib/locale";
+import {
+  getPracticePath,
+  getGrammarPath,
+  getLocalizedHomePath,
+} from "@/lib/locale";
 
 type GrammarLessonPageClientProps = {
   lessonBundle: GrammarLessonBundle;
@@ -72,6 +77,10 @@ export function GrammarLessonPageClient({
   const lesson = lessonBundle.lesson;
   const orderedSections = getOrderedSections(lessonBundle);
   const lessonContentId = `${lesson.id}-pdf-content`;
+  const lessonPracticeHref =
+    lesson.slug === "lesson-1"
+      ? getPracticePath(language, DEFAULT_GRAMMAR_PRACTICE_DECK_ID)
+      : null;
   const lessonOutlineEyebrow =
     language === "en" ? "Lesson map" : "Lesoverzicht";
   const lessonOutlineTitle =
@@ -285,6 +294,15 @@ export function GrammarLessonPageClient({
               >
                 {isStudyMode ? studyModeLabels.exit : studyModeLabels.enter}
               </Button>
+            ) : null}
+            {lessonPracticeHref ? (
+              <Link
+                href={lessonPracticeHref}
+                className="btn-secondary gap-2 px-4"
+              >
+                <Layers3 className="h-4 w-4" />
+                {t("grammar.practiceLesson")}
+              </Link>
             ) : null}
             <DownloadPdfButton
               targetId={lessonContentId}

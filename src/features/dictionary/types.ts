@@ -36,7 +36,7 @@ type DictionarySenseGrammarMood = "IMP";
 export type DictionarySenseGrammarNumber = "PL" | "SG";
 export type DictionarySenseGrammarPartOfSpeech = PartOfSpeech | "PRON";
 type DictionarySenseGrammarPolarity = "NEG";
-type DictionarySenseGrammarValency = "INTR" | "TR";
+export type DictionarySenseGrammarValency = "INTR" | "TR";
 type DictionarySenseGrammarVoice = "REFL";
 
 /**

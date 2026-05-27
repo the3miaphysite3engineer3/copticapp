@@ -66,6 +66,12 @@ export function getEntryPath(id: string | number, locale?: Language) {
   return locale ? getLocalizedPath(locale, path) : path;
 }
 
+export function getPracticePath(locale?: Language, deckId?: string) {
+  const basePath = locale ? getLocalizedPath(locale, "/practice") : "/practice";
+
+  return deckId ? `${basePath}?deck=${encodeURIComponent(deckId)}` : basePath;
+}
+
 export function getGrammarPath(locale?: Language) {
   return locale ? getLocalizedPath(locale, "/grammar") : "/grammar";
 }

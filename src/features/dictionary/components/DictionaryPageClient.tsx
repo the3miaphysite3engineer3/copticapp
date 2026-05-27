@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Layers3 } from "lucide-react";
 import Link from "next/link";
 
 import { AppPageIntro } from "@/components/AppPageIntro";
@@ -8,7 +8,12 @@ import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { useDictionarySearch } from "@/features/dictionary/hooks/useDictionarySearch";
-import { getAnalyticsPath, getLocalizedHomePath } from "@/lib/locale";
+import { DEFAULT_DICTIONARY_PRACTICE_DECK_ID } from "@/features/practice/lib/practiceDeckDefaults";
+import {
+  getAnalyticsPath,
+  getPracticePath,
+  getLocalizedHomePath,
+} from "@/lib/locale";
 
 import { DictionaryFilters } from "./DictionaryFilters";
 import { DictionaryResultsSection } from "./DictionaryResultsSection";
@@ -58,13 +63,25 @@ function DictionaryPageBody({ searchPath }: DictionaryPageBodyProps) {
     >
       <AppPageIntro
         actions={
-          <Link
-            href={getAnalyticsPath(language)}
-            className={buttonClassName({ variant: "secondary" })}
-          >
-            <BarChart3 className="h-4 w-4" />
-            {t("nav.analytics")}
-          </Link>
+          <div className="flex flex-wrap justify-center gap-3 sm:justify-end">
+            <Link
+              href={getPracticePath(
+                language,
+                DEFAULT_DICTIONARY_PRACTICE_DECK_ID,
+              )}
+              className={buttonClassName({ variant: "primary" })}
+            >
+              <Layers3 className="h-4 w-4" />
+              {t("practice.entryPoint.practiceWords")}
+            </Link>
+            <Link
+              href={getAnalyticsPath(language)}
+              className={buttonClassName({ variant: "secondary" })}
+            >
+              <BarChart3 className="h-4 w-4" />
+              {t("nav.analyticsShort")}
+            </Link>
+          </div>
         }
         breadcrumbs={[
           { label: t("nav.home"), href: getLocalizedHomePath(language) },

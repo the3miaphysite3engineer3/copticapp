@@ -2,6 +2,7 @@ import { grammarLesson01CoreConcepts } from "./v1/concepts/lesson-01-core.ts";
 import { grammarLesson01NominalSentenceExamples } from "./v1/examples/lesson-01-nominal-sentences.ts";
 import { grammarLesson01ZeroDeterminationExamples } from "./v1/examples/lesson-01-zero-determination.ts";
 import { grammarLesson01Exercise01 } from "./v1/exercises/lesson-01-exercise-01.ts";
+import { grammarLesson01FlashcardSeeds } from "./v1/flashcards/lesson-01.ts";
 import { grammarLesson01CoreFootnotes } from "./v1/footnotes/lesson-01-core.ts";
 import { grammarLesson01Document } from "./v1/lessons/lesson-01.ts";
 import { grammarLesson02Document } from "./v1/lessons/lesson-02.ts";
@@ -12,6 +13,7 @@ import type {
   GrammarConceptDocument,
   GrammarDatasetSnapshot,
   GrammarExerciseDocument,
+  GrammarFlashcardSeedDocument,
   GrammarLessonId,
   GrammarLessonIndexItem,
   GrammarSourceDocument,
@@ -28,6 +30,7 @@ const exampleDocuments = [
   ...grammarLesson01NominalSentenceExamples,
 ] as const;
 const footnoteDocuments = [...grammarLesson01CoreFootnotes] as const;
+const flashcardSeedDocuments = [...grammarLesson01FlashcardSeeds] as const;
 const sourceDocuments = [...grammarLesson01CoreSources] as const;
 
 const lessonById = new Map(
@@ -82,6 +85,10 @@ function listGrammarSourceDocuments(): GrammarSourceDocument[] {
   return [...sourceDocuments];
 }
 
+function listGrammarFlashcardSeedDocuments(): GrammarFlashcardSeedDocument[] {
+  return [...flashcardSeedDocuments];
+}
+
 function _getGrammarSourceDocumentById(id: string) {
   return sourceById.get(id) ?? null;
 }
@@ -103,6 +110,7 @@ export function getGrammarDatasetSnapshot(): GrammarDatasetSnapshot {
     concepts: listGrammarConceptDocuments(),
     examples: [...exampleDocuments],
     exercises: listGrammarExerciseDocuments(),
+    flashcardSeeds: listGrammarFlashcardSeedDocuments(),
     footnotes: [...footnoteDocuments],
     sources: listGrammarSourceDocuments(),
   };

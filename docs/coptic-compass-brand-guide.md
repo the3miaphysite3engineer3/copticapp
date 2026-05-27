@@ -460,13 +460,17 @@ screens, manuscript-adjacent visuals, or carefully produced brand assets.
 Primary navigation should emphasize the platform pillars:
 
 - Publications
-- Dictionary
 - Grammar
+- Dictionary
 - Shenute AI
-- Contact
 
-Account, dashboard, and admin surfaces should feel connected to the same brand
-without overpowering learning and reference tasks.
+Dictionary owns related tools such as Search, Practice, and Analytics rather
+than exposing each tool as a separate top-level item.
+
+Contact, account, dashboard, and admin surfaces should feel connected to the
+same brand without overpowering learning and reference tasks. In the website
+header, Contact and authentication belong with the right-side utility actions
+rather than the main platform-pillar group.
 
 ### AI Experience
 

@@ -6,7 +6,7 @@ type NavbarLinkClassOptions = {
 };
 
 const NAVBAR_LINK_BASE_CLASSES =
-  "group text-center text-sm tracking-[0.02em] transition-all duration-200 before:invisible before:col-start-1 before:row-start-1 before:h-0 before:overflow-hidden before:font-semibold before:content-[attr(data-label)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30";
+  "group whitespace-nowrap text-center text-sm tracking-[0.02em] transition-all duration-200 before:invisible before:col-start-1 before:row-start-1 before:h-0 before:overflow-hidden before:font-semibold before:content-[attr(data-label)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30";
 
 const NAVBAR_LINK_STATE_CLASSES = {
   active:

@@ -11,6 +11,7 @@ working details.
 | Project structure and routing | [Architecture Guide](./architecture.md)                               |
 | Local setup and deployment    | [Environment & Deployment Setup](./environment-setup.md)              |
 | Dictionary data editing       | [Dictionary JSON Guide](./dictionary-json.md)                         |
+| Practice feature              | [Practice Feature Guide](./practice.md)                               |
 | API, AI, OCR, and RAG flows   | [API, AI, and Data Workflows](./api-and-workflows.md)                 |
 | Brand, copy, and assets       | [Coptic Compass Brand Book](./coptic-compass-brand-guide.md)          |
 | Dutch UI and content copy     | [Dutch Localization Style Guide](./dutch-localization-style-guide.md) |
@@ -24,6 +25,8 @@ working details.
   `environment-setup.md`.
 - Put dictionary field conventions in `dictionary-json.md`; other docs should
   link there instead of repeating the full contract.
+- Put Practice card generation, FSRS scheduling, decks, and persistence details
+  in `practice.md`.
 - Put public API, AI provider, OCR, RAG, and communications workflow details in
   `api-and-workflows.md`.
 - Put product voice, visual identity, and public copy posture in the brand book.

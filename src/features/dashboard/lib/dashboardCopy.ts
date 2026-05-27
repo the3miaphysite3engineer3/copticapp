@@ -22,6 +22,25 @@ const DASHBOARD_COPY = {
     noExercisesDescription:
       "Head over to the Grammar section to complete your first lesson!",
     reviewedLabel: "Reviewed",
+    practice: {
+      title: "Saved Entries Practice",
+      description:
+        "Practice your bookmarked dictionary entries with spaced repetition.",
+      dueCards: "Due now",
+      newCards: "New items",
+      scheduledCards: "Scheduled",
+      reviewDeck: "Practice saved entries",
+      noSavedTitle: "Save entries to start practice",
+      noSavedDescription:
+        "Saved practice is generated from the dictionary entries you save.",
+      storagePendingTitle: "Practice storage pending",
+      storagePendingDescription:
+        "The review interface is ready, but the practice database migration still needs to be deployed before progress can be saved.",
+      nextDuePrefix: "Next due",
+      caughtUp: "All caught up",
+      reviewDueCards: "Review due items",
+      learnNewCards: "Learn new items",
+    },
     grammar: {
       title: "Grammar progress",
       description:
@@ -170,6 +189,25 @@ const DASHBOARD_COPY = {
     noExercisesDescription:
       "Ga naar de grammatica-sectie om uw eerste les af te ronden.",
     reviewedLabel: "Nagekeken",
+    practice: {
+      title: "Oefenen met opgeslagen lemma's",
+      description:
+        "Oefen uw opgeslagen woordenboeklemma's met gespreide herhaling.",
+      dueCards: "Nu te herhalen",
+      newCards: "Nieuwe items",
+      scheduledCards: "Gepland",
+      reviewDeck: "Opgeslagen lemma's oefenen",
+      noSavedTitle: "Sla lemma's op om te oefenen",
+      noSavedDescription:
+        "De oefening wordt gemaakt van de woordenboeklemma's die u opslaat.",
+      storagePendingTitle: "Oefenopslag in afwachting",
+      storagePendingDescription:
+        "De herhaalinterface is klaar, maar de databasemigratie voor oefenen moet nog worden gedeployed voordat voortgang kan worden opgeslagen.",
+      nextDuePrefix: "Volgende herhaling",
+      caughtUp: "Alles bijgewerkt",
+      reviewDueCards: "Items herhalen",
+      learnNewCards: "Nieuwe items leren",
+    },
     grammar: {
       title: "Voortgang grammatica",
       description:

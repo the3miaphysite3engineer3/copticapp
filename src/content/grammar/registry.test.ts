@@ -47,6 +47,18 @@ describe("grammar content registry", () => {
     );
   });
 
+  it("includes lesson flashcard seeds in the export snapshot", () => {
+    const exportSnapshot = createGrammarExportSnapshot();
+    const lessonBundle = exportSnapshot.lessons["lesson-1"];
+
+    expect(lessonBundle.flashcardSeeds.map((seed) => seed.id)).toEqual(
+      expect.arrayContaining([
+        "grammar.flashcard.lesson01.bare-noun.definition",
+        "grammar.flashcard.lesson01.nominal-sentence.he-is-father",
+      ]),
+    );
+  });
+
   it("ensures lesson example references resolve in the export snapshot", () => {
     const exportSnapshot = createGrammarExportSnapshot();
     const lessonBundle = exportSnapshot.lessons["lesson-1"];

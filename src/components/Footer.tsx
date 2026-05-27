@@ -7,6 +7,7 @@ import { FaXTwitter, FaInstagram, FaGithub } from "react-icons/fa6";
 import { iconButtonClassName } from "@/components/Button";
 import { cx } from "@/lib/classes";
 import {
+  getContactPath,
   getContributorsPath,
   getDevelopersPath,
   getPrivacyPath,
@@ -21,6 +22,14 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
   const brandLabel = t("home.title");
   const isShenuteRoute = /(^|\/)shenute(?:\/|$)/.test(pathname);
+  const footerLinks = [
+    { href: getPrivacyPath(language), label: t("footer.privacy") },
+    { href: getTermsPath(language), label: t("footer.terms") },
+    { href: getContactPath(language), label: t("nav.contact") },
+    { href: getDevelopersPath(language), label: t("footer.developers") },
+    { href: getContributorsPath(language), label: t("footer.contributors") },
+    { href: "/api-docs", label: t("footer.apiDocs") },
+  ];
 
   return (
     <footer
@@ -38,41 +47,16 @@ export function Footer() {
             {brandLabel} {t("footer.credit")}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted/70 md:justify-start">
-            <Link
-              href={getPrivacyPath(language)}
-              prefetch={false}
-              className="transition-colors hover:text-ink"
-            >
-              {t("footer.privacy")}
-            </Link>
-            <Link
-              href={getTermsPath(language)}
-              prefetch={false}
-              className="transition-colors hover:text-ink"
-            >
-              {t("footer.terms")}
-            </Link>
-            <Link
-              href={getDevelopersPath(language)}
-              prefetch={false}
-              className="transition-colors hover:text-ink"
-            >
-              {t("footer.developers")}
-            </Link>
-            <Link
-              href={getContributorsPath(language)}
-              prefetch={false}
-              className="transition-colors hover:text-ink"
-            >
-              {t("footer.contributors")}
-            </Link>
-            <Link
-              href="/api-docs"
-              prefetch={false}
-              className="transition-colors hover:text-ink"
-            >
-              {t("footer.apiDocs")}
-            </Link>
+            {footerLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                prefetch={false}
+                className="transition-colors hover:text-ink"
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
         <div className="flex items-center gap-2">

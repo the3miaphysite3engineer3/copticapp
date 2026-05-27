@@ -8,110 +8,134 @@ export const homeMessages = defineMessages({
     "home.eyebrow": "Built by Copts for Copts",
     "home.title": "Coptic Compass",
     "home.subtitle":
-      "A trusted digital Coptology platform for reading, researching, publishing, and carrying the Coptic language forward.",
+      "A trusted digital Coptology platform for reading, studying, publishing, and building with Coptic.",
     "home.hero.primaryCta": "Search the dictionary",
-    "home.hero.secondaryCta": "Start grammar",
-    "home.hero.tertiaryCta": "Our mission",
+    "home.hero.secondaryCta": "Start practice",
     "home.mission.eyebrow": "What this enables",
-    "home.mission.title": "One place for the work of Coptic language",
+    "home.mission.title": "One place for Coptology work",
     "home.mission.body":
-      "Move from a word lookup to a grammar question, from a text to its context, and from inquiry to publication without leaving the same ecosystem.",
+      "Move from lookup to grammar, from text to context, and from research to publication in one place.",
     "home.promise.title": "For learning that deepens",
     "home.promise.body":
-      "Clear pathways help beginners gain confidence while giving advanced readers the grammatical and lexical context they need.",
+      "Clear paths help beginners build confidence and give advanced readers the context they need.",
     "home.audience.title": "For a living tradition",
     "home.audience.body":
-      "Coptic Compass serves learners, clergy, scholars, translators, developers, and communities who want the language to remain usable and shared.",
-    "home.platform.eyebrow": "Coptology workflow",
-    "home.platform.title": "Choose the tool your question needs",
+      "Coptic Compass serves learners, clergy, scholars, translators, developers, and communities.",
+    "home.learningLoop.eyebrow": "Learning loop",
+    "home.learningLoop.title": "Search, learn, practice, and explore",
+    "home.learningLoop.desc":
+      "Look up forms, build grammar context, review what matters, and inspect patterns when you need depth.",
+    "home.learningLoop.searchTitle": "Search",
+    "home.learningLoop.searchDesc":
+      "Find Coptic forms, meanings, parts of speech, and dialect context.",
+    "home.learningLoop.searchCta": "Search words",
+    "home.learningLoop.learnTitle": "Learn",
+    "home.learningLoop.learnDesc":
+      "Study grammar lessons, examples, and guided explanations.",
+    "home.learningLoop.learnCta": "Study grammar",
+    "home.learningLoop.practiceTitle": "Practice",
+    "home.learningLoop.practiceDesc":
+      "Review dictionary forms and grammar concepts in daily mixed practice.",
+    "home.learningLoop.practiceCta": "Start practice",
+    "home.learningLoop.exploreTitle": "Explore",
+    "home.learningLoop.exploreDesc":
+      "Inspect coverage, dialect distribution, and part-of-speech patterns.",
+    "home.learningLoop.exploreCta": "View analytics",
+    "home.platform.eyebrow": "Platform pillars",
+    "home.platform.title": "A complete environment for Coptology",
     "home.platform.desc":
-      "Start with the question in front of you, then move into vocabulary, grammar, source material, Shenute AI, publication, or reusable data without changing context.",
+      "Dictionary, grammar, publications, Shenute AI, and developer access support learning, teaching, research, and reuse.",
+    "home.pillars.learnTitle": "Learn",
+    "home.pillars.learnDesc":
+      "Grammar lessons and adaptive practice help students turn lookup into memory and understanding.",
+    "home.pillars.referenceTitle": "Search",
+    "home.pillars.referenceDesc":
+      "Find words, compare dialects, and inspect lexical patterns.",
+    "home.pillars.publishTitle": "Publish",
+    "home.pillars.publishDesc":
+      "Give books and research material a serious, stable home.",
+    "home.pillars.assistBuildTitle": "Assist and build",
+    "home.pillars.assistBuildDesc":
+      "Ask guided questions, integrate tools, and reuse structured data.",
+    "home.pillars.grammarLink": "Grammar",
+    "home.pillars.practiceLink": "Practice",
+    "home.pillars.dictionaryLink": "Dictionary",
+    "home.pillars.analyticsLink": "Analytics",
     "home.publications": "Publications",
-    "home.publications.desc":
-      "Books, reference works, and research materials for students and scholars of Coptic.",
     "home.publications.cta": "Browse publications",
     "home.shenute.title": "Shenute AI",
-    "home.shenute.desc":
-      "A Coptology assistant for explanations, manuscript context, follow-up questions, and OCR-backed prompts.",
-    "home.shenute.cta": "Open Shenute AI",
     "home.developers.title": "Developer tools",
-    "home.developers.desc":
-      "Public APIs and integration guidance for dictionary, grammar, OCR, and Shenute AI workflows.",
-    "home.developers.cta": "View developer docs",
     "home.comingSoon": "Coming Soon",
-    "home.app.title": "Coptic Compass",
-    "home.app.desc":
-      "The Coptic Compass mobile app will bring grammar, vocabulary, intelligent search, and Coptology tools to iPhone, iPad, and Android.",
-    "home.app.focus": "Planned focus areas",
-    "home.app.focusItem1": "Interactive exercises with instructor review",
-    "home.app.focusItem2": "Structured lesson progression across devices",
-    "home.app.focusItem3": "Coptology-informed tools built around Coptic",
-    "home.app.releasePrefix": "Planned for",
-    "home.app.appStoreLabel": "App Store",
-    "home.app.googlePlayLabel": "Google Play",
-    "home.copticDict": "Coptic Dictionary",
-    "home.copticDict.desc":
-      "A lightning-fast digital lexicon explicitly designed for beginner students and linguists alike.",
-    "home.dictionary.cta": "Open dictionary",
-    "home.grammar.cta": "Begin studying",
     "home.closing.eyebrow": "Our direction",
     "home.closing.title": "A careful home for Coptology work",
     "home.closing.body":
-      "As the platform grows, every tool should make the language easier to study, teach, publish, and build with, without losing reverence for its tradition.",
+      "As the platform grows, every tool should make Coptic easier to study, teach, publish, and build with, while honoring its tradition.",
   },
   nl: {
     "home.eyebrow": "Gebouwd door Kopten voor Kopten",
     "home.title": "Coptic Compass",
     "home.subtitle":
-      "Een betrouwbaar digitaal Koptologieplatform om de Koptische taal te lezen, te onderzoeken, te publiceren en door te geven.",
+      "Een betrouwbaar digitaal Koptologieplatform om Koptisch te lezen, te bestuderen, te publiceren en digitaal bruikbaar te maken.",
     "home.hero.primaryCta": "Doorzoek het woordenboek",
-    "home.hero.secondaryCta": "Start grammatica",
-    "home.hero.tertiaryCta": "Onze missie",
+    "home.hero.secondaryCta": "Begin met oefenen",
     "home.mission.eyebrow": "Wat dit mogelijk maakt",
-    "home.mission.title": "Eén plek voor het werk rond de Koptische taal",
+    "home.mission.title": "Eén plek voor Koptologiewerk",
     "home.mission.body":
-      "Ga van een woordopzoeking naar een grammaticavraag, van een tekst naar zijn context, en van onderzoek naar publicatie binnen hetzelfde ecosysteem.",
+      "Ga van opzoeking naar grammatica, van tekst naar context en van onderzoek naar publicatie op één plek.",
     "home.promise.title": "Voor leren dat verdiept",
     "home.promise.body":
-      "Heldere paden helpen beginners vertrouwen op te bouwen en geven gevorderde lezers de grammaticale en lexicale context die zij nodig hebben.",
+      "Heldere paden geven beginners vertrouwen en gevorderde lezers de context die zij nodig hebben.",
     "home.audience.title": "Voor een levende traditie",
     "home.audience.body":
-      "Coptic Compass dient studenten, geestelijken, onderzoekers, vertalers, ontwikkelaars en gemeenschappen die willen dat de taal bruikbaar en gedeeld blijft.",
-    "home.platform.eyebrow": "Koptologiewerkwijze",
-    "home.platform.title": "Kies de tool die bij uw vraag past",
+      "Coptic Compass dient studenten, geestelijken, onderzoekers, vertalers, ontwikkelaars en gemeenschappen.",
+    "home.learningLoop.eyebrow": "Leerroute",
+    "home.learningLoop.title": "Zoek, leer, oefen en verken",
+    "home.learningLoop.desc":
+      "Zoek vormen op, bouw grammaticale context op, herhaal wat telt en verken patronen wanneer u verdieping nodig hebt.",
+    "home.learningLoop.searchTitle": "Zoeken",
+    "home.learningLoop.searchDesc":
+      "Vind Koptische vormen, betekenissen, woordsoorten en dialectcontext.",
+    "home.learningLoop.searchCta": "Zoek woorden",
+    "home.learningLoop.learnTitle": "Leren",
+    "home.learningLoop.learnDesc":
+      "Bestudeer grammaticalessen, voorbeelden en begeleide uitleg.",
+    "home.learningLoop.learnCta": "Bestudeer grammatica",
+    "home.learningLoop.practiceTitle": "Oefenen",
+    "home.learningLoop.practiceDesc":
+      "Herhaal woordenboekvormen en grammaticabegrippen in dagelijkse gemengde oefening.",
+    "home.learningLoop.practiceCta": "Begin met oefenen",
+    "home.learningLoop.exploreTitle": "Verkennen",
+    "home.learningLoop.exploreDesc":
+      "Bekijk dekking, dialectverdeling en patronen per woordsoort.",
+    "home.learningLoop.exploreCta": "Bekijk analytics",
+    "home.platform.eyebrow": "Platformpijlers",
+    "home.platform.title": "Eén omgeving voor Koptologiewerk",
     "home.platform.desc":
-      "Begin met de vraag die voor u ligt en beweeg daarna naar woordenschat, grammatica, bronnen, Shenute AI, publicatie of herbruikbare data zonder van context te wisselen.",
+      "Woordenboek, grammatica, publicaties, Shenute AI en ontwikkelaarstoegang ondersteunen leren, onderwijzen, onderzoek en hergebruik.",
+    "home.pillars.learnTitle": "Leren",
+    "home.pillars.learnDesc":
+      "Grammaticalessen en oefening helpen studenten opzoekingen om te zetten in begrip en geheugen.",
+    "home.pillars.referenceTitle": "Zoeken",
+    "home.pillars.referenceDesc":
+      "Vind woorden, vergelijk dialecten en verken lexicale patronen.",
+    "home.pillars.publishTitle": "Publiceren",
+    "home.pillars.publishDesc":
+      "Geef boeken en onderzoeksmateriaal een zorgvuldige, stabiele thuisbasis.",
+    "home.pillars.assistBuildTitle": "Assisteren en bouwen",
+    "home.pillars.assistBuildDesc":
+      "Stel begeleide vragen, integreer tools en hergebruik gestructureerde data.",
+    "home.pillars.grammarLink": "Grammatica",
+    "home.pillars.practiceLink": "Oefenen",
+    "home.pillars.dictionaryLink": "Woordenboek",
+    "home.pillars.analyticsLink": "Analytics",
     "home.publications": "Publicaties",
-    "home.publications.desc":
-      "Boeken, naslagwerken en onderzoeksmaterialen voor studenten en onderzoekers van het Koptisch.",
     "home.publications.cta": "Bekijk publicaties",
     "home.shenute.title": "Shenute AI",
-    "home.shenute.desc":
-      "Een Koptologieassistent voor uitleg, manuscriptcontext, vervolgvragen en OCR-ondersteunde prompts.",
-    "home.shenute.cta": "Open Shenute AI",
     "home.developers.title": "Ontwikkelaarstools",
-    "home.developers.desc":
-      "Publieke API's en integratiehulp voor woordenboek-, grammatica-, OCR- en Shenute AI-workflows.",
-    "home.developers.cta": "Bekijk ontwikkelaarsdocs",
     "home.comingSoon": "Binnenkort beschikbaar",
-    "home.app.title": "Coptic Compass",
-    "home.app.desc":
-      "De mobiele app van Coptic Compass brengt grammatica, woordenschat, intelligente zoekfuncties en Koptologietools naar iPhone, iPad en Android.",
-    "home.app.focus": "Geplande onderdelen",
-    "home.app.focusItem1": "Interactieve oefeningen met docentfeedback",
-    "home.app.focusItem2": "Gestructureerde lesopbouw op meerdere apparaten",
-    "home.app.focusItem3": "Koptologisch onderbouwde tools rond het Koptisch",
-    "home.app.releasePrefix": "Gepland voor",
-    "home.app.appStoreLabel": "App Store",
-    "home.app.googlePlayLabel": "Google Play",
-    "home.copticDict": "Koptisch woordenboek",
-    "home.copticDict.desc":
-      "Een snel digitaal lexicon dat expliciet is ontworpen voor zowel beginnende studenten als taalkundigen.",
-    "home.dictionary.cta": "Open het woordenboek",
-    "home.grammar.cta": "Begin met studeren",
     "home.closing.eyebrow": "Onze richting",
     "home.closing.title": "Een zorgvuldige thuisbasis voor Koptologiewerk",
     "home.closing.body":
-      "Terwijl het platform groeit, moet elke tool de taal makkelijker maken om te bestuderen, te onderwijzen, te publiceren en mee te bouwen, zonder de eerbied voor haar traditie te verliezen.",
+      "Terwijl het platform groeit, moet elke tool Koptisch makkelijker maken om te bestuderen, te onderwijzen, te publiceren en mee te bouwen, met eerbied voor haar traditie.",
   },
 });

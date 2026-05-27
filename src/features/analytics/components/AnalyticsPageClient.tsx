@@ -470,7 +470,7 @@ export default function AnalyticsPageClient({
         breadcrumbs={[
           { label: t("nav.home"), href: getLocalizedHomePath(language) },
           { label: t("nav.dictionary"), href: getDictionaryPath(language) },
-          { label: t("nav.analytics") },
+          { label: t("nav.analyticsShort") },
         ]}
         actions={
           <>

@@ -1,10 +1,15 @@
 "use client";
 
+import { Layers3 } from "lucide-react";
+import Link from "next/link";
+
 import { AppPageIntro } from "@/components/AppPageIntro";
+import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import type { GrammarLessonIndexItem } from "@/content/grammar/schema";
-import { getLocalizedHomePath } from "@/lib/locale";
+import { DEFAULT_GRAMMAR_PRACTICE_DECK_ID } from "@/features/practice/lib/practiceDeckDefaults";
+import { getPracticePath, getLocalizedHomePath } from "@/lib/locale";
 
 import { GrammarLessonCard } from "./GrammarLessonCard";
 
@@ -30,6 +35,15 @@ export default function GrammarHubPageClient({
     >
       <AppPageIntro
         align="center"
+        actions={
+          <Link
+            href={getPracticePath(language, DEFAULT_GRAMMAR_PRACTICE_DECK_ID)}
+            className={buttonClassName({ variant: "primary" })}
+          >
+            <Layers3 className="h-4 w-4" />
+            {t("grammar.practiceGrammar")}
+          </Link>
+        }
         breadcrumbs={[
           { label: t("nav.home"), href: getLocalizedHomePath(language) },
           { label: t("nav.grammar") },

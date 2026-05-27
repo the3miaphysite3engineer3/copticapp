@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { logout } from "@/actions/auth";
 import { AppPageIntro } from "@/components/AppPageIntro";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
+import { DashboardPracticePanel } from "@/features/dashboard/components/DashboardPracticePanel";
 import { DashboardRecentExercisesSection } from "@/features/dashboard/components/DashboardRecentExercisesSection";
 import { DashboardWelcomePanel } from "@/features/dashboard/components/DashboardWelcomePanel";
 import { getDashboardCopy } from "@/features/dashboard/lib/dashboardCopy";
@@ -81,6 +82,13 @@ export async function DashboardPageContent({
         <GrammarDashboardOverview
           language={locale}
           lessonSummaries={dashboardData.grammarLessonSummaries}
+        />
+
+        <DashboardPracticePanel
+          language={locale}
+          nextDueAt={dashboardData.practice.deck.nextDueAt}
+          stats={dashboardData.practice.deck.stats}
+          storageError={dashboardData.practice.storageError}
         />
 
         <DictionaryFavoritesOverview

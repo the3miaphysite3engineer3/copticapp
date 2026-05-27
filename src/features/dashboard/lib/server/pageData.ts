@@ -1,4 +1,3 @@
-import { getDictionaryEntryById } from "@/features/dictionary/lib/dictionary";
 import type { EntryFavoriteWithEntry } from "@/features/dictionary/lib/entryActions";
 import { getUserEntryFavorites } from "@/features/dictionary/lib/server/queries";
 import {
@@ -15,6 +14,10 @@ import {
   getUserLessonProgressRows,
   getUserSectionProgressRows,
 } from "@/features/grammar/lib/server/queries";
+import {
+  buildSavedDictionaryEntries,
+  loadSavedEntriesPracticeDeck,
+} from "@/features/practice/lib/server/pageData";
 import { getAccountAuthSettings } from "@/features/profile/lib/accountSettings";
 import {
   getAudienceContactForProfile,
@@ -30,25 +33,13 @@ import type { User } from "@supabase/supabase-js";
 type DashboardPageData = {
   audienceContact: Awaited<ReturnType<typeof getAudienceContactForProfile>>;
   canUpdatePassword: boolean;
+  practice: Awaited<ReturnType<typeof loadSavedEntriesPracticeDeck>>;
   grammarLessonSummaries: GrammarLessonLearnerSummary[];
   profile: Tables<"profiles">;
   providerLabel: string;
   savedDictionaryEntries: EntryFavoriteWithEntry[];
   submissions: Awaited<ReturnType<typeof getUserSubmissions>>;
 };
-
-/**
- * Enriches favorite rows with the corresponding dictionary entry so the
- * dashboard can render saved headwords without a second lookup phase.
- */
-function buildSavedDictionaryEntries(
-  entryFavorites: Awaited<ReturnType<typeof getUserEntryFavorites>>,
-): EntryFavoriteWithEntry[] {
-  return entryFavorites.map((favorite) => ({
-    entry: getDictionaryEntryById(favorite.entry_id),
-    favorite,
-  }));
-}
 
 /**
  * Builds learner-facing lesson summaries by combining the published grammar
@@ -122,10 +113,19 @@ export async function loadDashboardPageData({
     user.app_metadata,
     locale,
   );
+  const savedDictionaryEntries = buildSavedDictionaryEntries(entryFavorites);
+  const practice = await loadSavedEntriesPracticeDeck({
+    locale,
+    preferredDialect: profile.preferred_dictionary_dialect,
+    savedDictionaryEntries,
+    supabase,
+    userId: user.id,
+  });
 
   return {
     audienceContact,
     canUpdatePassword,
+    practice,
     grammarLessonSummaries: buildGrammarLessonSummaries({
       lessonBookmarks,
       lessonNotes,
@@ -134,7 +134,7 @@ export async function loadDashboardPageData({
     }),
     profile,
     providerLabel,
-    savedDictionaryEntries: buildSavedDictionaryEntries(entryFavorites),
+    savedDictionaryEntries,
     submissions,
   };
 }

@@ -24,6 +24,9 @@ function createGrammarLessonBundleFromSnapshot(
     (exercise) =>
       exerciseIds.has(exercise.id) || sectionExerciseIds.has(exercise.id),
   );
+  const bundledFlashcardSeeds = snapshot.flashcardSeeds.filter(
+    (seed) => seed.lessonId === enrichedLesson.id,
+  );
 
   return {
     lesson: enrichedLesson,
@@ -34,6 +37,7 @@ function createGrammarLessonBundleFromSnapshot(
       (example) => example.lessonId === enrichedLesson.id,
     ),
     exercises: bundledExercises,
+    flashcardSeeds: bundledFlashcardSeeds,
     footnotes: snapshot.footnotes.filter(
       (footnote) => footnote.lessonId === enrichedLesson.id,
     ),
@@ -95,6 +99,9 @@ export function createPublishedGrammarDatasetSnapshot(
 
   const publishedFootnotes = snapshot.footnotes.filter((footnote) =>
     publishedLessonIds.has(footnote.lessonId),
+  );
+  const publishedFlashcardSeeds = snapshot.flashcardSeeds.filter((seed) =>
+    publishedLessonIds.has(seed.lessonId),
   );
 
   const publishedLessons = snapshot.lessons.filter((lesson) =>
@@ -176,6 +183,15 @@ export function createPublishedGrammarDatasetSnapshot(
       ),
     })),
     exercises: publishedExercises,
+    flashcardSeeds: publishedFlashcardSeeds.map((seed) => ({
+      ...seed,
+      conceptRefs: seed.conceptRefs.filter((conceptId) =>
+        normalizedConceptIds.has(conceptId),
+      ),
+      sourceRefs: seed.sourceRefs.filter((sourceId) =>
+        normalizedSourceIds.has(sourceId),
+      ),
+    })),
     footnotes: publishedFootnotes.map((footnote) => ({
       ...footnote,
       sourceRefs: footnote.sourceRefs.filter((sourceId) =>
@@ -237,6 +253,13 @@ export function createGrammarStaticExportFiles(
       payload: createGrammarVersionedExport(
         exportSnapshot.manifest,
         publishedSnapshot.exercises,
+      ),
+    },
+    {
+      outputPath: "grammar/v1/flashcards.json",
+      payload: createGrammarVersionedExport(
+        exportSnapshot.manifest,
+        publishedSnapshot.flashcardSeeds,
       ),
     },
     {

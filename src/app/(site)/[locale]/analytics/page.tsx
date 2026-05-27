@@ -64,7 +64,7 @@ export default async function AnalyticsPage({
             path: getDictionaryPath(resolvedLocale),
           },
           {
-            name: getTranslation(resolvedLocale, "nav.analytics"),
+            name: getTranslation(resolvedLocale, "nav.analyticsShort"),
             path: getAnalyticsPath(resolvedLocale),
           },
         ])}
