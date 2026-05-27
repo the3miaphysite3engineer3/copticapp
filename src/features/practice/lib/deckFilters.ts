@@ -130,7 +130,11 @@ export function getDictionaryFlashcardDeckFilterOptions(
       });
     }
 
-    if (grammar && isDictionaryFlashcardCandidate(item.candidate)) {
+    if (
+      grammar &&
+      grammar !== "UNKNOWN" &&
+      isDictionaryFlashcardCandidate(item.candidate)
+    ) {
       incrementCount(grammars, grammar, {
         code: item.candidate.metadata.partOfSpeechCode,
         labelKey: item.candidate.metadata.partOfSpeechLabelKey,

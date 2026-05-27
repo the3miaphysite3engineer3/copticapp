@@ -81,3 +81,45 @@ test("practice answer context shows the dialect form instead of the headword", a
   await expect(answerContextPanel).toContainText("ⲟⲩⲱⲓⲛⲓ");
   await expect(answerContextPanel).not.toContainText("ⲟⲩⲟⲉⲓⲛ");
 });
+
+test("keyboard shortcuts navigate flashcard study flow", async ({ page }) => {
+  await page.goto(BOHAIRIC_NOUNS_PATH);
+
+  // 1. Ensure hint is toggled using 'h'
+  await page.keyboard.press("h");
+  await expect(page.getByRole("button", { name: "Hide hint" })).toBeVisible();
+
+  // 2. Press Space/Enter to reveal card or check answer
+  const input = page.locator("input[type='text']");
+  const isTyping = await input.isVisible();
+
+  if (isTyping) {
+    // If it's a typing card, check that typing text works and doesn't trigger shortcut keys (like r, v, h)
+    await input.focus();
+    await page.keyboard.type("r");
+    await expect(input).toHaveValue("r");
+
+    // Press Enter inside input to check typed answer (it will be incorrect)
+    await page.keyboard.press("Enter");
+    await expect(page.getByText(/Incorrect/i)).toBeVisible();
+  } else {
+    // For reveal cards, pressing space reveals the back of the card
+    await page.keyboard.press("Space");
+    await expect(page.getByRole("button", { name: /Good/i })).toBeVisible();
+  }
+
+  // If typing card, reveal it so we see rating buttons
+  if (isTyping) {
+    await page.getByRole("button", { name: "Reveal" }).click();
+  }
+
+  // 3. Replaying audio with 'r' should execute speaker trigger
+  await page.keyboard.press("r");
+
+  // 4. Pressing '3' rates it as 'Good' and advances to the next card
+  await page.keyboard.press("3");
+
+  // Since it advanced, the next card is hidden (Reveal button is visible again, rating buttons are hidden)
+  await expect(page.getByRole("button", { name: "Reveal" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Good/i })).toBeHidden();
+});

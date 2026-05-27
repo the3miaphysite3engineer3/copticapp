@@ -386,6 +386,14 @@ export function buildGeneratedDictionaryFlashcardSources({
       selectedDialect,
       templates,
     }).filter((candidate) => {
+      /**
+       * Entries with an unresolved part of speech add noise to generated
+       * decks and lack useful grammar metadata for learners.
+       */
+      if (candidate.metadata.partOfSpeech === "UNKNOWN") {
+        return false;
+      }
+
       if (
         deck.scope?.dialect &&
         candidate.displayDialect !== deck.scope.dialect

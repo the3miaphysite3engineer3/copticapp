@@ -33,6 +33,37 @@ Users can change deck, choose practice mode, refine filters, reveal answers,
 type answers for suitable prompts, and rate reviews as `Again`, `Hard`, `Good`,
 or `Easy`.
 
+### Interaction Mechanics
+
+#### 3D Card Flip Animation
+
+Flashcards are rendered as 3D physical objects using CSS perspective transforms.
+
+- **State Transition**: The card transitions smoothly along the Y-axis when `isRevealed` toggles.
+- **Layout Stability**: The card container keeps a stable height (`h-[24rem] sm:h-[26rem] md:h-[30rem]`) to avoid layout shifts. Tall card backs scroll within the card body (`overflow-y-auto`).
+
+#### Global Keyboard Shortcuts
+
+To allow high-speed, keyboard-driven study sessions, the following shortcuts are active when the user is _not_ typing in input fields (such as Coptic character typing cards):
+
+| Key               | Action                                                                        |
+| ----------------- | ----------------------------------------------------------------------------- |
+| `Space` / `Enter` | Reveals the card back (if hidden) or rates the card as **Good** (if revealed) |
+| `1`               | Rates the card as **Again** (once revealed)                                   |
+| `2`               | Rates the card as **Hard** (once revealed)                                    |
+| `3`               | Rates the card as **Good** (once revealed)                                    |
+| `4`               | Rates the card as **Easy** (once revealed)                                    |
+| `R` / `V`         | Replays the current Coptic audio pronunciation                                |
+| `H`               | Toggles the card hint                                                         |
+
+#### Practice Setup Control Panel
+
+The Practice Setup panel allows students to configure their active study session.
+
+- **Unified Collapsible Layout**: The panel is collapsible on all viewport sizes. It initializes collapsed on mobile (`< 768px`) and expanded on desktop (`>= 768px`), allowing users to toggle it manually to maximize card viewing space.
+- **Collapsed Configuration Summary**: When collapsed, the panel header displays color-coded summary pills of the active study mode and active filters (e.g. `Learn new` • `All prompt types`), ensuring instant context.
+- **New Tab Links**: Links within the answer context card details (e.g. "Open entry") open in new tabs (`target="_blank"`) to prevent accidental session resets.
+
 ## Signed-In vs Anonymous Users
 
 Practice is intentionally useful before sign-in, but persistence is signed-in.

@@ -18,7 +18,16 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useId, useMemo, useState, useTransition } from "react";
+import {
+  type ComponentType,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { createPortal } from "react-dom";
 
 import {
@@ -38,6 +47,7 @@ import {
   getDialectLabelKey,
   getPartOfSpeechLabel,
 } from "@/features/dictionary/config";
+import { useSpeech } from "@/features/dictionary/hooks/useSpeech";
 import type {
   FlashcardDeckItem,
   FlashcardDeckStats,
@@ -163,10 +173,14 @@ type StudySetupChoiceOption = {
   ariaLabel?: string;
   count?: number;
   disabled?: boolean;
-  icon?: typeof BookOpen;
+  icon?: ComponentType<{ className?: string }>;
   label: string;
   shortLabel?: string;
   value: string;
+  badge?: {
+    text: string;
+    variant: "success" | "warning" | "info" | "neutral";
+  };
 };
 
 type DeckPickerGroupId = "mixed" | "dictionary" | "grammar" | "private";
@@ -270,6 +284,22 @@ function StudySetupChoiceGroup({
               </span>
               {option.shortLabel ? (
                 <span className="md:hidden">{option.shortLabel}</span>
+              ) : null}
+              {option.badge ? (
+                <span
+                  className={cx(
+                    "rounded px-1 py-0.5 text-[0.62rem] font-bold uppercase tracking-wider",
+                    option.badge.variant === "success" &&
+                      "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400",
+                    option.badge.variant === "warning" &&
+                      "bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400",
+                    option.badge.variant === "info" &&
+                      "bg-sky-100 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400",
+                    option.badge.variant === "neutral" && "bg-line text-muted",
+                  )}
+                >
+                  {option.badge.text}
+                </span>
               ) : null}
               {typeof option.count === "number" ? (
                 <span
@@ -560,8 +590,18 @@ function StudySetupPanel({
   const { t } = useLanguage();
   const setupControlsId = useId();
   const refinementControlsId = useId();
-  const [isMobileSetupOpen, setIsMobileSetupOpen] = useState(false);
+  const [isSetupExpanded, setIsSetupExpanded] = useState(false);
   const [areRefinementsOpen, setAreRefinementsOpen] = useState(false);
+
+  useEffect(() => {
+    // Expand setup panel by default on desktop viewports
+    if (window.innerWidth >= 768) {
+      setTimeout(() => {
+        setIsSetupExpanded(true);
+      }, 0);
+    }
+  }, []);
+
   const hasActiveFilters = hasActiveDictionaryFlashcardDeckFilters(filters);
   const hasActiveRefinements =
     filters.dialect !== FLASHCARD_DECK_FILTER_ALL ||
@@ -582,6 +622,7 @@ function StudySetupPanel({
     shouldShowStudyModes || showSourceFilter || showCardTypeFilter;
   const shouldShowRefinementControls =
     hasRefinementControls && (areRefinementsOpen || hasActiveRefinements);
+
   const studyModeChoiceOptions = STUDY_MODE_OPTIONS.map((option) => ({
     count: counts[option.mode] > 0 ? counts[option.mode] : undefined,
     disabled: isPending || counts[option.mode] === 0,
@@ -590,6 +631,7 @@ function StudySetupPanel({
     shortLabel: t(option.shortTranslationKey),
     value: option.mode,
   }));
+
   const cardTypeChoiceOptions = [
     {
       label: t("practice.filters.allCardTypes"),
@@ -602,6 +644,7 @@ function StudySetupPanel({
       value: option.value,
     })),
   ];
+
   const sourceChoiceOptions = [
     {
       label: t("practice.filters.allSources"),
@@ -657,7 +700,7 @@ function StudySetupPanel({
   }
 
   function resetFilters() {
-    setIsMobileSetupOpen(false);
+    setIsSetupExpanded(false);
     setAreRefinementsOpen(false);
     onResetFilters();
   }
@@ -667,9 +710,9 @@ function StudySetupPanel({
       <button
         type="button"
         aria-controls={setupControlsId}
-        aria-expanded={isMobileSetupOpen}
-        onClick={() => setIsMobileSetupOpen((isOpen) => !isOpen)}
-        className="flex w-full items-center justify-between gap-3 rounded-md px-1 py-1 text-left transition-colors hover:bg-elevated/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25 md:hidden"
+        aria-expanded={isSetupExpanded}
+        onClick={() => setIsSetupExpanded((isOpen) => !isOpen)}
+        className="flex w-full items-start justify-between gap-3 rounded-md px-1 py-1 text-left transition-colors hover:bg-elevated/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25"
       >
         <span className="min-w-0">
           <span className="flex flex-wrap items-center gap-2">
@@ -698,11 +741,65 @@ function StudySetupPanel({
               </>
             )}
           </span>
+
+          {/* Active configuration summary shown when collapsed */}
+          {!isSetupExpanded && (
+            <span className="mt-2 flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+              {(() => {
+                const modeOption = STUDY_MODE_OPTIONS.find(
+                  (o) => o.mode === activeMode,
+                );
+                return modeOption ? (
+                  <span className="rounded bg-coptic/10 px-1.5 py-0.5 text-coptic">
+                    {t(modeOption.translationKey)}
+                  </span>
+                ) : null;
+              })()}
+
+              <span className="rounded bg-elevated px-1.5 py-0.5 text-muted border border-line">
+                {filters.cardType === FLASHCARD_DECK_FILTER_ALL
+                  ? t("practice.filters.allCardTypes")
+                  : (() => {
+                      const match = filterOptions.cardTypes.find(
+                        (o) => o.value === filters.cardType,
+                      );
+                      return match ? t(match.labelKey) : "";
+                    })()}
+              </span>
+
+              {filters.source !== FLASHCARD_DECK_FILTER_ALL &&
+                (() => {
+                  const match = filterOptions.sources.find(
+                    (o) => o.value === filters.source,
+                  );
+                  return match ? (
+                    <span className="rounded bg-indigo-100 dark:bg-indigo-950/40 px-1.5 py-0.5 text-indigo-700 dark:text-indigo-400">
+                      {t(match.labelKey)}
+                    </span>
+                  ) : null;
+                })()}
+
+              {filters.dialect !== FLASHCARD_DECK_FILTER_ALL && (
+                <span className="rounded bg-amber-100 dark:bg-amber-950/40 px-1.5 py-0.5 text-amber-700 dark:text-amber-400">
+                  {t("practice.filters.dialect")}: {filters.dialect}
+                </span>
+              )}
+
+              {filters.grammar !== FLASHCARD_DECK_FILTER_ALL && (
+                <span className="rounded bg-emerald-100 dark:bg-emerald-950/40 px-1.5 py-0.5 text-emerald-700 dark:text-emerald-400">
+                  {t("practice.filters.grammar")}:{" "}
+                  {filterOptions.grammars.find(
+                    (o) => o.value === filters.grammar,
+                  )?.code || filters.grammar}
+                </span>
+              )}
+            </span>
+          )}
         </span>
         <ChevronDown
           className={cx(
-            "h-4 w-4 shrink-0 text-muted transition-transform",
-            isMobileSetupOpen && "rotate-180",
+            "h-4 w-4 shrink-0 text-muted transition-transform mt-1",
+            isSetupExpanded && "rotate-180",
           )}
           aria-hidden="true"
         />
@@ -711,30 +808,10 @@ function StudySetupPanel({
       <div
         id={setupControlsId}
         className={cx(
-          "md:block",
-          isMobileSetupOpen ? "mt-3 md:mt-0" : "max-md:hidden",
+          isSetupExpanded ? "block mt-4 pt-4 border-t border-line" : "hidden",
         )}
       >
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div className="hidden md:block">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-muted">
-                {t("practice.filters.title")}
-              </h2>
-              <Badge
-                tone={activeDeck.kind === "saved" ? "accent" : "coptic"}
-                size="xs"
-              >
-                {deckKindLabel}
-              </Badge>
-            </div>
-            {hasActiveFilters ? (
-              <p className="mt-1 text-sm font-medium text-muted">
-                {filteredCount} {t("practice.filters.of")} {totalCount}{" "}
-                {t("practice.filters.selected")}
-              </p>
-            ) : null}
-          </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           <div className="flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
@@ -1287,6 +1364,8 @@ function AnswerContextPanel({
         {primaryLink ? (
           <Link
             href={primaryLink.href}
+            target="_blank"
+            rel="noopener noreferrer"
             className="self-start rounded-md px-3 py-2 text-xs font-semibold text-coptic transition-colors hover:bg-surface hover:text-coptic-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 sm:self-center"
           >
             {t(primaryLink.labelKey)}
@@ -1397,11 +1476,13 @@ function TypedAnswerPractice({
   onCheck,
   status,
   value,
+  shouldShake,
 }: {
   onChange: (value: string) => void;
   onCheck: () => void;
   status: TypedFlashcardAnswerResult | null;
   value: string;
+  shouldShake?: boolean;
 }) {
   const { t } = useLanguage();
   let feedbackContent = null;
@@ -1454,6 +1535,7 @@ function TypedAnswerPractice({
           className={cx(
             antinoou.className,
             "h-11 min-w-0 flex-1 rounded-md border border-line bg-surface px-3 text-lg font-semibold text-coptic shadow-inner outline-none transition-colors placeholder:text-sm placeholder:font-sans placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20",
+            shouldShake && "animate-shake",
           )}
         />
         <button
@@ -1482,6 +1564,7 @@ function FlashcardFace({
   onTypedAnswerCheck,
   typedAnswer,
   typedAnswerStatus,
+  shouldShake,
 }: {
   isHintVisible: boolean;
   isRevealed: boolean;
@@ -1490,114 +1573,147 @@ function FlashcardFace({
   onTypedAnswerCheck: () => void;
   typedAnswer: string;
   typedAnswerStatus: TypedFlashcardAnswerResult | null;
+  shouldShake?: boolean;
 }) {
   const { t } = useLanguage();
   const { candidate } = item;
   const hintText = getFlashcardHintText(candidate, t);
   const isTypingCard = candidate.back.kind === "coptic";
   const primaryLink = getCandidatePrimaryLink(candidate);
-  let answerContent = (
-    <p className="mt-3 text-base font-medium text-muted">
-      {t("practice.saved.hiddenAnswer")}
-    </p>
-  );
+  const backFaceScrollRef = useRef<HTMLDivElement>(null);
 
-  if (isRevealed) {
-    answerContent = (
-      <div className="mt-3">
-        <FlashcardSideValue
-          side={candidate.back}
-          speechText={getCandidateAnswerSpeechText(candidate)}
-        />
-      </div>
-    );
-  } else if (isTypingCard) {
-    answerContent = (
-      <div className="mt-3 space-y-3">
-        {isHintVisible ? <FlashcardHintPanel hintText={hintText} /> : null}
-        <TypedAnswerPractice
-          value={typedAnswer}
-          status={typedAnswerStatus}
-          onChange={onTypedAnswerChange}
-          onCheck={onTypedAnswerCheck}
-        />
-      </div>
-    );
-  } else if (isHintVisible) {
-    answerContent = (
-      <div className="mt-3">
-        <FlashcardHintPanel hintText={hintText} />
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (backFaceScrollRef.current) {
+      backFaceScrollRef.current.scrollTop = 0;
+    }
+  }, [item.candidate.id]);
 
   return (
-    <div className="flex min-h-[13rem] flex-col sm:min-h-[15.5rem] md:min-h-[25rem]">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge tone={item.status === "new" ? "accent" : "coptic"} size="xs">
-            {item.status === "new"
-              ? t("practice.saved.new")
-              : t("practice.saved.due")}
-          </Badge>
-          <Badge tone="surface" size="xs">
-            {t(candidate.metadata.templateLabelKey)}
-          </Badge>
-          {isDictionaryFlashcardCandidate(candidate) &&
-          candidate.displayDialect ? (
-            <Badge tone="neutral" size="xs">
-              <DialectSiglum siglum={candidate.displayDialect} />
-            </Badge>
-          ) : null}
-          {isGrammarFlashcardCandidate(candidate) ? (
-            <Badge tone="neutral" size="xs">
-              {t(candidate.metadata.sourceLabelKey)}
-            </Badge>
-          ) : null}
-        </div>
-
-        {primaryLink ? (
-          <Link
-            href={primaryLink.href}
-            className={buttonClassName({
-              className: "h-9 px-3 text-xs max-sm:hidden",
-              size: "sm",
-              variant: "secondary",
-            })}
-          >
-            <BookOpen className="h-4 w-4" aria-hidden="true" />
-            {t(primaryLink.labelKey)}
-          </Link>
-        ) : null}
-      </div>
-
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 py-3 text-center md:gap-6 md:py-10">
-        <div className="w-full space-y-2 md:space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted">
-            {t(candidate.front.labelKey)}
-          </p>
-          <FlashcardSideValue
-            side={candidate.front}
-            speechText={getCandidateFrontSpeechText(candidate)}
-          />
-        </div>
-
+    <div className="card-perspective w-full h-[24rem] sm:h-[26rem] md:h-[30rem]">
+      <div className={cx("card-inner", isRevealed && "is-flipped")}>
+        {/* CARD FRONT FACE */}
         <div
-          className={cx(
-            "w-full rounded-lg border px-4 py-3 transition-colors md:px-6 md:py-5",
-            isRevealed
-              ? "border-coptic/20 bg-coptic/5"
-              : "border-line bg-elevated/70",
-          )}
-          aria-live="polite"
+          className="card-face card-front rounded-lg border border-line bg-elevated/45 p-4 shadow-soft md:p-6"
+          aria-hidden={isRevealed}
         >
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted">
-            {t(candidate.back.labelKey)}
-          </p>
-          {answerContent}
+          {primaryLink ? (
+            <div className="flex justify-end w-full">
+              <Link
+                href={primaryLink.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonClassName({
+                  className: "h-9 px-3 text-xs max-sm:hidden",
+                  size: "sm",
+                  variant: "secondary",
+                })}
+                tabIndex={isRevealed ? -1 : 0}
+              >
+                <BookOpen className="h-4 w-4" aria-hidden="true" />
+                {t(primaryLink.labelKey)}
+              </Link>
+            </div>
+          ) : null}
+
+          <div className="flex flex-1 flex-col items-center justify-center gap-2 py-3 text-center md:gap-6 md:py-10">
+            <div className="w-full space-y-2 md:space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted">
+                {t(candidate.front.labelKey)}
+              </p>
+              <FlashcardSideValue
+                side={candidate.front}
+                speechText={getCandidateFrontSpeechText(candidate)}
+              />
+            </div>
+
+            <div className="w-full rounded-lg border border-line bg-elevated/70 px-4 py-3 md:px-6 md:py-5">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted">
+                {t(candidate.back.labelKey)}
+              </p>
+              {isTypingCard ? (
+                <div className="mt-3 space-y-3 text-left">
+                  {isHintVisible ? (
+                    <FlashcardHintPanel hintText={hintText} />
+                  ) : null}
+                  <TypedAnswerPractice
+                    value={typedAnswer}
+                    status={typedAnswerStatus}
+                    onChange={onTypedAnswerChange}
+                    onCheck={onTypedAnswerCheck}
+                    shouldShake={shouldShake}
+                  />
+                </div>
+              ) : (
+                <div className="mt-3">
+                  {isHintVisible ? (
+                    <FlashcardHintPanel hintText={hintText} />
+                  ) : null}
+                  <p className="text-base font-medium text-muted">
+                    {t("practice.saved.hiddenAnswer")}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {isRevealed ? <AnswerContextPanel candidate={candidate} /> : null}
+        {/* CARD BACK FACE */}
+        <div
+          className="card-face card-back rounded-lg border border-line border-l-4 border-l-coptic/40 bg-surface p-4 shadow-soft md:p-6"
+          aria-hidden={!isRevealed}
+        >
+          {primaryLink ? (
+            <div className="flex justify-end w-full">
+              <Link
+                href={primaryLink.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonClassName({
+                  className: "h-9 px-3 text-xs max-sm:hidden",
+                  size: "sm",
+                  variant: "secondary",
+                })}
+                tabIndex={isRevealed ? 0 : -1}
+              >
+                <BookOpen className="h-4 w-4" aria-hidden="true" />
+                {t(primaryLink.labelKey)}
+              </Link>
+            </div>
+          ) : null}
+
+          <div
+            ref={backFaceScrollRef}
+            className="flex flex-1 flex-col items-center justify-start gap-2 py-3 text-center md:gap-4 md:py-8 overflow-y-auto w-full"
+          >
+            <div className="w-full my-auto flex flex-col items-center gap-2 md:gap-4">
+              <div className="w-full space-y-1 md:space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted">
+                  {t(candidate.front.labelKey)}
+                </p>
+                <FlashcardSideValue
+                  side={candidate.front}
+                  speechText={getCandidateFrontSpeechText(candidate)}
+                />
+              </div>
+
+              <div className="w-full rounded-lg border border-coptic/20 bg-coptic/5 px-4 py-3 md:px-6 md:py-4">
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted">
+                  {t(candidate.back.labelKey)}
+                </p>
+                <div className="mt-2">
+                  <FlashcardSideValue
+                    side={candidate.back}
+                    speechText={getCandidateAnswerSpeechText(candidate)}
+                  />
+                </div>
+              </div>
+
+              <div className="w-full text-left">
+                <AnswerContextPanel key={candidate.id} candidate={candidate} />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1772,6 +1888,7 @@ export function PracticePageClient({
   storageError,
 }: PracticePageClientProps) {
   const { language, t } = useLanguage();
+  const { speakAuto } = useSpeech();
   const [deckFilters, setDeckFilters] =
     useState<DictionaryFlashcardDeckFilters>(
       DEFAULT_DICTIONARY_FLASHCARD_DECK_FILTERS,
@@ -1815,6 +1932,7 @@ export function PracticePageClient({
   const [typedAnswer, setTypedAnswer] = useState("");
   const [typedAnswerStatus, setTypedAnswerStatus] =
     useState<TypedFlashcardAnswerResult | null>(null);
+  const [shouldShake, setShouldShake] = useState(false);
   const [reviews, setReviews] = useState<ReviewOutcome[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isDeckPickerOpen, setIsDeckPickerOpen] = useState(false);
@@ -1864,6 +1982,7 @@ export function PracticePageClient({
     setIsRevealed(false);
     setTypedAnswer("");
     setTypedAnswerStatus(null);
+    setShouldShake(false);
     setReviews([]);
     setErrorMessage(null);
   }
@@ -1906,120 +2025,236 @@ export function PracticePageClient({
     resetStudySessionState();
   }
 
-  function advanceSessionReview(options: {
-    cardId: string;
-    dueAt: string | null;
-    rating: FlashcardReviewRating;
-  }) {
-    if (!currentItem) {
-      return;
-    }
+  const advanceSessionReview = useCallback(
+    (options: {
+      cardId: string;
+      dueAt: string | null;
+      rating: FlashcardReviewRating;
+    }) => {
+      if (!currentItem) {
+        return;
+      }
 
-    setReviews((currentReviews) => [
-      ...currentReviews,
-      {
-        cardId: options.cardId,
-        candidateId: currentItem.candidate.id,
-        dueAt: options.dueAt,
-        rating: options.rating,
-      },
-    ]);
-    setCurrentIndex((index) => index + 1);
-    setIsHintVisible(false);
-    setIsRevealed(false);
-    setTypedAnswer("");
-    setTypedAnswerStatus(null);
-  }
+      setReviews((currentReviews) => [
+        ...currentReviews,
+        {
+          cardId: options.cardId,
+          candidateId: currentItem.candidate.id,
+          dueAt: options.dueAt,
+          rating: options.rating,
+        },
+      ]);
+      setCurrentIndex((index) => index + 1);
+      setIsHintVisible(false);
+      setIsRevealed(false);
+      setTypedAnswer("");
+      setTypedAnswerStatus(null);
+      setShouldShake(false);
+    },
+    [currentItem],
+  );
 
   function updateTypedAnswer(value: string) {
     setTypedAnswer(value);
     setTypedAnswerStatus(null);
   }
 
-  function checkTypedAnswer() {
+  const checkTypedAnswer = useCallback(() => {
     if (!currentItem || currentItem.candidate.back.kind !== "coptic") {
       return;
     }
 
-    setTypedAnswerStatus(
-      compareTypedFlashcardAnswer({
-        expected: currentItem.candidate.back.text,
-        input: typedAnswer,
-      }),
-    );
-  }
+    const status = compareTypedFlashcardAnswer({
+      expected: currentItem.candidate.back.text,
+      input: typedAnswer,
+    });
+    setTypedAnswerStatus(status);
 
-  function reviewCurrentCard(rating: FlashcardReviewRating) {
-    if (!currentItem || isPending) {
-      return;
+    if (status === "correct") {
+      setIsRevealed(true);
+    } else if (status === "incorrect") {
+      setShouldShake(true);
+      setTimeout(() => setShouldShake(false), 500);
     }
+  }, [currentItem, typedAnswer]);
 
-    setErrorMessage(null);
+  const reviewCurrentCard = useCallback(
+    (rating: FlashcardReviewRating) => {
+      if (!currentItem || isPending) {
+        return;
+      }
 
-    if (!isPersistenceEnabled) {
-      advanceSessionReview({
-        cardId: currentItem.candidate.id,
-        dueAt: null,
-        rating,
-      });
-      return;
-    }
+      setErrorMessage(null);
 
-    startTransition(async () => {
-      let practiceItemId = currentItem.flashcardId;
+      if (!isPersistenceEnabled) {
+        advanceSessionReview({
+          cardId: currentItem.candidate.id,
+          dueAt: null,
+          rating,
+        });
+        return;
+      }
 
-      if (!practiceItemId) {
-        const ensureFormData = new FormData();
-        ensureFormData.set("language", language);
-        ensureFormData.set("sourceType", currentItem.candidate.sourceType);
-        ensureFormData.set("sourceId", currentItem.candidate.sourceId);
-        ensureFormData.set("variantKey", currentItem.candidate.variantKey);
-        ensureFormData.set("template", currentItem.candidate.template);
+      startTransition(async () => {
+        let practiceItemId = currentItem.flashcardId;
 
-        if (isDictionaryFlashcardCandidate(currentItem.candidate)) {
-          ensureFormData.set("entryId", String(currentItem.candidate.entryId));
-          ensureFormData.set(
-            "selectedDialect",
-            currentItem.candidate.selectedDialect,
+        if (!practiceItemId) {
+          const ensureFormData = new FormData();
+          ensureFormData.set("language", language);
+          ensureFormData.set("sourceType", currentItem.candidate.sourceType);
+          ensureFormData.set("sourceId", currentItem.candidate.sourceId);
+          ensureFormData.set("variantKey", currentItem.candidate.variantKey);
+          ensureFormData.set("template", currentItem.candidate.template);
+
+          if (isDictionaryFlashcardCandidate(currentItem.candidate)) {
+            ensureFormData.set(
+              "entryId",
+              String(currentItem.candidate.entryId),
+            );
+            ensureFormData.set(
+              "selectedDialect",
+              currentItem.candidate.selectedDialect,
+            );
+          }
+
+          const ensureResult = await ensurePracticeItemForSource(
+            null,
+            ensureFormData,
           );
+
+          if (!ensureResult?.success || !ensureResult.practiceItemId) {
+            setErrorMessage(
+              ensureResult?.error ?? t("practice.saved.reviewFailed"),
+            );
+            return;
+          }
+
+          practiceItemId = ensureResult.practiceItemId;
         }
 
-        const ensureResult = await ensurePracticeItemForSource(
-          null,
-          ensureFormData,
-        );
+        const reviewFormData = new FormData();
+        reviewFormData.set("language", language);
+        reviewFormData.set("practiceItemId", practiceItemId);
+        reviewFormData.set("rating", rating);
 
-        if (!ensureResult?.success || !ensureResult.practiceItemId) {
+        const reviewResult = await submitPracticeReview(null, reviewFormData);
+
+        if (!reviewResult?.success) {
           setErrorMessage(
-            ensureResult?.error ?? t("practice.saved.reviewFailed"),
+            reviewResult?.error ?? t("practice.saved.reviewFailed"),
           );
           return;
         }
 
-        practiceItemId = ensureResult.practiceItemId;
-      }
+        advanceSessionReview({
+          cardId: practiceItemId,
+          dueAt: reviewResult.dueAt ?? null,
+          rating,
+        });
+      });
+    },
+    [
+      currentItem,
+      isPending,
+      isPersistenceEnabled,
+      language,
+      advanceSessionReview,
+      t,
+    ],
+  );
 
-      const reviewFormData = new FormData();
-      reviewFormData.set("language", language);
-      reviewFormData.set("practiceItemId", practiceItemId);
-      reviewFormData.set("rating", rating);
+  const playCurrentAudio = useCallback(() => {
+    if (!currentItem) {
+      return;
+    }
 
-      const reviewResult = await submitPracticeReview(null, reviewFormData);
+    const textToSpeak = isRevealed
+      ? getCandidateAnswerSpeechText(currentItem.candidate) ||
+        getCandidateFrontSpeechText(currentItem.candidate)
+      : getCandidateFrontSpeechText(currentItem.candidate) ||
+        getCandidateAnswerSpeechText(currentItem.candidate);
 
-      if (!reviewResult?.success) {
-        setErrorMessage(
-          reviewResult?.error ?? t("practice.saved.reviewFailed"),
-        );
+    if (textToSpeak) {
+      speakAuto(textToSpeak);
+    }
+  }, [currentItem, isRevealed, speakAuto]);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const activeEl = document.activeElement;
+      const isTyping =
+        activeEl &&
+        (activeEl.tagName === "INPUT" ||
+          activeEl.tagName === "TEXTAREA" ||
+          activeEl.getAttribute("contenteditable") === "true");
+
+      if (isTyping) {
         return;
       }
 
-      advanceSessionReview({
-        cardId: practiceItemId,
-        dueAt: reviewResult.dueAt ?? null,
-        rating,
-      });
-    });
-  }
+      if (isDeckPickerOpen) {
+        return;
+      }
+
+      const key = event.key.toLowerCase();
+
+      if (key === " " || event.key === "Enter") {
+        event.preventDefault();
+        if (!currentItem) {
+          return;
+        }
+
+        if (!isRevealed) {
+          const isTypingCard = currentItem.candidate.back.kind === "coptic";
+          if (isTypingCard) {
+            checkTypedAnswer();
+          } else {
+            setIsRevealed(true);
+          }
+        } else {
+          reviewCurrentCard("good");
+        }
+      } else if (key === "1") {
+        if (isRevealed) {
+          event.preventDefault();
+          reviewCurrentCard("again");
+        }
+      } else if (key === "2") {
+        if (isRevealed) {
+          event.preventDefault();
+          reviewCurrentCard("hard");
+        }
+      } else if (key === "3") {
+        if (isRevealed) {
+          event.preventDefault();
+          reviewCurrentCard("good");
+        }
+      } else if (key === "4") {
+        if (isRevealed) {
+          event.preventDefault();
+          reviewCurrentCard("easy");
+        }
+      } else if (key === "r" || key === "v") {
+        event.preventDefault();
+        playCurrentAudio();
+      } else if (key === "h") {
+        event.preventDefault();
+        setIsHintVisible((prev) => !prev);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [
+    currentItem,
+    isRevealed,
+    isDeckPickerOpen,
+    playCurrentAudio,
+    reviewCurrentCard,
+    checkTypedAnswer,
+  ]);
 
   const caughtUpDescription = nextDueDate
     ? `${t("practice.saved.nextDue")}: ${nextDueDate}`
@@ -2142,6 +2377,7 @@ export function PracticePageClient({
                 typedAnswerStatus={typedAnswerStatus}
                 onTypedAnswerChange={updateTypedAnswer}
                 onTypedAnswerCheck={checkTypedAnswer}
+                shouldShake={shouldShake}
               />
 
               {errorMessage ? (
@@ -2169,9 +2405,14 @@ export function PracticePageClient({
                       })}
                     >
                       <Lightbulb className="h-4 w-4" aria-hidden="true" />
-                      {isHintVisible
-                        ? t("practice.saved.hideHint")
-                        : t("practice.saved.hint")}
+                      <span>
+                        {isHintVisible
+                          ? t("practice.saved.hideHint")
+                          : t("practice.saved.hint")}
+                      </span>
+                      <kbd className="hidden md:inline-block ml-1.5 px-1.5 py-0.5 text-[10px] font-sans font-semibold text-muted bg-elevated rounded border border-line shadow-sm">
+                        H
+                      </kbd>
                     </button>
                     <button
                       type="button"
@@ -2182,7 +2423,10 @@ export function PracticePageClient({
                       })}
                     >
                       <Eye className="h-4 w-4" aria-hidden="true" />
-                      {t("practice.saved.reveal")}
+                      <span>{t("practice.saved.reveal")}</span>
+                      <kbd className="hidden md:inline-block ml-1.5 px-1.5 py-0.5 text-[10px] font-sans font-semibold text-paper/85 bg-paper/20 rounded border border-paper/10 shadow-sm">
+                        Space
+                      </kbd>
                     </button>
                   </div>
                 ) : (
@@ -2191,7 +2435,7 @@ export function PracticePageClient({
                       {t("practice.saved.ratingLabel")}
                     </p>
                     <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
-                      {RATING_OPTIONS.map((option) => {
+                      {RATING_OPTIONS.map((option, index) => {
                         const Icon = option.icon;
                         const buttonLabel = isPending
                           ? t("practice.saved.saving")
@@ -2213,6 +2457,9 @@ export function PracticePageClient({
                               aria-hidden="true"
                             />
                             <span>{buttonLabel}</span>
+                            <kbd className="hidden md:inline-block ml-1 px-1.5 py-0.5 text-[10px] font-sans font-semibold opacity-75 rounded border border-current bg-surface/10">
+                              {index + 1}
+                            </kbd>
                           </button>
                         );
                       })}
