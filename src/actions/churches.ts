@@ -712,15 +712,16 @@ export async function createInvitationAction(
     invited_by: auth.user.id,
   };
 
-  const { data, error } = await createInvitation(auth.supabase, values);
-  if (error || !data) return { success: false, error: error?.message ?? "Failed to create invitation." };
+  const { data: raw, error } = await createInvitation(auth.supabase, values);
+  if (error || !raw) return { success: false, error: error?.message ?? "Failed to create invitation." };
 
+  const inv = raw as unknown as { id: string; token: string };
   const host = (await headers()).get("host") ?? "coptic-compass.com";
   const protocol = host === "localhost" || host.startsWith("localhost") ? "http" : "https";
-  const inviteLink = `${protocol}://${host}/churches/invite?token=${data.token}`;
+  const inviteLink = `${protocol}://${host}/churches/invite?token=${inv.token}`;
 
   revalidatePath(`/churches/${churchId}/organizations/${orgId}`);
-  return { success: true, inviteLink, data: { id: data.id } };
+  return { success: true, inviteLink, data: { id: inv.id } };
 }
 
 export async function acceptInvitationAction(
@@ -733,7 +734,7 @@ export async function acceptInvitationAction(
   if (!token) return { success: false, error: "Token is required." };
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("accept_invitation", { p_token: token });
+  const { data, error } = await (supabase.rpc as any)("accept_invitation", { p_token: token });
   if (error) return { success: false, error: error.message };
 
   const result = data as Record<string, unknown> | null;
@@ -744,6 +745,8 @@ export async function acceptInvitationAction(
 }
 
 // ---- TTS to Dataset Action ----
+
+export async function addTtsRecordingToDatasetAction(
   _prevState: ChurchActionState,
   formData: FormData,
 ): Promise<ChurchActionState> {

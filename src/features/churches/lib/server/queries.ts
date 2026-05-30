@@ -190,11 +190,11 @@ export async function deleteOrganization(
 
 export async function createMember(
   supabase: AppSupabaseClient,
-  values: OrganizationMemberInsert,
+  values: Record<string, unknown>,
 ) {
   const { data, error } = await supabase
     .from("organization_members")
-    .insert(values)
+    .insert(values as any)
     .select()
     .single();
   return { data, error };
@@ -204,12 +204,12 @@ export async function getMembersByOrganization(
   supabase: AppSupabaseClient,
   orgId: string,
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("organization_members")
     .select("*, profile:user_id(full_name, email, avatar_url)")
     .eq("organization_id", orgId)
     .order("full_name", { ascending: true });
-  return { data, error };
+  return { data: data as any[] | null, error };
 }
 
 export async function getMemberById(
@@ -227,11 +227,11 @@ export async function getMemberById(
 export async function updateMember(
   supabase: AppSupabaseClient,
   memberId: string,
-  values: OrganizationMemberUpdate,
+  values: Record<string, unknown>,
 ) {
   const { data, error } = await supabase
     .from("organization_members")
-    .update(values)
+    .update(values as any)
     .eq("id", memberId)
     .select()
     .single();
@@ -561,7 +561,7 @@ export async function createInvitation(
   supabase: AppSupabaseClient,
   values: OrganizationInvitationInsert,
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("organization_invitations")
     .insert(values)
     .select()
@@ -573,7 +573,7 @@ export async function getInvitationsByOrganization(
   supabase: AppSupabaseClient,
   orgId: string,
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("organization_invitations")
     .select("*")
     .eq("organization_id", orgId)
@@ -585,7 +585,7 @@ export async function getInvitationByToken(
   supabase: AppSupabaseClient,
   token: string,
 ) {
-  const { data, error } = await supabase.rpc("get_invitation_by_token", {
+  const { data, error } = await (supabase as any).rpc("get_invitation_by_token", {
     p_token: token,
   });
   return { data: data as Record<string, unknown> | null, error };
@@ -595,7 +595,7 @@ export async function acceptInvitationRpc(
   supabase: AppSupabaseClient,
   token: string,
 ) {
-  const { data, error } = await supabase.rpc("accept_invitation", {
+  const { data, error } = await (supabase as any).rpc("accept_invitation", {
     p_token: token,
   });
   return { data: data as Record<string, unknown> | null, error };
@@ -606,7 +606,7 @@ export async function updateInvitation(
   id: string,
   values: OrganizationInvitationUpdate,
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("organization_invitations")
     .update(values)
     .eq("id", id)

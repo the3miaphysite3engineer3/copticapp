@@ -15,7 +15,9 @@ export default async function OrganizationDetailPage({
   const pageData = await loadOrganizationPageData(supabase, orgId);
   if (!pageData.organization) notFound();
 
-  const { organization: org, members, recordings, invitations } = pageData;
+  const { organization: org, recordings } = pageData;
+  const members = pageData.members as Array<Record<string, unknown>>;
+  const invitations = pageData.invitations as Array<Record<string, unknown>>;
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 p-6">
@@ -75,12 +77,12 @@ export default async function OrganizationDetailPage({
               Pending Invitations
             </div>
             {invitations.map((inv) => (
-              <div key={inv.id} className="flex items-center justify-between p-3">
+              <div key={inv.id as string} className="flex items-center justify-between p-3">
                 <div>
-                  <span className="font-medium">{inv.email}</span>
+                  <span className="font-medium">{inv.email as string}</span>
                   <span className="text-ink/40 ml-2 text-xs">
-                    {inv.status} &middot; invited{" "}
-                    {new Date(inv.created_at).toLocaleDateString()}
+                    {inv.status as string} &middot; invited{" "}
+                    {new Date(inv.created_at as string).toLocaleDateString()}
                   </span>
                 </div>
               </div>
@@ -91,23 +93,21 @@ export default async function OrganizationDetailPage({
           <div className="border-line divide-line mt-4 divide-y overflow-hidden rounded-lg border">
             {members.map((member) => (
               <div
-                key={member.id}
+                key={member.id as string}
                 className="flex items-center justify-between p-3"
               >
                 <div>
                   <span className="font-medium">
-                    {(member as Record<string, unknown>).profile
-                      ? ((member as Record<string, unknown>).profile as Record<string, unknown>).full_name as string
-                      : member.full_name}
+                    {(member as any).profile?.full_name ?? member.full_name as string}
                   </span>
                   <span className="text-ink/40 ml-2 text-sm">
-                    {member.role}
+                    {member.role as string}
                   </span>
-                  {member.email && (
+                  {member.email ? (
                     <span className="text-ink/40 ml-2 text-sm">
-                      &middot; {member.email}
+                      &middot; {member.email as string}
                     </span>
-                  )}
+                  ) : null}
                 </div>
               </div>
             ))}

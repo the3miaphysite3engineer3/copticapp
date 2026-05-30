@@ -17,10 +17,10 @@ export default async function InvitePage({
   if (!raw) notFound();
 
   const invitation = raw as Record<string, unknown>;
-  if (invitation.status !== "pending") {
+  if ((invitation.status as string) !== "pending") {
     return (
       <div className="mx-auto max-w-lg space-y-6 p-6 text-center">
-        <h1 className="text-3xl font-bold">Invitation {invitation.status}</h1>
+        <h1 className="text-3xl font-bold">Invitation {(invitation.status as string)}</h1>
         <p className="text-ink/60">This invitation is no longer valid.</p>
         <a href="/churches" className="text-accent hover:underline text-sm">
           &larr; Back to churches
@@ -41,11 +41,11 @@ export default async function InvitePage({
         <p className="text-lg">
           You have been invited to join{" "}
           <strong>{invitation.organization_name as string}</strong>
-          {invitation.church_name && (
+          {invitation.church_name ? (
             <>
               {" "}at <strong>{invitation.church_name as string}</strong>
             </>
-          )}.
+          ) : null}.
         </p>
 
         {!auth ? (
