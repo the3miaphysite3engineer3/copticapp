@@ -3,13 +3,18 @@
 import { useActionState } from "react";
 
 import { approveChurchRequestAction } from "@/actions/churches";
+import type { ApproveRejectState } from "@/actions/churches";
+import { StatusNotice } from "@/components/StatusNotice";
 
 export function ApproveChurchRequestForm({
   requestId,
 }: {
   requestId: string;
 }) {
-  const [, formAction] = useActionState(approveChurchRequestAction, null);
+  const [state, formAction] = useActionState<ApproveRejectState, FormData>(
+    approveChurchRequestAction,
+    null,
+  );
 
   return (
     <form action={formAction}>
@@ -22,6 +27,11 @@ export function ApproveChurchRequestForm({
       >
         Approve
       </button>
+      {state?.error ? (
+        <StatusNotice tone="error" className="mt-2">
+          {state.error}
+        </StatusNotice>
+      ) : null}
     </form>
   );
 }

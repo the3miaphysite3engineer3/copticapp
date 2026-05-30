@@ -623,14 +623,6 @@ export async function approveChurchRequestAction(
   if (!request) return { success: false, error: "Request not found." };
 
   if (action === "approve") {
-    const { error } = await updateChurchRequest(auth.supabase, requestId, {
-      status: "approved",
-      approved_at: new Date().toISOString(),
-      approved_by: auth.user.id,
-    });
-    if (error) return { success: false, error: error.message };
-
-    // Create the actual church
     const { data: church } = await createChurch(auth.supabase, {
       name: request.name,
       slug: request.slug,
@@ -639,9 +631,19 @@ export async function approveChurchRequestAction(
       country: request.country,
       created_by: auth.user.id,
     });
-    if (!church) return { success: false, error: "Failed to create church." };
+    if (!church) return { success: false, error: "A church with this slug may already exist. Failed to create church." };
 
-    await addChurchAdmin(auth.supabase, church.id, auth.user.id, "admin");
+    const { error: adminError } = await addChurchAdmin(auth.supabase, church.id, auth.user.id, "admin");
+    if (adminError) {
+      return { success: false, error: "Church created but failed to grant you admin access. Contact support." };
+    }
+
+    const { error } = await updateChurchRequest(auth.supabase, requestId, {
+      status: "approved",
+      approved_at: new Date().toISOString(),
+      approved_by: auth.user.id,
+    });
+    if (error) return { success: false, error: error.message };
 
     revalidatePath("/churches");
     return { success: true };
