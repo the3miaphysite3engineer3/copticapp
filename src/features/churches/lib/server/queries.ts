@@ -91,16 +91,16 @@ export async function deleteChurch(
 }
 
 export async function addChurchAdmin(
-  supabase: AppSupabaseClient,
+  _supabase: AppSupabaseClient,
   churchId: string,
   userId: string,
   role: "admin" | "editor" | "viewer" = "admin",
 ) {
-  const { error } = await supabase.rpc("add_church_admin", {
-    p_church_id: churchId,
-    p_user_id: userId,
-    p_role: role,
-  });
+  const { createServiceRoleClient } = await import("@/lib/supabase/serviceRole");
+  const sb = createServiceRoleClient();
+  const { error } = await sb
+    .from("church_admins")
+    .insert({ church_id: churchId, user_id: userId, role });
   return { data: null, error };
 }
 
