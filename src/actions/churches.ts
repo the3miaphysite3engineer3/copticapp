@@ -624,25 +624,32 @@ export async function approveChurchRequestAction(
   if (!request) return { success: false, error: "Request not found." };
 
   if (action === "approve") {
-    let church = (await createChurch(auth.supabase, {
+    const { data: church, error: createError } = await createChurch(auth.supabase, {
       name: request.name,
       slug: request.slug,
       description: request.description,
       city: request.city,
       country: request.country,
       created_by: auth.user.id,
-    })).data;
+    });
 
-    if (!church) {
-      const existing = await getChurchBySlug(auth.supabase, request.slug);
-      if (existing.data) {
-        church = existing.data;
+    let resolvedChurch = church;
+
+    if (!resolvedChurch) {
+      if (createError?.code === "23505") {
+        const existing = await getChurchBySlug(auth.supabase, request.slug);
+        if (existing.data) {
+          resolvedChurch = existing.data;
+        } else {
+          return { success: false, error: `Slug conflict but couldn't find existing church: ${createError.message}` };
+        }
       } else {
-        return { success: false, error: "Failed to create church. The slug may already exist or another error occurred." };
+        return { success: false, error: createError?.message ?? "Failed to create church." };
       }
     }
 
-    const { error: adminError } = await addChurchAdmin(auth.supabase, church.id, auth.user.id, "admin");
+    if (!resolvedChurch) return { success: false, error: "Failed to create church." };
+    const { error: adminError } = await addChurchAdmin(auth.supabase, resolvedChurch.id, auth.user.id, "admin");
     if (adminError) {
       return { success: false, error: "Church found but failed to grant you admin access. The admin entry may already exist." };
     }
