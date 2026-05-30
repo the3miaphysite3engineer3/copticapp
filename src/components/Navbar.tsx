@@ -17,6 +17,7 @@ import { DEFAULT_PRACTICE_DECK_ID } from "@/features/practice/lib/practiceDeckDe
 import { cx } from "@/lib/classes";
 import {
   getAnalyticsPath,
+  getChurchesPath,
   getDashboardPath,
   getDictionaryPath,
   getPracticePath,
@@ -122,6 +123,7 @@ export function Navbar() {
   const primaryLinks: NavbarLink[] = [
     { href: getPublicationsPath(language), label: t("nav.publications") },
     { href: getGrammarPath(language), label: t("nav.grammar") },
+    { href: getChurchesPath(), label: t("nav.churches") },
   ];
   const shenuteLink: NavbarLink = {
     href: getShenutePath(),

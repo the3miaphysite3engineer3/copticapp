@@ -25,6 +25,7 @@ export const sharedMessages = defineMessages({
     "nav.analytics": "Analytics Dashboard",
     "nav.analyticsShort": "Analytics",
     "nav.analyticsDescription": "Explore dictionary data and patterns.",
+    "nav.churches": "Churches",
     "nav.login": "Sign In",
     "nav.dashboard": "Dashboard",
 
@@ -76,6 +77,7 @@ export const sharedMessages = defineMessages({
     "nav.analytics": "Analytics-dashboard",
     "nav.analyticsShort": "Analytics",
     "nav.analyticsDescription": "Verken woordenboekgegevens en patronen.",
+    "nav.churches": "Kerken",
     "nav.login": "Inloggen",
     "nav.dashboard": "Dashboard",
 

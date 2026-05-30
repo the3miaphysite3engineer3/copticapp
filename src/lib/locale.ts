@@ -88,6 +88,10 @@ export function getShenutePath() {
   return "/shenute";
 }
 
+export function getChurchesPath() {
+  return "/churches";
+}
+
 export function getAnalyticsPath(locale?: Language) {
   return locale ? getLocalizedPath(locale, "/analytics") : "/analytics";
 }

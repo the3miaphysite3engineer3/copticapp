@@ -1189,6 +1189,450 @@ export type Database = {
           },
         ];
       };
+      churches: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          description: string | null;
+          address: string | null;
+          city: string | null;
+          country: string | null;
+          logo_url: string | null;
+          website: string | null;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          description?: string | null;
+          address?: string | null;
+          city?: string | null;
+          country?: string | null;
+          logo_url?: string | null;
+          website?: string | null;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          description?: string | null;
+          address?: string | null;
+          city?: string | null;
+          country?: string | null;
+          logo_url?: string | null;
+          website?: string | null;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            columns: ["created_by"];
+            foreignKeyName: "churches_created_by_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "profiles";
+          },
+        ];
+      };
+      church_admins: {
+        Row: {
+          church_id: string;
+          user_id: string;
+          role: "admin" | "editor" | "viewer";
+          created_at: string;
+        };
+        Insert: {
+          church_id: string;
+          user_id: string;
+          role?: "admin" | "editor" | "viewer";
+          created_at?: string;
+        };
+        Update: {
+          church_id?: string;
+          user_id?: string;
+          role?: "admin" | "editor" | "viewer";
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            columns: ["church_id"];
+            foreignKeyName: "church_admins_church_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "churches";
+          },
+          {
+            columns: ["user_id"];
+            foreignKeyName: "church_admins_user_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "profiles";
+          },
+        ];
+      };
+      church_organizations: {
+        Row: {
+          id: string;
+          church_id: string;
+          name: string;
+          slug: string;
+          description: string | null;
+          type: "deacons" | "other" | "sunday_kids";
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          church_id: string;
+          name: string;
+          slug: string;
+          description?: string | null;
+          type?: "deacons" | "other" | "sunday_kids";
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          church_id?: string;
+          name?: string;
+          slug?: string;
+          description?: string | null;
+          type?: "deacons" | "other" | "sunday_kids";
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            columns: ["church_id"];
+            foreignKeyName: "church_organizations_church_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "churches";
+          },
+          {
+            columns: ["created_by"];
+            foreignKeyName: "church_organizations_created_by_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "profiles";
+          },
+        ];
+      };
+      organization_members: {
+        Row: {
+          id: string;
+          organization_id: string;
+          full_name: string;
+          email: string | null;
+          phone: string | null;
+          role: "assistant" | "leader" | "member" | "teacher";
+          date_of_birth: string | null;
+          notes: string | null;
+          added_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          full_name: string;
+          email?: string | null;
+          phone?: string | null;
+          role?: "assistant" | "leader" | "member" | "teacher";
+          date_of_birth?: string | null;
+          notes?: string | null;
+          added_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          full_name?: string;
+          email?: string | null;
+          phone?: string | null;
+          role?: "assistant" | "leader" | "member" | "teacher";
+          date_of_birth?: string | null;
+          notes?: string | null;
+          added_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            columns: ["organization_id"];
+            foreignKeyName: "organization_members_organization_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "church_organizations";
+          },
+          {
+            columns: ["added_by"];
+            foreignKeyName: "organization_members_added_by_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "profiles";
+          },
+        ];
+      };
+      audio_recordings: {
+        Row: {
+          id: string;
+          organization_id: string;
+          recorded_by: string;
+          title: string;
+          transcription: string | null;
+          transcription_english: string | null;
+          dialect: "A" | "ALL" | "B" | "F" | "L" | "M" | "S";
+          audio_url: string;
+          audio_duration_seconds: number | null;
+          file_size_bytes: number | null;
+          file_format: string | null;
+          status: "approved" | "pending" | "rejected" | "transcribed";
+          recording_date: string | null;
+          metadata: Json;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          recorded_by: string;
+          title: string;
+          transcription?: string | null;
+          transcription_english?: string | null;
+          dialect?: "A" | "ALL" | "B" | "F" | "L" | "M" | "S";
+          audio_url: string;
+          audio_duration_seconds?: number | null;
+          file_size_bytes?: number | null;
+          file_format?: string | null;
+          status?: "approved" | "pending" | "rejected" | "transcribed";
+          recording_date?: string | null;
+          metadata?: Json;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          recorded_by?: string;
+          title?: string;
+          transcription?: string | null;
+          transcription_english?: string | null;
+          dialect?: "A" | "ALL" | "B" | "F" | "L" | "M" | "S";
+          audio_url?: string;
+          audio_duration_seconds?: number | null;
+          file_size_bytes?: number | null;
+          file_format?: string | null;
+          status?: "approved" | "pending" | "rejected" | "transcribed";
+          recording_date?: string | null;
+          metadata?: Json;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            columns: ["organization_id"];
+            foreignKeyName: "audio_recordings_organization_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "church_organizations";
+          },
+          {
+            columns: ["recorded_by"];
+            foreignKeyName: "audio_recordings_recorded_by_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "organization_members";
+          },
+          {
+            columns: ["created_by"];
+            foreignKeyName: "audio_recordings_created_by_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "profiles";
+          },
+        ];
+      };
+      whisper_datasets: {
+        Row: {
+          id: string;
+          church_id: string;
+          name: string;
+          description: string | null;
+          status: "completed" | "draft" | "exported" | "failed" | "preparing" | "ready" | "training";
+          total_recordings: number;
+          total_duration_seconds: number;
+          huggingface_dataset_id: string | null;
+          metadata: Json;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          church_id: string;
+          name: string;
+          description?: string | null;
+          status?: "completed" | "draft" | "exported" | "failed" | "preparing" | "ready" | "training";
+          total_recordings?: number;
+          total_duration_seconds?: number;
+          huggingface_dataset_id?: string | null;
+          metadata?: Json;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          church_id?: string;
+          name?: string;
+          description?: string | null;
+          status?: "completed" | "draft" | "exported" | "failed" | "preparing" | "ready" | "training";
+          total_recordings?: number;
+          total_duration_seconds?: number;
+          huggingface_dataset_id?: string | null;
+          metadata?: Json;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            columns: ["church_id"];
+            foreignKeyName: "whisper_datasets_church_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "churches";
+          },
+          {
+            columns: ["created_by"];
+            foreignKeyName: "whisper_datasets_created_by_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "profiles";
+          },
+        ];
+      };
+      whisper_dataset_recordings: {
+        Row: {
+          dataset_id: string;
+          recording_id: string;
+        };
+        Insert: {
+          dataset_id: string;
+          recording_id: string;
+        };
+        Update: {
+          dataset_id?: string;
+          recording_id?: string;
+        };
+        Relationships: [
+          {
+            columns: ["dataset_id"];
+            foreignKeyName: "whisper_dataset_recordings_dataset_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "whisper_datasets";
+          },
+          {
+            columns: ["recording_id"];
+            foreignKeyName: "whisper_dataset_recordings_recording_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "audio_recordings";
+          },
+        ];
+      };
+      whisper_fine_tuning_jobs: {
+        Row: {
+          id: string;
+          dataset_id: string;
+          model_name: string;
+          language: "cop" | "cop-eg";
+          status: "completed" | "failed" | "pending" | "preparing" | "training";
+          learning_rate: number | null;
+          num_train_epochs: number | null;
+          batch_size: number | null;
+          trained_model_id: string | null;
+          final_loss: number | null;
+          word_error_rate: number | null;
+          error: string | null;
+          started_at: string | null;
+          completed_at: string | null;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          dataset_id: string;
+          model_name?: string;
+          language?: "cop" | "cop-eg";
+          status?: "completed" | "failed" | "pending" | "preparing" | "training";
+          learning_rate?: number | null;
+          num_train_epochs?: number | null;
+          batch_size?: number | null;
+          trained_model_id?: string | null;
+          final_loss?: number | null;
+          word_error_rate?: number | null;
+          error?: string | null;
+          started_at?: string | null;
+          completed_at?: string | null;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          dataset_id?: string;
+          model_name?: string;
+          language?: "cop" | "cop-eg";
+          status?: "completed" | "failed" | "pending" | "preparing" | "training";
+          learning_rate?: number | null;
+          num_train_epochs?: number | null;
+          batch_size?: number | null;
+          trained_model_id?: string | null;
+          final_loss?: number | null;
+          word_error_rate?: number | null;
+          error?: string | null;
+          started_at?: string | null;
+          completed_at?: string | null;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            columns: ["dataset_id"];
+            foreignKeyName: "whisper_fine_tuning_jobs_dataset_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "whisper_datasets";
+          },
+          {
+            columns: ["created_by"];
+            foreignKeyName: "whisper_fine_tuning_jobs_created_by_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "profiles";
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
