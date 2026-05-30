@@ -12,6 +12,7 @@ import {
   getDatasetRecordings,
   getFineTuningJobsByDataset,
   getChurchAdmins,
+  getInvitationsByOrganization,
 } from "@/features/churches/lib/server/queries";
 
 export async function loadUserChurchesPageData(
@@ -55,11 +56,16 @@ export async function loadOrganizationPageData(
     supabase,
     orgId,
   );
+  const { data: invitations } = await getInvitationsByOrganization(
+    supabase,
+    orgId,
+  );
 
   return {
     organization: org,
     members: members ?? [],
     recordings: recordings ?? [],
+    invitations: invitations ?? [],
   };
 }
 

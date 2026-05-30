@@ -39,6 +39,9 @@ import {
   createRecording as createRecordingQuery,
   addRecordingToDataset as addRecToDatasetQuery,
   getOrganizationById,
+  createInvitation,
+  getInvitationsByOrganization,
+  updateInvitation,
 } from "@/features/churches/lib/server/queries";
 import type {
   ChurchInsert,
@@ -48,6 +51,7 @@ import type {
   WhisperDatasetInsert,
   WhisperFineTuningJobInsert,
   ChurchRequestInsert,
+  OrganizationInvitationInsert,
 } from "@/features/churches/types";
 
 // ---- Action State Types ----
@@ -676,9 +680,70 @@ export async function approveChurchRequestAction(
   return { success: true };
 }
 
-// ---- TTS to Dataset Action ----
+// ---- Organization Invitation Actions ----
 
-export async function addTtsRecordingToDatasetAction(
+export type InvitationActionState = {
+  success: boolean;
+  error?: string;
+  inviteLink?: string;
+  data?: Record<string, unknown>;
+} | null;
+
+export async function createInvitationAction(
+  _prevState: InvitationActionState,
+  formData: FormData,
+): Promise<InvitationActionState> {
+  if (!hasSupabaseRuntimeEnv()) return { success: false, error: "Service unavailable." };
+
+  const auth = await getAuthenticatedServerContext();
+  if (!auth) return { success: false, error: "Please sign in first." };
+
+  const orgId = getFormString(formData, "orgId");
+  const email = getFormString(formData, "email");
+  const churchId = getFormString(formData, "churchId");
+
+  if (!orgId || !email) {
+    return { success: false, error: "Organization ID and email are required." };
+  }
+
+  const values: OrganizationInvitationInsert = {
+    organization_id: orgId,
+    email,
+    invited_by: auth.user.id,
+  };
+
+  const { data, error } = await createInvitation(auth.supabase, values);
+  if (error || !data) return { success: false, error: error?.message ?? "Failed to create invitation." };
+
+  const host = (await headers()).get("host") ?? "coptic-compass.com";
+  const protocol = host === "localhost" || host.startsWith("localhost") ? "http" : "https";
+  const inviteLink = `${protocol}://${host}/churches/invite?token=${data.token}`;
+
+  revalidatePath(`/churches/${churchId}/organizations/${orgId}`);
+  return { success: true, inviteLink, data: { id: data.id } };
+}
+
+export async function acceptInvitationAction(
+  _prevState: InvitationActionState,
+  formData: FormData,
+): Promise<InvitationActionState> {
+  if (!hasSupabaseRuntimeEnv()) return { success: false, error: "Service unavailable." };
+
+  const token = getFormString(formData, "token");
+  if (!token) return { success: false, error: "Token is required." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("accept_invitation", { p_token: token });
+  if (error) return { success: false, error: error.message };
+
+  const result = data as Record<string, unknown> | null;
+  if (!result) return { success: false, error: "Failed to accept invitation." };
+  if (result.error) return { success: false, error: result.error as string };
+
+  return { success: true, data: result };
+}
+
+// ---- TTS to Dataset Action ----
   _prevState: ChurchActionState,
   formData: FormData,
 ): Promise<ChurchActionState> {

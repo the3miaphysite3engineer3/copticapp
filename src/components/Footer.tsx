@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FaXTwitter, FaInstagram, FaGithub } from "react-icons/fa6";
+import { FaXTwitter, FaInstagram, FaGithub, FaFacebook } from "react-icons/fa6";
 
 import { iconButtonClassName } from "@/components/Button";
 import { cx } from "@/lib/classes";
@@ -61,7 +61,17 @@ export function Footer() {
         </div>
         <div className="flex items-center gap-2">
           <a
-            href="https://x.com/kyrilloswannes"
+            href="https://www.facebook.com/profile.php?id=61563109659451"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={iconButtonClassName()}
+            title="Facebook"
+          >
+            <span className="sr-only">Facebook</span>
+            <FaFacebook className="h-[18px] w-[18px]" />
+          </a>
+          <a
+            href="https://x.com/copticcompass"
             target="_blank"
             rel="noopener noreferrer"
             className={iconButtonClassName()}
@@ -71,7 +81,7 @@ export function Footer() {
             <FaXTwitter className="h-[18px] w-[18px]" />
           </a>
           <a
-            href="https://www.instagram.com/kyrilloswannes/"
+            href="https://www.instagram.com/copticcompass/"
             target="_blank"
             rel="noopener noreferrer"
             className={iconButtonClassName()}
@@ -81,7 +91,7 @@ export function Footer() {
             <FaInstagram className="h-[18px] w-[18px]" />
           </a>
           <a
-            href="https://github.com/KyroHub"
+            href="https://github.com/KyroHub/CopticCompass"
             target="_blank"
             rel="noopener noreferrer"
             className={iconButtonClassName()}

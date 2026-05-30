@@ -12,8 +12,8 @@ export type ChurchOrganizationInsert = TablesInsert<"church_organizations">;
 export type ChurchOrganizationUpdate = TablesUpdate<"church_organizations">;
 
 export type OrganizationMemberRow = Tables<"organization_members">;
-export type OrganizationMemberInsert = TablesInsert<"organization_members">;
-export type OrganizationMemberUpdate = TablesUpdate<"organization_members">;
+export type OrganizationMemberInsert = TablesInsert<"organization_members"> & { user_id?: string | null };
+export type OrganizationMemberUpdate = TablesUpdate<"organization_members"> & { user_id?: string | null };
 
 export type AudioRecordingRow = Tables<"audio_recordings">;
 export type AudioRecordingInsert = TablesInsert<"audio_recordings">;
@@ -46,3 +46,51 @@ export type OrganizationWithStats = ChurchOrganizationRow & {
 export type ChurchRequestRow = Tables<"church_requests">;
 export type ChurchRequestInsert = TablesInsert<"church_requests">;
 export type ChurchRequestUpdate = TablesUpdate<"church_requests">;
+
+export type InvitationStatus = "pending" | "accepted" | "expired" | "revoked";
+
+export type OrganizationInvitationRow = {
+  id: string;
+  organization_id: string;
+  email: string;
+  token: string;
+  invited_by: string;
+  status: InvitationStatus;
+  created_at: string;
+  accepted_at: string | null;
+  expires_at: string;
+};
+
+export type OrganizationInvitationInsert = {
+  id?: string;
+  organization_id: string;
+  email: string;
+  token?: string;
+  invited_by: string;
+  status?: InvitationStatus;
+  created_at?: string;
+  accepted_at?: string | null;
+  expires_at?: string;
+};
+
+export type OrganizationInvitationUpdate = {
+  id?: string;
+  organization_id?: string;
+  email?: string;
+  token?: string;
+  invited_by?: string;
+  status?: InvitationStatus;
+  created_at?: string;
+  accepted_at?: string | null;
+  expires_at?: string;
+};
+
+export type OrganizationMemberWithProfile = OrganizationMemberRow & {
+  user_id: string | null;
+  profile?: {
+    id: string;
+    full_name: string | null;
+    email: string | null;
+    avatar_url: string | null;
+  } | null;
+};

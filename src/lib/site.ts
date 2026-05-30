@@ -20,7 +20,7 @@ function getDictionaryEntryCount() {
 const dictionaryEntryCount = getDictionaryEntryCount();
 const siteAuthor = {
   name: "Kyrillos Wannes",
-  twitter: "@kyrilloswannes",
+  twitter: "@copticcompass",
   github: "https://github.com/KyroHub",
 };
 
@@ -46,6 +46,7 @@ export const siteConfig = {
   shortDescription: "A trusted digital Coptology platform.",
   description: buildSiteDescription(dictionaryEntryCount),
   liveUrl: "https://www.copticcompass.com",
+  facebookUrl: "https://www.facebook.com/profile.php?id=61563109659451",
   repoUrl: "https://github.com/KyroHub/CopticCompass",
   cloneUrl: "https://github.com/KyroHub/CopticCompass.git",
   author: siteAuthor,

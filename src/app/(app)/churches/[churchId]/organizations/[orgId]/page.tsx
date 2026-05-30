@@ -15,7 +15,7 @@ export default async function OrganizationDetailPage({
   const pageData = await loadOrganizationPageData(supabase, orgId);
   if (!pageData.organization) notFound();
 
-  const { organization: org, members, recordings } = pageData;
+  const { organization: org, members, recordings, invitations } = pageData;
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 p-6">
@@ -66,9 +66,27 @@ export default async function OrganizationDetailPage({
           <h2 className="text-xl font-semibold">Members ({members.length})</h2>
         </div>
         <div className="border-line rounded-lg border p-6">
-          <h3 className="mb-4 text-sm font-medium">Add Member</h3>
-          <MemberForm orgId={orgId} />
+          <h3 className="mb-4 text-sm font-medium">Invite Member</h3>
+          <InviteForm orgId={orgId} churchId={churchId} />
         </div>
+        {invitations.length > 0 && (
+          <div className="border-line divide-line mt-4 divide-y overflow-hidden rounded-lg border">
+            <div className="bg-surface px-3 py-2 text-xs font-medium text-ink/50">
+              Pending Invitations
+            </div>
+            {invitations.map((inv) => (
+              <div key={inv.id} className="flex items-center justify-between p-3">
+                <div>
+                  <span className="font-medium">{inv.email}</span>
+                  <span className="text-ink/40 ml-2 text-xs">
+                    {inv.status} &middot; invited{" "}
+                    {new Date(inv.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {members.length > 0 && (
           <div className="border-line divide-line mt-4 divide-y overflow-hidden rounded-lg border">
             {members.map((member) => (
@@ -77,7 +95,11 @@ export default async function OrganizationDetailPage({
                 className="flex items-center justify-between p-3"
               >
                 <div>
-                  <span className="font-medium">{member.full_name}</span>
+                  <span className="font-medium">
+                    {(member as Record<string, unknown>).profile
+                      ? ((member as Record<string, unknown>).profile as Record<string, unknown>).full_name as string
+                      : member.full_name}
+                  </span>
                   <span className="text-ink/40 ml-2 text-sm">
                     {member.role}
                   </span>
@@ -163,48 +185,48 @@ export default async function OrganizationDetailPage({
   );
 }
 
-function MemberForm({ orgId }: { orgId: string }) {
+function InviteForm({ orgId, churchId }: { orgId: string; churchId: string }) {
   return (
-    <form className="flex flex-wrap items-end gap-3">
+    <form
+      className="flex flex-wrap items-end gap-3"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const formData = new FormData(form);
+        const { createInvitationAction } = await import("@/actions/churches");
+        const result = await createInvitationAction(null, formData);
+        if (result?.inviteLink) {
+          try {
+            await navigator.clipboard.writeText(result.inviteLink);
+            alert("Invite link copied to clipboard!\n\n" + result.inviteLink);
+          } catch {
+            alert("Invite link:\n\n" + result.inviteLink);
+          }
+        } else if (result?.error) {
+          alert(result.error);
+        }
+      }}
+    >
       <input type="hidden" name="orgId" value={orgId} />
+      <input type="hidden" name="churchId" value={churchId} />
       <div>
-        <label htmlFor="fullName" className="text-ink/70 mb-1 block text-xs">
-          Full Name
+        <label htmlFor="email" className="text-ink/70 mb-1 block text-xs">
+          Email Address
         </label>
         <input
-          id="fullName"
-          name="fullName"
+          id="email"
+          name="email"
+          type="email"
           required
-          className="border-line focus:border-accent w-56 rounded-lg border px-3 py-2 text-sm outline-none"
-          placeholder="Deacon name"
+          className="border-line focus:border-accent w-72 rounded-lg border px-3 py-2 text-sm outline-none"
+          placeholder="user@example.com"
         />
       </div>
-      <div>
-        <label htmlFor="role" className="text-ink/70 mb-1 block text-xs">
-          Role
-        </label>
-        <select
-          id="role"
-          name="role"
-          className="border-line focus:border-accent rounded-lg border px-3 py-2 text-sm outline-none"
-        >
-          <option value="member">Member</option>
-          <option value="leader">Leader</option>
-          <option value="teacher">Teacher</option>
-          <option value="assistant">Assistant</option>
-        </select>
-      </div>
       <button
-        formAction={async (formData: FormData) => {
-          "use server";
-          const { createMemberAction } = await import(
-            "@/actions/churches"
-          );
-          await createMemberAction(null, formData);
-        }}
+        type="submit"
         className="bg-accent hover:bg-accent/90 rounded-lg px-4 py-2 text-sm font-medium text-white"
       >
-        Add Member
+        Send Invite
       </button>
     </form>
   );

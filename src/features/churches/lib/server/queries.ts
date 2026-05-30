@@ -8,6 +8,8 @@ import type {
   ChurchRequestUpdate,
   OrganizationMemberInsert,
   OrganizationMemberUpdate,
+  OrganizationInvitationInsert,
+  OrganizationInvitationUpdate,
   AudioRecordingInsert,
   AudioRecordingUpdate,
   WhisperDatasetInsert,
@@ -204,7 +206,7 @@ export async function getMembersByOrganization(
 ) {
   const { data, error } = await supabase
     .from("organization_members")
-    .select("*")
+    .select("*, profile:user_id(full_name, email, avatar_url)")
     .eq("organization_id", orgId)
     .order("full_name", { ascending: true });
   return { data, error };
@@ -546,6 +548,66 @@ export async function updateChurchRequest(
 ) {
   const { data, error } = await supabase
     .from("church_requests")
+    .update(values)
+    .eq("id", id)
+    .select()
+    .single();
+  return { data, error };
+}
+
+// ---- Organization Invitations ----
+
+export async function createInvitation(
+  supabase: AppSupabaseClient,
+  values: OrganizationInvitationInsert,
+) {
+  const { data, error } = await supabase
+    .from("organization_invitations")
+    .insert(values)
+    .select()
+    .single();
+  return { data, error };
+}
+
+export async function getInvitationsByOrganization(
+  supabase: AppSupabaseClient,
+  orgId: string,
+) {
+  const { data, error } = await supabase
+    .from("organization_invitations")
+    .select("*")
+    .eq("organization_id", orgId)
+    .order("created_at", { ascending: false });
+  return { data, error };
+}
+
+export async function getInvitationByToken(
+  supabase: AppSupabaseClient,
+  token: string,
+) {
+  const { data, error } = await supabase.rpc("get_invitation_by_token", {
+    p_token: token,
+  });
+  return { data: data as Record<string, unknown> | null, error };
+}
+
+export async function acceptInvitationRpc(
+  supabase: AppSupabaseClient,
+  token: string,
+) {
+  const { data, error } = await supabase.rpc("accept_invitation", {
+    p_token: token,
+  });
+  return { data: data as Record<string, unknown> | null, error };
+}
+
+export async function updateInvitation(
+  supabase: AppSupabaseClient,
+  id: string,
+  values: OrganizationInvitationUpdate,
+) {
+  const { data, error } = await supabase
+    .from("organization_invitations")
     .update(values)
     .eq("id", id)
     .select()
