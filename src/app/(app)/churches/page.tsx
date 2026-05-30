@@ -1,5 +1,6 @@
 import { requireAuthenticatedPageSession } from "@/lib/supabase/auth";
 import { loadUserChurchesPageData } from "@/features/churches/lib/server/pageData";
+import { CreateChurchForm } from "@/features/churches/components/CreateChurchForm";
 
 export default async function ChurchesPage() {
   const { supabase, user } = await requireAuthenticatedPageSession("/churches");
@@ -46,24 +47,5 @@ export default async function ChurchesPage() {
         </div>
       )}
     </div>
-  );
-}
-
-function CreateChurchForm() {
-  return (
-    <form>
-      <button
-        formAction={async () => {
-          "use server";
-          const { createChurchAction } = await import(
-            "@/actions/churches"
-          );
-          // Placeholder — real form uses useActionState
-        }}
-        className="bg-accent hover:bg-accent/90 rounded-lg px-4 py-2 text-sm font-medium text-white"
-      >
-        Create Church
-      </button>
-    </form>
   );
 }
