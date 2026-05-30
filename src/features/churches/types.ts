@@ -42,3 +42,7 @@ export type OrganizationWithStats = ChurchOrganizationRow & {
   member_count?: number;
   recording_count?: number;
 };
+
+export type ChurchRequestRow = Tables<"church_requests">;
+export type ChurchRequestInsert = TablesInsert<"church_requests">;
+export type ChurchRequestUpdate = TablesUpdate<"church_requests">;

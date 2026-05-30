@@ -1633,6 +1633,66 @@ export type Database = {
           },
         ];
       };
+      church_requests: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          description: string | null;
+          city: string | null;
+          country: string | null;
+          requester_name: string;
+          requester_email: string;
+          facebook_page_url: string;
+          confirmation_token: string;
+          status: "approved" | "confirmed" | "pending" | "rejected";
+          created_at: string;
+          confirmed_at: string | null;
+          approved_at: string | null;
+          approved_by: string | null;
+          rejected_at: string | null;
+          rejected_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          description?: string | null;
+          city?: string | null;
+          country?: string | null;
+          requester_name: string;
+          requester_email: string;
+          facebook_page_url: string;
+          confirmation_token?: string;
+          status?: "approved" | "confirmed" | "pending" | "rejected";
+          created_at?: string;
+          confirmed_at?: string | null;
+          approved_at?: string | null;
+          approved_by?: string | null;
+          rejected_at?: string | null;
+          rejected_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          description?: string | null;
+          city?: string | null;
+          country?: string | null;
+          requester_name?: string;
+          requester_email?: string;
+          facebook_page_url?: string;
+          confirmation_token?: string;
+          status?: "approved" | "confirmed" | "pending" | "rejected";
+          created_at?: string;
+          confirmed_at?: string | null;
+          approved_at?: string | null;
+          approved_by?: string | null;
+          rejected_at?: string | null;
+          rejected_by?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {

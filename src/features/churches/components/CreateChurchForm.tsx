@@ -43,7 +43,7 @@ export function CreateChurchForm() {
       <form
         ref={formRef}
         action={formAction}
-        className="border-line absolute right-0 top-full z-10 mt-2 w-80 space-y-4 rounded-lg border bg-white p-4 shadow-lg"
+        className="border-line absolute right-0 top-full z-10 mt-2 w-80 space-y-4 rounded-lg border bg-surface p-4 shadow-soft"
       >
         <FormField htmlFor="name" label="Church name">
           <input

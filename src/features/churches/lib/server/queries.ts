@@ -4,6 +4,8 @@ import type {
   ChurchUpdate,
   ChurchOrganizationInsert,
   ChurchOrganizationUpdate,
+  ChurchRequestInsert,
+  ChurchRequestUpdate,
   OrganizationMemberInsert,
   OrganizationMemberUpdate,
   AudioRecordingInsert,
@@ -487,4 +489,66 @@ export async function deleteFineTuningJob(
     .delete()
     .eq("id", jobId);
   return { error };
+}
+
+// ---- Church Requests ----
+
+export async function createChurchRequest(
+  supabase: AppSupabaseClient,
+  values: ChurchRequestInsert,
+) {
+  const { data, error } = await supabase
+    .from("church_requests")
+    .insert(values)
+    .select()
+    .single();
+  return { data, error };
+}
+
+export async function getChurchRequestByToken(
+  supabase: AppSupabaseClient,
+  token: string,
+) {
+  const { data, error } = await supabase
+    .from("church_requests")
+    .select("*")
+    .eq("confirmation_token", token)
+    .single();
+  return { data, error };
+}
+
+export async function getChurchRequestById(
+  supabase: AppSupabaseClient,
+  id: string,
+) {
+  const { data, error } = await supabase
+    .from("church_requests")
+    .select("*")
+    .eq("id", id)
+    .single();
+  return { data, error };
+}
+
+export async function getAllChurchRequests(
+  supabase: AppSupabaseClient,
+) {
+  const { data, error } = await supabase
+    .from("church_requests")
+    .select("*")
+    .order("created_at", { ascending: false });
+  return { data, error };
+}
+
+export async function updateChurchRequest(
+  supabase: AppSupabaseClient,
+  id: string,
+  values: ChurchRequestUpdate,
+) {
+  const { data, error } = await supabase
+    .from("church_requests")
+    .update(values)
+    .eq("id", id)
+    .select()
+    .single();
+  return { data, error };
 }

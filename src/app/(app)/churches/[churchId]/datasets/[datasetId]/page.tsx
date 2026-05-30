@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { requireAuthenticatedPageSession } from "@/lib/supabase/auth";
 import { loadDatasetDetailPageData } from "@/features/churches/lib/server/pageData";
+import { getOrganizationsByChurch } from "@/features/churches/lib/server/queries";
+import { AddTtsRecordingForm } from "@/features/churches/components/AddTtsRecordingForm";
 
 export default async function DatasetDetailPage({
   params,
@@ -16,6 +18,7 @@ export default async function DatasetDetailPage({
   if (!pageData.dataset) notFound();
 
   const { dataset, recordings, jobs } = pageData;
+  const { data: organizations } = await getOrganizationsByChurch(supabase, churchId);
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 p-6">
@@ -95,6 +98,27 @@ export default async function DatasetDetailPage({
           Export Dataset (JSON)
         </a>
       </div>
+
+      {/* TTS Generation */}
+      {organizations && organizations.length > 0 && (
+        <section>
+          <h2 className="mb-4 text-xl font-semibold">Generate TTS Recording</h2>
+          <div className="border-line rounded-lg border p-4">
+            <p className="text-ink/50 mb-3 text-sm">
+              Type Coptic text to synthesize speech and add it directly to this
+              dataset.
+            </p>
+            <AddTtsRecordingForm
+              churchId={churchId}
+              datasetId={datasetId}
+              organizations={organizations.map((o) => ({
+                id: o.id,
+                name: o.name,
+              }))}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Recordings in Dataset */}
       <section>

@@ -1,8 +1,10 @@
 "use server";
 
 import { getAuthenticatedServerContext } from "@/lib/supabase/auth";
-import { hasSupabaseRuntimeEnv } from "@/lib/supabase/config";
+import { createClient } from "@/lib/supabase/server";
+import { getSupabaseRuntimeEnv, hasSupabaseRuntimeEnv } from "@/lib/supabase/config";
 import { getFormString } from "@/lib/validation";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import {
   createChurch,
@@ -25,6 +27,17 @@ import {
   removeRecordingFromDataset,
   createFineTuningJob,
   updateFineTuningJob,
+  createChurchRequest,
+  getChurchRequestById,
+  getChurchRequestByToken,
+  getAllChurchRequests,
+  updateChurchRequest,
+  getOrganizationsByChurch,
+  createOrganization as createOrgQuery,
+  createMember as createMemberQuery,
+  createRecording as createRecordingQuery,
+  addRecordingToDataset as addRecToDatasetQuery,
+  getOrganizationById,
 } from "@/features/churches/lib/server/queries";
 import type {
   ChurchInsert,
@@ -33,6 +46,7 @@ import type {
   AudioRecordingInsert,
   WhisperDatasetInsert,
   WhisperFineTuningJobInsert,
+  ChurchRequestInsert,
 } from "@/features/churches/types";
 
 // ---- Action State Types ----
@@ -514,4 +528,198 @@ export async function startFineTuningJobAction(
 
   revalidatePath(`/churches`);
   return { success: true, data: { id: data.id } };
+}
+
+// ---- Church Request Actions ----
+
+export type ChurchRequestActionState = {
+  success: boolean;
+  error?: string;
+  confirmationToken?: string;
+  confirmationUrl?: string;
+} | null;
+
+export async function submitChurchRequestAction(
+  _prevState: ChurchRequestActionState,
+  formData: FormData,
+): Promise<ChurchRequestActionState> {
+  if (!hasSupabaseRuntimeEnv()) {
+    return { success: false, error: "Service unavailable." };
+  }
+
+  const name = getFormString(formData, "name");
+  const slug = getFormString(formData, "slug");
+  const description = getFormString(formData, "description") || null;
+  const city = getFormString(formData, "city") || null;
+  const country = getFormString(formData, "country") || null;
+  const requesterName = getFormString(formData, "requesterName");
+  const requesterEmail = getFormString(formData, "requesterEmail");
+  const facebookPageUrl = getFormString(formData, "facebookPageUrl");
+
+  if (!name || !slug || !requesterName || !requesterEmail || !facebookPageUrl) {
+    return { success: false, error: "All required fields must be filled." };
+  }
+
+  const supabase = await createClient();
+
+  const values: ChurchRequestInsert = {
+    name,
+    slug,
+    description,
+    city,
+    country,
+    requester_name: requesterName,
+    requester_email: requesterEmail,
+    facebook_page_url: facebookPageUrl,
+  };
+
+  const created = await createChurchRequest(supabase, values);
+  if (created.error) {
+    if (created.error.code === "23505") {
+      return { success: false, error: "A church with this slug already exists or this request was already submitted." };
+    }
+    return { success: false, error: created.error.message ?? "Failed to submit request." };
+  }
+  if (!created.data) {
+    return { success: false, error: "Failed to submit request." };
+  }
+
+  const host = (await headers()).get("host") ?? "coptic-compass.com";
+  const protocol = host === "localhost" || host.startsWith("localhost") ? "http" : "https";
+  const confirmationUrl = `${protocol}://${host}/churches/confirm?token=${created.data.confirmation_token}`;
+
+  return {
+    success: true,
+    confirmationToken: created.data.confirmation_token,
+    confirmationUrl,
+  };
+}
+
+// ---- Approve / Reject Church Request Actions ----
+
+export type ApproveRejectState = { success: boolean; error?: string } | null;
+
+export async function approveChurchRequestAction(
+  _prevState: ApproveRejectState,
+  formData: FormData,
+): Promise<ApproveRejectState> {
+  if (!hasSupabaseRuntimeEnv()) return { success: false, error: "Service unavailable." };
+
+  const auth = await getAuthenticatedServerContext();
+  if (!auth) return { success: false, error: "Please sign in first." };
+
+  const profile = await auth.supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", auth.user.id)
+    .single();
+  if (profile.data?.role !== "admin") return { success: false, error: "Not authorized." };
+
+  const requestId = getFormString(formData, "requestId");
+  const action = getFormString(formData, "action");
+  if (!requestId) return { success: false, error: "Request ID required." };
+
+  const { data: request } = await getChurchRequestById(auth.supabase, requestId);
+  if (!request) return { success: false, error: "Request not found." };
+
+  if (action === "approve") {
+    const { error } = await updateChurchRequest(auth.supabase, requestId, {
+      status: "approved",
+      approved_at: new Date().toISOString(),
+      approved_by: auth.user.id,
+    });
+    if (error) return { success: false, error: error.message };
+
+    // Create the actual church
+    const { data: church } = await createChurch(auth.supabase, {
+      name: request.name,
+      slug: request.slug,
+      description: request.description,
+      city: request.city,
+      country: request.country,
+      created_by: auth.user.id,
+    });
+    if (!church) return { success: false, error: "Failed to create church." };
+
+    await addChurchAdmin(auth.supabase, church.id, auth.user.id, "admin");
+
+    revalidatePath("/churches");
+    return { success: true };
+  }
+
+  const { error } = await updateChurchRequest(auth.supabase, requestId, {
+    status: "rejected",
+    rejected_at: new Date().toISOString(),
+    rejected_by: auth.user.id,
+  });
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/churches");
+  return { success: true };
+}
+
+// ---- TTS to Dataset Action ----
+
+export async function addTtsRecordingToDatasetAction(
+  _prevState: ChurchActionState,
+  formData: FormData,
+): Promise<ChurchActionState> {
+  if (!hasSupabaseRuntimeEnv()) return { success: false, error: "Service unavailable." };
+
+  const auth = await getAuthenticatedServerContext();
+  if (!auth) return { success: false, error: "Please sign in first." };
+
+  const datasetId = getFormString(formData, "datasetId");
+  const orgId = getFormString(formData, "orgId");
+  const copticText = getFormString(formData, "copticText");
+  const englishText = getFormString(formData, "englishText") || null;
+
+  if (!datasetId || !orgId || !copticText) {
+    return { success: false, error: "Dataset, organization, and Coptic text are required." };
+  }
+
+  try {
+    const { getPremiumAudio } = await import("@/actions/tts");
+    const { uploadToCloudinary } = await import("@/lib/cloudinary");
+
+    const audioResult = await getPremiumAudio(copticText, "f_coptic_standard", 0);
+    const audioBuffer = Buffer.from(audioResult.base64Audio, "base64");
+    const uploadResult = await uploadToCloudinary(audioBuffer, `tts-${Date.now()}.${audioResult.mimeType === "audio/wav" ? "wav" : "mp3"}`);
+
+    const { data: org } = await getOrganizationById(auth.supabase, orgId);
+    if (!org) return { success: false, error: "Organization not found." };
+
+    const { data: ttsMember } = await createMemberQuery(auth.supabase, {
+      organization_id: orgId,
+      full_name: "TTS Generator",
+      role: "member",
+      added_by: auth.user.id,
+    });
+    if (!ttsMember) return { success: false, error: "Failed to create TTS member reference." };
+
+    const { data: recording } = await createRecordingQuery(auth.supabase, {
+      organization_id: orgId,
+      recorded_by: ttsMember.id,
+      title: `TTS: ${copticText.slice(0, 60)}`,
+      transcription: copticText,
+      transcription_english: englishText,
+      dialect: "B",
+      audio_url: uploadResult.url,
+      audio_duration_seconds: null,
+      file_size_bytes: uploadResult.bytes,
+      file_format: uploadResult.format,
+      status: "transcribed",
+      created_by: auth.user.id,
+    });
+    if (!recording) return { success: false, error: "Failed to create recording." };
+
+    const { error: linkError } = await addRecToDatasetQuery(auth.supabase, datasetId, recording.id);
+    if (linkError) return { success: false, error: linkError.message };
+
+    revalidatePath(`/churches`);
+    return { success: true, data: { id: recording.id } };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to generate TTS recording.";
+    return { success: false, error: message };
+  }
 }
