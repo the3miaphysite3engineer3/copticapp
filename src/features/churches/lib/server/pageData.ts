@@ -1,6 +1,7 @@
 import type { AppSupabaseClient } from "@/lib/supabase/queryTypes";
 import {
   getUserChurches,
+  getUserChurchesViaMembership,
   getChurchById,
   getOrganizationById,
   getOrganizationsByChurch,
@@ -13,14 +14,39 @@ import {
   getFineTuningJobsByDataset,
   getChurchAdmins,
   getInvitationsByOrganization,
+  getPendingInvitationsByEmail,
 } from "@/features/churches/lib/server/queries";
 
 export async function loadUserChurchesPageData(
   supabase: AppSupabaseClient,
   userId: string,
+  userEmail: string,
 ) {
-  const { data: churches } = await getUserChurches(supabase, userId);
-  return { churches: churches ?? [] };
+  const { data: adminChurches } = await getUserChurches(supabase, userId);
+  const { data: memberChurches } = await getUserChurchesViaMembership(
+    supabase,
+    userId,
+  );
+
+  const map = new Map<string, any>();
+  for (const c of adminChurches ?? []) {
+    map.set(c.id, { ...c, member_role: "admin" });
+  }
+  for (const c of memberChurches ?? []) {
+    if (!map.has(c.id)) {
+      map.set(c.id, { ...c, member_role: "member" });
+    }
+  }
+
+  const { data: pendingInvites } = await getPendingInvitationsByEmail(
+    supabase,
+    userEmail,
+  );
+
+  return {
+    churches: Array.from(map.values()),
+    pendingInvites: pendingInvites ?? [],
+  };
 }
 
 export async function loadChurchDashboardPageData(

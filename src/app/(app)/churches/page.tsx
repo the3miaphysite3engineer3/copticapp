@@ -6,7 +6,11 @@ import { ApproveChurchRequestForm } from "@/features/churches/components/Approve
 
 export default async function ChurchesPage() {
   const { supabase, user } = await requireAuthenticatedPageSession("/churches");
-  const { churches } = await loadUserChurchesPageData(supabase, user.id);
+  const { churches, pendingInvites } = await loadUserChurchesPageData(
+    supabase,
+    user.id,
+    user.email ?? "",
+  );
 
   const profile = await supabase
     .from("profiles")
@@ -39,6 +43,34 @@ export default async function ChurchesPage() {
           <CreateChurchForm />
         </div>
       </div>
+
+      {pendingInvites.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold">
+            Pending Invitations ({pendingInvites.length})
+          </h2>
+          <div className="border-line divide-line divide-y overflow-hidden rounded-lg border">
+            {pendingInvites.map((inv: any) => (
+              <div key={inv.id} className="flex items-center justify-between p-4">
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium">
+                    {inv.organization?.name ?? "Unknown Organization"}
+                  </div>
+                  <div className="text-ink/50 mt-0.5 text-sm">
+                    Invited to join as a member
+                  </div>
+                </div>
+                <a
+                  href={`/churches/invite?token=${inv.token}`}
+                  className="bg-accent hover:bg-accent/90 shrink-0 rounded-lg px-4 py-2 text-sm font-medium text-white"
+                >
+                  Accept Invite
+                </a>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {isAdmin && pendingRequests.length > 0 && (
         <section>
@@ -97,7 +129,7 @@ export default async function ChurchesPage() {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {churches.map((church) => (
+          {churches.map((church: any) => (
             <a
               key={church.id}
               href={`/churches/${church.id}`}
@@ -110,6 +142,11 @@ export default async function ChurchesPage() {
                 </p>
               )}
               <div className="text-ink/40 mt-3 text-xs">
+                {church.member_role === "member" && (
+                  <span className="mr-2 rounded bg-blue-100 px-1.5 py-0.5 text-blue-700">
+                    member
+                  </span>
+                )}
                 {church.city && `${church.city}${church.country ? ", " : ""}`}
                 {church.country}
               </div>

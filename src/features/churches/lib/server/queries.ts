@@ -67,6 +67,35 @@ export async function getUserChurches(
   return { data, error };
 }
 
+export async function getUserChurchesViaMembership(
+  supabase: AppSupabaseClient,
+  userId: string,
+) {
+  const { data, error } = await supabase
+    .from("churches")
+    .select(`
+      *,
+      organizations:church_organizations!inner(
+        members:organization_members!inner(*)
+      )
+    `)
+    .eq("organizations.members.user_id", userId);
+  return { data, error };
+}
+
+export async function getPendingInvitationsByEmail(
+  supabase: AppSupabaseClient,
+  email: string,
+) {
+  const { data, error } = await (supabase as any)
+    .from("organization_invitations")
+    .select("*, organization:organization_id(name)")
+    .eq("email", email)
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+  return { data: data as any[] | null, error };
+}
+
 export async function updateChurch(
   supabase: AppSupabaseClient,
   churchId: string,
