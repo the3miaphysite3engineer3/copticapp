@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import {
   createChurch,
+  getChurchBySlug,
   updateChurch,
   deleteChurch,
   addChurchAdmin,
@@ -623,19 +624,27 @@ export async function approveChurchRequestAction(
   if (!request) return { success: false, error: "Request not found." };
 
   if (action === "approve") {
-    const { data: church } = await createChurch(auth.supabase, {
+    let church = (await createChurch(auth.supabase, {
       name: request.name,
       slug: request.slug,
       description: request.description,
       city: request.city,
       country: request.country,
       created_by: auth.user.id,
-    });
-    if (!church) return { success: false, error: "A church with this slug may already exist. Failed to create church." };
+    })).data;
+
+    if (!church) {
+      const existing = await getChurchBySlug(auth.supabase, request.slug);
+      if (existing.data) {
+        church = existing.data;
+      } else {
+        return { success: false, error: "Failed to create church. The slug may already exist or another error occurred." };
+      }
+    }
 
     const { error: adminError } = await addChurchAdmin(auth.supabase, church.id, auth.user.id, "admin");
     if (adminError) {
-      return { success: false, error: "Church created but failed to grant you admin access. Contact support." };
+      return { success: false, error: "Church found but failed to grant you admin access. The admin entry may already exist." };
     }
 
     const { error } = await updateChurchRequest(auth.supabase, requestId, {
