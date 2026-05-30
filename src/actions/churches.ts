@@ -651,7 +651,7 @@ export async function approveChurchRequestAction(
     if (!resolvedChurch) return { success: false, error: "Failed to create church." };
     const { error: adminError } = await addChurchAdmin(auth.supabase, resolvedChurch.id, auth.user.id, "admin");
     if (adminError) {
-      return { success: false, error: "Church found but failed to grant you admin access. The admin entry may already exist." };
+      return { success: false, error: `Failed to add admin: ${adminError.message} (${adminError.code ?? "no code"})` };
     }
 
     const { error } = await updateChurchRequest(auth.supabase, requestId, {
