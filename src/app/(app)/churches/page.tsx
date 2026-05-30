@@ -9,7 +9,6 @@ export default async function ChurchesPage() {
   const { churches, pendingInvites } = await loadUserChurchesPageData(
     supabase,
     user.id,
-    user.email ?? "",
   );
 
   const profile = await supabase
@@ -54,10 +53,10 @@ export default async function ChurchesPage() {
               <div key={inv.id} className="flex items-center justify-between p-4">
                 <div className="min-w-0 flex-1">
                   <div className="font-medium">
-                    {inv.organization?.name ?? "Unknown Organization"}
+                    {inv.organization_name ?? "Unknown Organization"}
                   </div>
                   <div className="text-ink/50 mt-0.5 text-sm">
-                    Invited to join as a member
+                    {inv.church_name ? `${inv.church_name} · member` : "Invited to join as a member"}
                   </div>
                 </div>
                 <a

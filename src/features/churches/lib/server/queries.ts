@@ -85,15 +85,9 @@ export async function getUserChurchesViaMembership(
 
 export async function getPendingInvitationsByEmail(
   supabase: AppSupabaseClient,
-  email: string,
 ) {
-  const { data, error } = await (supabase as any)
-    .from("organization_invitations")
-    .select("*, organization:organization_id(name)")
-    .eq("email", email)
-    .eq("status", "pending")
-    .order("created_at", { ascending: false });
-  return { data: data as any[] | null, error };
+  const { data, error } = await (supabase as any).rpc("get_my_pending_invitations");
+  return { data: (data as any[]) ?? [], error };
 }
 
 export async function updateChurch(

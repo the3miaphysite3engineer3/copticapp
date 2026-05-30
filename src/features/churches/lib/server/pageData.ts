@@ -20,7 +20,6 @@ import {
 export async function loadUserChurchesPageData(
   supabase: AppSupabaseClient,
   userId: string,
-  userEmail: string,
 ) {
   const { data: adminChurches } = await getUserChurches(supabase, userId);
   const { data: memberChurches } = await getUserChurchesViaMembership(
@@ -38,10 +37,7 @@ export async function loadUserChurchesPageData(
     }
   }
 
-  const { data: pendingInvites } = await getPendingInvitationsByEmail(
-    supabase,
-    userEmail,
-  );
+  const { data: pendingInvites } = await getPendingInvitationsByEmail(supabase);
 
   return {
     churches: Array.from(map.values()),
