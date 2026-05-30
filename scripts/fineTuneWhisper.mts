@@ -53,6 +53,7 @@ function parseArgs(): DatasetConfig {
     return idx >= 0 && idx + 1 < args.length ? args[idx + 1] : "";
   };
 
+  const has = (flag: string): boolean => args.includes(flag);
   const datasetId = get("--dataset-id");
   if (!datasetId) {
     console.error("Error: --dataset-id is required");
