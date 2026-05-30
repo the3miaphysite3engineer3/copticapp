@@ -41,7 +41,7 @@ export async function uploadToCloudinary(
   const uploadUrl = `https://api.cloudinary.com/v1_1/${config.cloudName}/video/upload`;
 
   const body = new FormData();
-  body.append("file", new Blob([buffer], { type: "audio/mpeg" }), originalFileName);
+  body.append("file", new Blob([new Uint8Array(buffer)], { type: "audio/mpeg" }), originalFileName);
   body.append("public_id", publicId);
   body.append("resource_type", "video");
   body.append("type", "upload");

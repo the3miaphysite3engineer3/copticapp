@@ -109,10 +109,10 @@ export default async function ChurchDashboardPage({
                 </div>
                 <div className="text-ink/40 mt-2 flex gap-4 text-sm">
                   <span>
-                    {(org as Record<string, unknown>).member_count ?? 0} members
+                    {Number((org as Record<string, unknown>).member_count) || 0} members
                   </span>
                   <span>
-                    {(org as Record<string, unknown>).recording_count ?? 0}{" "}
+                    {Number((org as Record<string, unknown>).recording_count) || 0}{" "}
                     recordings
                   </span>
                 </div>

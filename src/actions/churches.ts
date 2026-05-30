@@ -77,11 +77,11 @@ export async function createChurchAction(
 
   const { data, error } = await createChurch(auth.supabase, values);
 
-  if (error) {
-    if (error.code === "23505") {
+  if (error || !data) {
+    if (error?.code === "23505") {
       return { success: false, error: "A church with this slug already exists." };
     }
-    return { success: false, error: error.message };
+    return { success: false, error: error?.message ?? "Failed to create church." };
   }
 
   await addChurchAdmin(auth.supabase, data.id, auth.user.id, "admin");
@@ -168,7 +168,7 @@ export async function createOrganizationAction(
   };
 
   const { data, error } = await createOrganization(auth.supabase, values);
-  if (error) return { success: false, error: error.message };
+  if (error || !data) return { success: false, error: error?.message ?? "Failed to create organization." };
 
   revalidatePath(`/churches/${churchId}`);
   return { success: true, data: { id: data.id } };
@@ -246,7 +246,7 @@ export async function createMemberAction(
   };
 
   const { data, error } = await createMember(auth.supabase, values);
-  if (error) return { success: false, error: error.message };
+  if (error || !data) return { success: false, error: error?.message ?? "Failed to create member." };
 
   revalidatePath(`/churches`);
   return { success: true, data: { id: data.id } };
@@ -333,7 +333,7 @@ export async function createRecordingAction(
   };
 
   const { data, error } = await createRecording(auth.supabase, values);
-  if (error) return { success: false, error: error.message };
+  if (error || !data) return { success: false, error: error?.message ?? "Failed to create recording." };
 
   revalidatePath(`/churches`);
   return { success: true, data: { id: data.id } };
@@ -415,7 +415,7 @@ export async function createDatasetAction(
   };
 
   const { data, error } = await createDataset(auth.supabase, values);
-  if (error) return { success: false, error: error.message };
+  if (error || !data) return { success: false, error: error?.message ?? "Failed to create dataset." };
 
   revalidatePath(`/churches/${churchId}/datasets`);
   return { success: true, data: { id: data.id } };
@@ -508,7 +508,7 @@ export async function startFineTuningJobAction(
   };
 
   const { data, error } = await createFineTuningJob(auth.supabase, values);
-  if (error) return { success: false, error: error.message };
+  if (error || !data) return { success: false, error: error?.message ?? "Failed to start fine-tuning job." };
 
   await updateDataset(auth.supabase, datasetId, { status: "training" });
 
