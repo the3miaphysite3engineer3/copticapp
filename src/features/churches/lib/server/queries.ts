@@ -94,14 +94,14 @@ export async function addChurchAdmin(
   supabase: AppSupabaseClient,
   churchId: string,
   userId: string,
-  role: "admin" | "editor" | "viewer" = "viewer",
+  role: "admin" | "editor" | "viewer" = "admin",
 ) {
-  const { data, error } = await supabase
-    .from("church_admins")
-    .insert({ church_id: churchId, user_id: userId, role })
-    .select()
-    .single();
-  return { data, error };
+  const { error } = await supabase.rpc("add_church_admin", {
+    p_church_id: churchId,
+    p_user_id: userId,
+    p_role: role,
+  });
+  return { data: null, error };
 }
 
 export async function getChurchAdmins(
